@@ -21,10 +21,10 @@
                     <input type="text" placeholder="Rechercher un cours d'eau..."
                         class="bg-transparent border-none outline-none w-full text-sm text-slate-800 placeholder-slate-400 font-grotesk">
                 </div>
-                <div
-                    class="w-[46px] h-[46px] rounded-full bg-sv-blue flex items-center justify-center font-mono text-[13px] font-bold text-white shrink-0 shadow-[0_4px_16px_rgba(34,42,96,0.25)] cursor-pointer transition-transform active:scale-[0.93] select-none">
+                <a href="{{ route('login', ['source' => 'mobile']) }}"
+                    class="w-[46px] h-[46px] rounded-full bg-sv-blue flex items-center justify-center font-mono text-[13px] font-bold text-white shrink-0 shadow-[0_4px_16px_rgba(34,42,96,0.25)] cursor-pointer transition-transform active:scale-[0.93] select-none no-underline">
                     SV
-                </div>
+                </a>
             </div>
 
             <div class="flex gap-2 mt-2.5 pl-0.5 pointer-events-auto overflow-x-auto no-scrollbar">

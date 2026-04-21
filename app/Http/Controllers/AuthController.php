@@ -12,11 +12,15 @@ use App\Http\Requests\RegisterRequest;
 class AuthController extends Controller
 {
     /* ------------------------------------------------------------------ */
-    /*  LOGIN                                                               */
+    /* LOGIN                                                             */
     /* ------------------------------------------------------------------ */
 
-    public function showLogin()
+    public function showLogin(Request $request)
     {
+        if ($request->has('source')) {
+            session(['auth_source' => $request->source]);
+        }
+
         return view('auth.login');
     }
 
@@ -26,7 +30,9 @@ class AuthController extends Controller
 
         if (Auth::attempt($credentials, $request->boolean('remember'))) {
             $request->session()->regenerate();
-            return redirect()->intended(route('dashboard'));
+            $source = session('auth_source', 'web');
+            $redirectUrl = $source === 'mobile' ? url('index_mobile') : url('dashboard');
+            return redirect()->intended($redirectUrl);
         }
 
         return back()
@@ -35,11 +41,15 @@ class AuthController extends Controller
     }
 
     /* ------------------------------------------------------------------ */
-    /*  REGISTER                                                            */
+    /* REGISTER                                                          */
     /* ------------------------------------------------------------------ */
 
-    public function showRegister()
+    public function showRegister(Request $request)
     {
+        if ($request->has('source')) {
+            session(['auth_source' => $request->source]);
+        }
+
         return view('auth.register');
     }
 
@@ -56,11 +66,14 @@ class AuthController extends Controller
         Auth::login($user);
         $request->session()->regenerate();
 
-        return redirect()->route('dashboard');
+        $source = session('auth_source', 'web');
+        $redirectUrl = $source === 'mobile' ? route('index_mobile') : route('dashboard');
+
+        return redirect()->intended($redirectUrl);
     }
 
     /* ------------------------------------------------------------------ */
-    /*  LOGOUT                                                              */
+    /* LOGOUT                                                            */
     /* ------------------------------------------------------------------ */
 
     public function logout(Request $request)

@@ -117,7 +117,7 @@
                             </span>
                         @endforeach
                     </div>
-                    <a href="/app"
+                    <a href="{{ url('index_mobile') }}"
                         class="btn-lift inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-white text-sm font-semibold bg-sv-blue hover:opacity-90 transition-opacity duration-200">
                         Accéder à l'application
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -152,7 +152,7 @@
                             </span>
                         @endforeach
                     </div>
-                    <a href="/plateforme"
+                    <a href="{{ route('login') }}"
                         class="btn-lift inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-white text-sm font-semibold bg-sv-green hover:opacity-90 transition-opacity duration-200">
                         Accéder à la plateforme web
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

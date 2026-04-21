@@ -17,3 +17,7 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middl
 Route::get('/index_mobile', function () {
     return view('mobile/index');
 });
+
+Route::get('/index_web', function () {
+    return view('web/dashboard');
+});
