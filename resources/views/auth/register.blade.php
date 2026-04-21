@@ -50,21 +50,21 @@
             <div class="space-y-5">
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label for="first_name" class="field-label block mb-1.5">Prénom</label>
-                        <input id="first_name" name="first_name" type="text" value="{{ old('first_name') }}"
+                        <label for="firstname" class="field-label block mb-1.5">Prénom</label>
+                        <input id="firstname" name="firstname" type="text" value="{{ old('firstname') }}"
                             placeholder="Jean" autocomplete="given-name"
-                            class="field w-full rounded-xl px-4 py-3 text-sm @error('first_name') error @enderror">
-                        @error('first_name')
+                            class="field w-full rounded-xl px-4 py-3 text-sm @error('firstname') error @enderror">
+                        @error('firstname')
                             <p class="error-msg visible">{{ $message }}</p>
                         @enderror
                     </div>
 
                     <div>
-                        <label for="last_name" class="field-label block mb-1.5">Nom</label>
-                        <input id="last_name" name="last_name" type="text" value="{{ old('last_name') }}"
+                        <label for="name" class="field-label block mb-1.5">Nom</label>
+                        <input id="name" name="name" type="text" value="{{ old('name') }}"
                             placeholder="Dupont" autocomplete="family-name"
-                            class="field w-full rounded-xl px-4 py-3 text-sm @error('last_name') error @enderror">
-                        @error('last_name')
+                            class="field w-full rounded-xl px-4 py-3 text-sm @error('name') error @enderror">
+                        @error('name')
                             <p class="error-msg visible">{{ $message }}</p>
                         @enderror
                     </div>

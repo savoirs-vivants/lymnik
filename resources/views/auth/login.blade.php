@@ -16,13 +16,9 @@
 <body class="bg-hero flex items-center justify-center min-h-screen px-4 py-12 font-grotesk">
 
     <div class="glass-card w-full max-w-[440px] rounded-2xl p-8 sm:p-10 shadow-2xl">
-
-        {{-- ── Logo ── --}}
         <div class="gap-3 mb-8">
             <span class="font-grotesk font-bold text-white text-lg tracking-tight">Lymnik</span>
         </div>
-
-        {{-- ── Heading ── --}}
         <div class="mb-7">
             <h1 class="font-grotesk text-2xl font-bold text-white mb-1">Se connecter</h1>
             <p class="text-slate-400 text-sm">
@@ -33,8 +29,6 @@
                 </a>
             </p>
         </div>
-
-        {{-- ── Erreurs Laravel ── --}}
         @if ($errors->any())
             <div class="mb-6 p-4 rounded-xl border border-red-400/20 bg-red-400/10">
                 <ul class="space-y-1">
@@ -51,8 +45,6 @@
                 </ul>
             </div>
         @endif
-
-        {{-- ── Session status (ex: lien reset envoyé) ── --}}
         @if (session('status'))
             <div class="mb-6 p-4 rounded-xl border border-sv-green/25 bg-sv-green/10">
                 <p class="text-sv-green text-xs flex items-center gap-2">
@@ -65,14 +57,9 @@
                 </p>
             </div>
         @endif
-
-        {{-- ── Form ── --}}
         <form method="POST" action="{{ route('login') }}">
             @csrf
-
             <div class="space-y-5">
-
-                {{-- E-mail --}}
                 <div>
                     <label for="email" class="field-label block mb-1.5">Adresse e-mail</label>
                     <input id="email" name="email" type="email" value="{{ old('email') }}"
@@ -82,8 +69,6 @@
                         <p class="text-red-400 text-[11px] mt-1.5">{{ $message }}</p>
                     @enderror
                 </div>
-
-                {{-- Mot de passe --}}
                 <div>
                     <div class="flex items-center justify-between mb-1.5">
                         <label for="password" class="field-label">Mot de passe</label>
@@ -115,7 +100,6 @@
                     @enderror
                 </div>
 
-                {{-- Se souvenir de moi --}}
                 <div class="flex items-center gap-3">
                     <input id="remember" name="remember" type="checkbox" class="custom-checkbox"
                         {{ old('remember') ? 'checked' : '' }}>
@@ -124,7 +108,6 @@
                     </label>
                 </div>
 
-                {{-- Submit --}}
                 <button type="submit"
                     class="btn-submit w-full rounded-xl py-3.5 text-white font-grotesk font-semibold text-sm flex items-center justify-center gap-2">
                     Se connecter
@@ -137,10 +120,8 @@
             </div>
         </form>
 
-        {{-- ── Divider ── --}}
         <div class="divider my-6">OU</div>
 
-        {{-- ── Code classe ── --}}
         <p class="text-center text-slate-400 text-xs">
             Vous avez un code classe ?
             <a href="/"
