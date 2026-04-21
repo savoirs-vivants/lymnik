@@ -27,7 +27,7 @@
                     </svg>
                     J'ai un code
                 </a>
-                <a href="/compte"
+                <a href="{{ route('login') }}"
                     class="w-9 h-9 rounded-full border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-50 hover:border-gray-300 transition-all duration-200">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
