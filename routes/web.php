@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\MobileController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -14,9 +15,7 @@ Route::post('/register', [AuthController::class, 'register']);
 
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middleware('auth');
 
-Route::get('/index_mobile', function () {
-    return view('mobile/index');
-});
+Route::get('/mobile', [MobileController::class, 'index'])->name('index_mobile');
 
 Route::get('/index_web', function () {
     return view('web/dashboard');

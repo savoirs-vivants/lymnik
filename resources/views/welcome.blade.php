@@ -58,7 +58,7 @@
                     Stations de mesure en continu, analyses participatives et données
                     cartographiées en temps réel — pour comprendre et protéger nos rivières.
                 </p>
-                <a href="{{ url('index_mobile') }}"
+                <a href="{{ route('index_mobile') }}"
                     class="btn-lift inline-flex items-center gap-2.5 px-6 py-3.5 rounded-xl border border-white/25 bg-white/10 hover:bg-white/20 text-white text-sm font-semibold backdrop-blur-sm">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <circle cx="11" cy="11" r="8" stroke-width="2" />
@@ -117,7 +117,7 @@
                             </span>
                         @endforeach
                     </div>
-                    <a href="{{ url('index_mobile') }}"
+                    <a href="{{ route('index_mobile') }}"
                         class="btn-lift inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-white text-sm font-semibold bg-sv-blue hover:opacity-90 transition-opacity duration-200">
                         Accéder à l'application
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
