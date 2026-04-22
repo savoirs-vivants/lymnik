@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AnalyseController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\MobileController;
@@ -19,4 +20,9 @@ Route::get('/mobile', [MobileController::class, 'index'])->name('index_mobile');
 
 Route::get('/index_web', function () {
     return view('web/dashboard');
+});
+
+Route::middleware('auth')->group(function () {
+    Route::get('/mobile/analyse/create', [AnalyseController::class, 'create'])->name('mobile.analyse.create');
+    Route::post('/mobile/analyse',       [AnalyseController::class, 'store'])->name('mobile.analyse.store');
 });
