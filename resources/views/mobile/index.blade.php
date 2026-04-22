@@ -21,10 +21,23 @@
                     <input type="text" placeholder="Rechercher un cours d'eau..."
                         class="bg-transparent border-none outline-none w-full text-sm text-slate-800 placeholder-slate-400 font-grotesk">
                 </div>
-                <a href="{{ route('login', ['source' => 'mobile']) }}"
-                    class="w-[46px] h-[46px] rounded-full bg-sv-blue flex items-center justify-center font-mono text-[13px] font-bold text-white shrink-0 shadow-[0_4px_16px_rgba(34,42,96,0.25)] cursor-pointer transition-transform active:scale-[0.93] select-none no-underline">
-                    SV
-                </a>
+                @guest
+                    <a href="{{ route('login', ['source' => 'mobile']) }}"
+                        class="w-[46px] h-[46px] rounded-full bg-slate-100 flex items-center justify-center text-slate-400 shrink-0 shadow-[0_4px_16px_rgba(0,0,0,0.08)] border border-slate-200 cursor-pointer transition-transform active:scale-[0.93] select-none no-underline">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"
+                            viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                    </a>
+                @endguest
+
+                @auth
+                    <a href="{{ route('index_mobile') }}"
+                        class="w-[46px] h-[46px] rounded-full bg-sv-blue flex items-center justify-center font-grotesk text-[13px] font-bold text-white shrink-0 shadow-[0_4px_16px_rgba(34,42,96,0.25)] cursor-pointer transition-transform active:scale-[0.93] select-none no-underline border-2 border-white">
+                        {{ strtoupper(substr(Auth::user()->firstname, 0, 1) . substr(Auth::user()->name, 0, 1)) }}
+                    </a>
+                @endauth
             </div>
 
             <div class="flex gap-2 mt-2.5 pl-0.5 pointer-events-auto overflow-x-auto no-scrollbar">
