@@ -25,31 +25,28 @@ class CoursDeauSeeder extends Seeder
 
         $features = $data['features'];
         $total = count($features);
-        $this->command->info($total . ' cours d\'eau trouvés. Début de l\'importation...');
+        $this->command->info($total . ' cours d\'eau trouvés. Début du filtrage et de l\'importation...');
 
         $bar = $this->command->getOutput()->createProgressBar($total);
         $bar->start();
 
         DB::disableQueryLog();
-
         DB::beginTransaction();
 
         try {
             foreach ($features as $feature) {
-                $nom = $feature['properties']['nom_cours_eau']
-                    ?? $feature['properties']['name']
-                    ?? 'Cours d\'eau inconnu';
-
-                CoursDEau::create([
-                    'nom' => $nom,
-                    'type_cours' => 'rivière',
-                    'trace' => $feature['geometry'],
-                ]);
-
                 $bar->advance();
+                if (empty($feature['properties']['TopoOH'])) {
+                    continue;
+                }
+                CoursDEau::create([
+                    'nom'        => $feature['properties']['TopoOH'],
+                    'type_cours' => 'rivière',
+                    'trace'      => json_encode($feature['geometry']),
+                ]);
             }
-            DB::commit();
 
+            DB::commit();
         } catch (\Exception $e) {
             DB::rollBack();
             $this->command->error("\nErreur lors de l'importation : " . $e->getMessage());
@@ -57,6 +54,7 @@ class CoursDeauSeeder extends Seeder
         }
 
         $bar->finish();
-        $this->command->info("\nLes cours d'eau ont été importés avec succès !");
+        $importes = CoursDEau::count();
+        $this->command->info("\nSuccès ! $importes cours d'eau nommés ont été importés (les autres ont été ignorés).");
     }
 }
