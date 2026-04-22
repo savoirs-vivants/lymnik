@@ -132,6 +132,10 @@ document.addEventListener('DOMContentLoaded', () => {
         return { bandelette: 'Bandelette JBL', photometre: 'Photomètre', les_deux: 'Bandelette + Photomètre' }[type] ?? type;
     }
 
+    function markerColor(point) {
+        return '#1565c0';
+    }
+
     points.forEach(p => {
         const color  = markerColor(p);
         const marker = L.marker([p.latitude, p.longitude], { icon: makeMarkerIcon(color) }).addTo(map);

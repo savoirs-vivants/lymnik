@@ -29,7 +29,6 @@ class AnalyseController extends Controller
                 $point = Point::findOrFail($request->point_id);
             } else {
                 $point = Point::create([
-                    'cours_d_eau_id' => $request->cours_d_eau_id,
                     'latitude'       => $request->latitude,
                     'longitude'      => $request->longitude,
                 ]);
