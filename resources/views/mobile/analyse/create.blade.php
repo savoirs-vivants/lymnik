@@ -1,16 +1,8 @@
 @extends('layouts.mobile')
 @section('title', 'Création de point')
 
-@push('styles')
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-@endpush
-
 @section('content')
 <div id="page-shell" class="flex flex-col h-[100dvh] overflow-hidden bg-slate-50 font-grotesk text-slate-900">
-
-    {{-- ================================================================ --}}
-    {{-- HEADER                                                           --}}
-    {{-- ================================================================ --}}
     <div id="page-header" class="bg-gradient-to-br from-[#0d1533] via-[#0f1d42] to-[#1a2a6c] pt-[max(48px,env(safe-area-inset-top))] pb-0 shrink-0 relative z-10">
         <div class="flex items-center justify-center px-4 pb-3 relative">
             <a href="{{ route('index_mobile') }}" aria-label="Retour"
@@ -27,7 +19,6 @@
             </div>
         </div>
 
-        {{-- Step progress bar --}}
         <div id="step-bar" class="flex border-t border-white/10 mt-2.5">
             <div class="step-tab flex-1 text-center py-2.5 px-1 font-mono text-[9px] font-bold tracking-widest uppercase border-b-2 transition-colors duration-250 cursor-pointer text-white border-white" data-target="section-1">Localisation</div>
             <div class="step-tab flex-1 text-center py-2.5 px-1 font-mono text-[9px] font-bold tracking-widest uppercase border-b-2 transition-colors duration-250 cursor-pointer text-white/30 border-transparent [&.active]:text-white [&.active]:border-white [&.done]:text-[#16987c] [&.done]:border-[#16987c]/50" data-target="section-2">Photo</div>
@@ -36,9 +27,6 @@
         </div>
     </div>
 
-    {{-- ================================================================ --}}
-    {{-- FORM CONTENT                                                     --}}
-    {{-- ================================================================ --}}
     <div id="form-scroll" class="flex-1 overflow-y-auto px-4 pt-5 pb-[calc(90px+env(safe-area-inset-bottom,0px))] scroll-smooth touch-pan-y [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
 
         @if ($errors->any())
@@ -61,7 +49,6 @@
             <input type="hidden" name="latitude" id="f-lat" value="{{ old('latitude', $lat) }}">
             <input type="hidden" name="longitude" id="f-lng" value="{{ old('longitude', $lng) }}">
 
-            {{-- ── SECTION 1 : LOCALISATION ── --}}
             <div class="bg-white rounded-[18px] p-[18px] mb-3.5 shadow-[0_2px_12px_rgba(34,42,96,0.06)]" id="section-1">
                 <div class="flex items-center gap-2.5 mb-3.5">
                     <div class="w-[26px] h-[26px] rounded-full bg-[#222a60] text-white font-mono text-[11px] font-bold flex items-center justify-center shrink-0">1</div>
@@ -89,7 +76,6 @@
                 </div>
             </div>
 
-            {{-- ── SECTION 2 : PHOTO ── --}}
             <div class="bg-white rounded-[18px] p-[18px] mb-3.5 shadow-[0_2px_12px_rgba(34,42,96,0.06)]" id="section-2">
                 <div class="flex items-center gap-2.5 mb-3.5">
                     <div class="w-[26px] h-[26px] rounded-full bg-[#222a60] text-white font-mono text-[11px] font-bold flex items-center justify-center shrink-0">2</div>
@@ -117,7 +103,6 @@
                           class="w-full p-3 rounded-xl border-[1.5px] border-slate-200 bg-slate-50 font-grotesk text-[13px] text-slate-800 outline-none resize-none min-h-[80px] leading-relaxed placeholder:text-slate-400 focus:border-[#222a60] focus:bg-white transition-colors">{{ old('note') }}</textarea>
             </div>
 
-            {{-- ── SECTION 3 : TYPE ── --}}
             <div class="bg-white rounded-[18px] p-[18px] mb-3.5 shadow-[0_2px_12px_rgba(34,42,96,0.06)]" id="section-3">
                 <div class="flex items-center gap-2.5 mb-3.5">
                     <div class="w-[26px] h-[26px] rounded-full bg-[#222a60] text-white font-mono text-[11px] font-bold flex items-center justify-center shrink-0">3</div>
@@ -126,7 +111,6 @@
                 <input type="hidden" name="type" id="f-type" value="{{ old('type', 'bandelette') }}">
 
                 <div class="grid grid-cols-2 gap-2.5 mb-2.5">
-                    {{-- Bandelette JBL --}}
                     <div class="type-card group rounded-[14px] border-[1.5px] border-slate-200 p-3.5 cursor-pointer transition-colors bg-[#fafafa] relative [&.selected]:border-[#222a60] [&.selected]:bg-blue-50 {{ old('type', 'bandelette') === 'bandelette' ? 'selected' : '' }}" data-type="bandelette">
                         <div class="w-9 h-9 rounded-lg flex items-center justify-center mb-2 bg-blue-50 text-[#222a60]">
                             <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -141,7 +125,6 @@
                         </div>
                     </div>
 
-                    {{-- Photomètre --}}
                     <div class="type-card group rounded-[14px] border-[1.5px] border-slate-200 p-3.5 cursor-pointer transition-colors bg-[#fafafa] relative [&.selected]:border-[#222a60] [&.selected]:bg-blue-50 {{ old('type') === 'photometre' ? 'selected' : '' }}" data-type="photometre">
                         <div class="w-9 h-9 rounded-lg flex items-center justify-center mb-2 bg-indigo-50 text-indigo-700">
                             <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -157,7 +140,6 @@
                     </div>
                 </div>
 
-                {{-- Les deux --}}
                 <div class="type-card group rounded-[14px] border-[1.5px] border-slate-200 py-3.5 px-4 cursor-pointer transition-colors bg-[#fafafa] flex items-center gap-3 [&.selected]:border-[#222a60] [&.selected]:bg-blue-50 {{ old('type') === 'les_deux' ? 'selected' : '' }}" data-type="les_deux">
                     <div class="w-[34px] h-[34px] rounded-lg bg-slate-50 border-[1.5px] border-slate-200 flex items-center justify-center text-slate-400 shrink-0">
                         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -174,7 +156,6 @@
                 </div>
             </div>
 
-            {{-- ── SECTION 4 : MESURES ── --}}
             <div class="bg-white rounded-[18px] p-[18px] mb-3.5 shadow-[0_2px_12px_rgba(34,42,96,0.06)]" id="section-4">
                 <div class="flex items-center gap-2.5 mb-3.5">
                     <div class="w-[26px] h-[26px] rounded-full bg-[#222a60] text-white font-mono text-[11px] font-bold flex items-center justify-center shrink-0">4</div>
@@ -246,9 +227,6 @@
         </form>
     </div>
 
-    {{-- ================================================================ --}}
-    {{-- FIXED SUBMIT BAR                                                 --}}
-    {{-- ================================================================ --}}
     <div id="submit-bar" class="fixed bottom-0 inset-x-0 z-30 bg-white/95 backdrop-blur-md pt-3 px-4 pb-[calc(12px+env(safe-area-inset-bottom,0px))] border-t border-slate-100">
         <button type="submit" form="analyse-form" class="w-full p-4 rounded-[14px] bg-gradient-to-br from-[#1a7fc4] to-[#1565c0] text-white font-grotesk text-[15px] font-bold border-none outline-none flex items-center justify-center gap-2 cursor-pointer transition-all active:opacity-90 active:scale-[0.99] shadow-[0_4px_20px_rgba(21,101,192,0.3)]">
             <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
@@ -260,158 +238,10 @@
 
 </div>
 
-@push('scripts')
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-document.addEventListener('DOMContentLoaded', () => {
-
-    /* ─── Initial coords ─── */
-    let lat = parseFloat('{{ $lat ?? 48.5853 }}') || 48.5853;
-    let lng = parseFloat('{{ $lng ?? 7.7512  }}') || 7.7512;
-
-    /* ─── Mini map ─── */
-    const miniMap = L.map('mini-map', {
-        center: [lat, lng],
-        zoom: 15,
-        zoomControl: false,
-        attributionControl: false,
-        dragging: true,
-        scrollWheelZoom: false,
-    });
-
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-        maxZoom: 19,
-    }).addTo(miniMap);
-
-    const markerIcon = L.divIcon({
-        className: '',
-        html: `<div style="width:22px;height:22px;border-radius:50%;background:white;border:3px solid #222a60;box-shadow:0 2px 8px rgba(34,42,96,0.3);"></div>`,
-        iconSize: [22, 22],
-        iconAnchor: [11, 11],
-    });
-
-    const marker = L.marker([lat, lng], { icon: markerIcon, draggable: true }).addTo(miniMap);
-
-    function updateCoords(newLat, newLng) {
-        lat = newLat; lng = newLng;
-        document.getElementById('f-lat').value = lat.toFixed(6);
-        document.getElementById('f-lng').value = lng.toFixed(6);
-        document.getElementById('coords-display').textContent = lat.toFixed(4) + '° N · ' + lng.toFixed(4) + '° E';
-    }
-
-    marker.on('dragend', e => {
-        const pos = e.target.getLatLng();
-        updateCoords(pos.lat, pos.lng);
-    });
-
-    miniMap.on('click', e => {
-        marker.setLatLng(e.latlng);
-        updateCoords(e.latlng.lat, e.latlng.lng);
-    });
-
-    document.getElementById('gps-btn').addEventListener('click', () => {
-        if (!navigator.geolocation) return;
-        navigator.geolocation.getCurrentPosition(pos => {
-            const ll = [pos.coords.latitude, pos.coords.longitude];
-            marker.setLatLng(ll);
-            miniMap.setView(ll, 16);
-            updateCoords(ll[0], ll[1]);
-        });
-    });
-
-    /* ─── Photo picker (Corrigé avec UN SEUL input) ─── */
-    const fileInput = document.getElementById('file-upload');
-    const phCamera = document.getElementById('ph-camera');
-    const photoThumb = document.getElementById('photo-thumb');
-
-    // Clic sur la zone "Ajouter" ouvre le selecteur de fichiers
-    phCamera.addEventListener('click', () => {
-        fileInput.click();
-    });
-
-    // Quand l'image est chargée
-    fileInput.addEventListener('change', () => {
-        const file = fileInput.files[0];
-        if (!file) return;
-
-        const reader = new FileReader();
-        reader.onload = e => {
-            document.getElementById('photo-preview').src = e.target.result;
-            // On manipule les classes Tailwind au lieu du style
-            photoThumb.classList.remove('hidden');
-            photoThumb.classList.add('flex');
-            phCamera.classList.add('hidden');
-        };
-        reader.readAsDataURL(file);
-    });
-
-    // Bouton pour supprimer l'image
-    document.getElementById('photo-remove').addEventListener('click', () => {
-        photoThumb.classList.add('hidden');
-        photoThumb.classList.remove('flex');
-        phCamera.classList.remove('hidden');
-        fileInput.value = ''; // On vide l'input
-    });
-
-    /* ─── Type selector ─── */
-    const typeHidden = document.getElementById('f-type');
-    const bandFields  = document.getElementById('fields-bandelette');
-    const photoFields = document.getElementById('fields-photometre');
-
-    function selectType(type) {
-        typeHidden.value = type;
-        document.querySelectorAll('.type-card').forEach(c => {
-            c.classList.toggle('selected', c.dataset.type === type);
-        });
-
-        // Affichage conditionnel des champs avec Tailwind
-        if (['bandelette', 'les_deux'].includes(type)) {
-            bandFields.classList.remove('hidden');
-        } else {
-            bandFields.classList.add('hidden');
-        }
-
-        if (['photometre', 'les_deux'].includes(type)) {
-            photoFields.classList.remove('hidden');
-        } else {
-            photoFields.classList.add('hidden');
-        }
-    }
-
-    document.querySelectorAll('[data-type]').forEach(card => {
-        card.addEventListener('click', () => selectType(card.dataset.type));
-    });
-
-    selectType(typeHidden.value || 'bandelette');
-
-    /* ─── Step progress bar ─── */
-    const tabs     = document.querySelectorAll('.step-tab');
-    const sections = ['section-1','section-2','section-3','section-4'].map(id => document.getElementById(id));
-    const scroll   = document.getElementById('form-scroll');
-
-    function updateStepBar() {
-        const scrollTop = scroll.scrollTop + 80;
-        let active = 0;
-        sections.forEach((s, i) => {
-            if (s && s.offsetTop <= scrollTop) active = i;
-        });
-        tabs.forEach((tab, i) => {
-            tab.classList.toggle('active', i === active);
-            tab.classList.toggle('done', i < active);
-        });
-    }
-    scroll.addEventListener('scroll', updateStepBar, { passive: true });
-
-    tabs.forEach((tab, i) => {
-        tab.addEventListener('click', () => {
-            if (sections[i]) {
-                scroll.scrollTo({ top: sections[i].offsetTop - 20, behavior: 'smooth' });
-            }
-        });
-    });
-
-    setTimeout(() => miniMap.invalidateSize(), 150);
-});
+    window.initLat = parseFloat("{{ $lat ?? '48.5853' }}");
+    window.initLng = parseFloat("{{ $lng ?? '7.7512' }}");
 </script>
-@endpush
+
+<script src="{{ asset('js/nouvelle-analyse.js') }}"></script>
 @endsection
