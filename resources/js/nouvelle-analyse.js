@@ -2,6 +2,9 @@ document.addEventListener("DOMContentLoaded", () => {
     let lat = window.initLat || 48.5853;
     let lng = window.initLng || 7.7512;
 
+    const mapElement = document.getElementById("mini-map");
+    if (!mapElement) return;
+
     const miniMap = L.map("mini-map", {
         center: [lat, lng],
         zoom: 15,

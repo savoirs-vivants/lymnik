@@ -3,7 +3,10 @@ import 'leaflet/dist/leaflet.css';
 
 document.addEventListener('DOMContentLoaded', () => {
 
-    const map = L.map('map', {
+    const mapElement = document.getElementById('map');
+    if (!mapElement) return;
+
+    window.map = L.map('map', {
         center: [48.8153, 7.7884],
         zoom: 13,
         zoomControl: false,
@@ -14,23 +17,6 @@ document.addEventListener('DOMContentLoaded', () => {
         maxZoom: 19,
         attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
     }).addTo(map);
-
-    fetch('CoursEau_FXX.json')
-        .then(r => r.json())
-        .then(data => {
-            L.geoJSON(data, {
-                style: { color: '#2563eb', weight: 2, opacity: 0.7 },
-                onEachFeature(feature, layer) {
-                    layer.on('click', async e => {
-                        L.DomEvent.stopPropagation(e);
-                        if (sheetOpen) { closeSheet(); return; }
-                        if (!window.userAuthenticated) { showAuthToast(); return; }
-                        await showCreateCard(e.latlng);
-                    });
-                },
-            }).addTo(map);
-        })
-        .catch(err => console.error('Erreur GeoJSON :', err));
 
     if (window.mapRivers?.length) {
         const features = window.mapRivers.map(r => ({
@@ -45,6 +31,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 layer.bindTooltip(feature.properties.nom ?? '', {
                     sticky: true,
                     className: 'font-mono text-xs',
+                });
+                layer.on('click', async e => {
+                    L.DomEvent.stopPropagation(e);
+                    if (sheetOpen) { closeSheet(); return; }
+                    if (!window.userAuthenticated) { showAuthToast(); return; }
+                    await showCreateCard(e.latlng);
                 });
             },
         }).addTo(map);
@@ -225,7 +217,7 @@ document.addEventListener('DOMContentLoaded', () => {
             photometre: {
                 phosphate: { label: 'Phosphate', unit: 'mg/L' },
                 nitrate:   { label: 'Nitrate',   unit: 'mg/L' },
-                ammonium:  { label: 'Ammonium',  unit: 'mg/L' },
+                ammoniac:  { label: 'Ammoniac',  unit: 'mg/L' },
             },
         };
 
@@ -303,3 +295,92 @@ document.addEventListener('DOMContentLoaded', () => {
     map.on('click', hideHint);
 
 });
+
+    const searchInput = document.getElementById('search-input');
+    const searchResults = document.getElementById('search-results');
+    let searchTimeout = null;
+
+    if (searchInput && searchResults) {
+        searchInput.addEventListener('input', (e) => {
+            const query = e.target.value.trim();
+
+            clearTimeout(searchTimeout);
+
+            if (query.length < 2) {
+                searchResults.innerHTML = '';
+                searchResults.classList.add('hidden');
+                return;
+            }
+
+            searchTimeout = setTimeout(async () => {
+                try {
+                    const isPostalCode = /^\d+$/.test(query);
+                    const url = isPostalCode
+                        ? `https://geo.api.gouv.fr/communes?codePostal=${query}&fields=nom,code,codesPostaux,centre&limit=5`
+                        : `https://geo.api.gouv.fr/communes?nom=${query}&fields=nom,code,codesPostaux,centre&boost=population&limit=5`;
+
+                    const response = await fetch(url);
+                    const data = await response.json();
+
+                    if (data.length === 0) {
+                        searchResults.innerHTML = '<div class="p-3.5 text-sm text-slate-400 font-medium text-center">Aucune commune trouvée</div>';
+                        searchResults.classList.remove('hidden');
+                        return;
+                    }
+
+                    searchResults.innerHTML = data.map(city => {
+                        const coords = city.centre ? city.centre.coordinates : null;
+                        const lng = coords ? coords[0] : null;
+                        const lat = coords ? coords[1] : null;
+
+                        return `
+                            <div class="search-item flex items-center gap-3 p-3 hover:bg-blue-50 border-b border-slate-50 last:border-b-0 cursor-pointer transition-colors"
+                                 data-lat="${lat}" data-lng="${lng}">
+                                <div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 shrink-0 pointer-events-none">
+                                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 21s-8-4.5-8-11.8A8 8 0 0112 1.2a8 8 0 018 8c0 7.3-8 11.8-8 11.8z"/>
+                                        <circle cx="12" cy="9.2" r="2.5"/>
+                                    </svg>
+                                </div>
+                                <div class="flex-1 min-w-0 pointer-events-none">
+                                    <div class="text-[13px] font-bold text-slate-800 truncate">${city.nom}</div>
+                                    <div class="text-[10px] text-slate-400 font-mono mt-0.5">${city.codesPostaux[0]}</div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+
+                    searchResults.classList.remove('hidden');
+
+                } catch (error) {
+                    console.error('Erreur API Geo:', error);
+                }
+            }, 300);
+        });
+
+        searchResults.addEventListener('mousedown', (e) => {
+            const item = e.target.closest('.search-item');
+            if (!item) return;
+
+            const lat = parseFloat(item.dataset.lat);
+            const lng = parseFloat(item.dataset.lng);
+
+            if (!isNaN(lat) && !isNaN(lng)) {
+                map.flyTo([lat, lng], 14, { animate: true, duration: 1.5 });
+            } else {
+                console.error("Coordonnées introuvables pour cette ville");
+            }
+
+            setTimeout(() => {
+                searchInput.value = '';
+                searchInput.blur();
+                searchResults.classList.add('hidden');
+            }, 50);
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
+                searchResults.classList.add('hidden');
+            }
+        });
+    }

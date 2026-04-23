@@ -134,7 +134,7 @@
                             </svg>
                         </div>
                         <div class="text-[13px] font-bold text-slate-800 mb-[3px]">Photomètre</div>
-                        <div class="text-[10px] text-slate-400 leading-snug mb-2.5">3 paramètres : phosphate, nitrate, ammonium</div>
+                        <div class="text-[10px] text-slate-400 leading-snug mb-2.5">3 paramètres : phosphate, nitrate, ammoniac</div>
                         <div class="w-[18px] h-[18px] rounded-full border-2 border-slate-300 flex items-center justify-center transition-colors group-[.selected]:border-[#222a60]">
                             <div class="w-2 h-2 rounded-full bg-[#222a60] opacity-0 transition-opacity group-[.selected]:opacity-100"></div>
                         </div>
@@ -209,7 +209,7 @@
                     $photoFields = [
                         ['key' => 'phosphate', 'label' => 'Phosphate', 'unit' => 'mg/L'],
                         ['key' => 'nitrate',   'label' => 'Nitrate',   'unit' => 'mg/L'],
-                        ['key' => 'ammonium',  'label' => 'Ammonium',  'unit' => 'mg/L'],
+                        ['key' => 'ammoniac',  'label' => 'Ammoniac',  'unit' => 'mg/L'],
                     ];
                     @endphp
                     @foreach($photoFields as $f)

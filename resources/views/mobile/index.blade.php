@@ -7,16 +7,18 @@
 
     <div id="map" class="absolute inset-0 z-0 outline-none bg-slate-200"></div>
 
-    <div id="top-bar"
-        class="absolute top-0 inset-x-0 z-10 pt-[max(52px,env(safe-area-inset-top))] px-4 pb-3 pointer-events-none">
-        <div class="flex items-center gap-2.5 pointer-events-auto">
-            <div class="flex-1 flex items-center gap-2 bg-white/95 backdrop-blur-md rounded-2xl px-3.5 h-[46px] shadow-[0_4px_20px_rgba(34,42,96,0.12)] border border-sv-blue/5">
+    <div id="top-bar" class="absolute top-0 inset-x-0 z-50 pt-[max(52px,env(safe-area-inset-top))] px-4 pb-3 pointer-events-none">
+        <div class="flex items-center gap-2.5 pointer-events-auto relative z-20">
+            <div class="flex-1 flex items-center gap-2 bg-white/95 backdrop-blur-md rounded-2xl px-3.5 h-[46px] shadow-[0_4px_20px_rgba(34,42,96,0.12)] border border-sv-blue/5 relative">
                 <svg class="text-slate-400 shrink-0" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <circle cx="11" cy="11" r="8" stroke-width="2"/>
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35"/>
                 </svg>
-                <input type="text" placeholder="Commune ou Code Postal"
+                <input type="text" id="search-input" placeholder="Commune ou Code Postal" autocomplete="off"
                     class="bg-transparent border-none outline-none w-full text-sm text-slate-800 placeholder-slate-400 font-grotesk">
+
+                <div id="search-results" class="absolute top-[52px] left-0 right-0 bg-white rounded-xl shadow-[0_12px_40px_rgba(34,42,96,0.15)] border border-slate-100 overflow-hidden hidden">
+                    </div>
             </div>
 
             @guest
