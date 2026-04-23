@@ -3,16 +3,12 @@
 
 @push('styles')
 <style>
-/* ── Pulse animation for temp marker ── */
 @keyframes pulse-ring {
     0%   { box-shadow: 0 0 0 0 rgba(21,101,192,0.4); }
     70%  { box-shadow: 0 0 0 10px rgba(21,101,192,0); }
     100% { box-shadow: 0 0 0 0 rgba(21,101,192,0); }
 }
 
-/* ══════════════════════════════════════
-   CREATE CARD
-══════════════════════════════════════ */
 #create-card {
     position: absolute;
     bottom: 0; left: 0; right: 0;
@@ -92,9 +88,6 @@
 }
 .cc-btn-create:active { opacity: 0.88; }
 
-/* ══════════════════════════════════════
-   BOTTOM SHEET — info mode (analyse)
-══════════════════════════════════════ */
 .sheet-analyse-badge {
     display: inline-flex; align-items: center; gap: 6px;
     border-radius: 99px;
@@ -136,10 +129,8 @@
 <div id="app-shell"
     class="relative w-full h-[100dvh] flex flex-col overflow-hidden bg-slate-50 font-grotesk text-slate-900">
 
-    {{-- ── MAP ── --}}
     <div id="map" class="absolute inset-0 z-0 outline-none bg-slate-200"></div>
 
-    {{-- ── TOP BAR ── --}}
     <div id="top-bar"
         class="absolute top-0 inset-x-0 z-10 pt-[max(52px,env(safe-area-inset-top))] px-4 pb-3 pointer-events-none">
         <div class="flex items-center gap-2.5 pointer-events-auto">
@@ -185,13 +176,11 @@
             </div>
     </div>
 
-    {{-- ── TAP HINT ── --}}
     <div id="tap-hint"
          class="absolute bottom-24 left-1/2 -translate-x-1/2 z-10 bg-sv-blue/85 backdrop-blur-md text-white text-[11px] font-mono px-4 py-2 rounded-full pointer-events-none whitespace-nowrap transition-opacity duration-400 [&.fade-out]:opacity-0">
         Appuyez sur la carte pour créer une analyse
     </div>
 
-    {{-- ── BOTTOM SHEET (info point existant) ── --}}
     <div id="bottom-sheet"
         class="absolute bottom-0 inset-x-0 z-20 bg-white rounded-t-[20px] shadow-[0_-8px_40px_rgba(34,42,96,0.14)] translate-y-full [&.open]:translate-y-0 transition-transform duration-[380ms] ease-[cubic-bezier(0.34,1.1,0.64,1)] pb-[env(safe-area-inset-bottom,12px)]">
         <div class="w-9 h-1 bg-slate-200 rounded-full mx-auto mt-3"></div>
@@ -210,12 +199,10 @@
             </div>
             <h2 class="sheet-river-name text-[20px] font-bold text-sv-blue mt-1 mb-3 font-grotesk">—</h2>
             <div class="sheet-analyse-info">
-                {{-- Populated dynamically by JS --}}
             </div>
         </div>
     </div>
 
-    {{-- ── CREATE CARD (nouveau point) ── --}}
     <div id="create-card">
         <div class="create-card-handle"></div>
         <div class="create-card-inner">
@@ -243,7 +230,6 @@
         </div>
     </div>
 
-    {{-- ── BOTTOM NAV ── --}}
     <nav id="bottom-nav"
         class="absolute bottom-0 inset-x-0 z-[15] bg-white/95 backdrop-blur-md border-t border-sv-blue/5 flex justify-around items-center pt-2.5 pb-[calc(10px+env(safe-area-inset-bottom,0px))] translate-y-0 [&.hidden-nav]:translate-y-full transition-transform duration-[380ms] ease-[cubic-bezier(0.34,1.1,0.64,1)]">
         <a href="#" class="nav-item active group flex flex-col items-center gap-[3px] cursor-pointer px-5 py-1 rounded-xl transition-colors active:bg-slate-100 select-none no-underline">
@@ -262,10 +248,11 @@
 
 </div>
 
-{{-- Inject data for JS --}}
 <script>
     window.mapPoints          = @json($pointsJson);
+    window.mapRivers          = @json($riversJson);
     window.createAnalyseUrl   = "{{ route('mobile.analyse.create') }}";
+    window.nearestRiverUrl    = "{{ route('mobile.cours-d-eau.nearest') }}";
     window.userAuthenticated  = {{ auth()->check() ? 'true' : 'false' }};
     window.loginUrl           = "{{ route('login', ['source' => 'mobile']) }}";
 </script>
