@@ -50,21 +50,83 @@ document.addEventListener('DOMContentLoaded', () => {
         }).addTo(map);
     }
 
+    const userIcon = L.divIcon({
+        className: 'user-location-marker',
+        html: `
+            <div style="position: relative; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center;">
+                <div style="position: absolute; width: 100%; height: 100%; background-color: #eca438; border-radius: 50%; animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;"></div>
+                <div style="position: relative; width: 16px; height: 16px; background-color: #ff9900; border: 2.5px solid white; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"></div>
+            </div>
+        `,
+        iconSize: [20, 20],
+        iconAnchor: [10, 10]
+    });
+
+    const style = document.createElement('style');
+    style.innerHTML = `
+        @keyframes ping {
+            0% { transform: scale(1); opacity: 1; }
+            75%, 100% { transform: scale(2.5); opacity: 0; }
+        }
+    `;
+    document.head.appendChild(style);
+
+    let userMarker = null;
+    const btnLocate = document.getElementById('btn-locate');
+
+    if (btnLocate) {
+        btnLocate.addEventListener('click', function() {
+            if (!navigator.geolocation) {
+                alert("Votre navigateur ne supporte pas la géolocalisation.");
+                return;
+            }
+
+            const originalHTML = btnLocate.innerHTML;
+            btnLocate.innerHTML = `
+                <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="animation: spin 1s linear infinite; color: #2563eb;">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"/>
+                </svg>
+            `;
+            if(!document.getElementById('spin-anim')) {
+                 const spinStyle = document.createElement('style');
+                 spinStyle.id = 'spin-anim';
+                 spinStyle.innerHTML = `@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`;
+                 document.head.appendChild(spinStyle);
+            }
+
+            navigator.geolocation.getCurrentPosition(
+                function(position) {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+
+                    if (userMarker) map.removeLayer(userMarker);
+
+                    userMarker = L.marker([lat, lng], {icon: userIcon}).addTo(map);
+                    userMarker.setZIndexOffset(1000);
+
+                    map.flyTo([lat, lng], 17, { animate: true, duration: 1.5 });
+                    btnLocate.innerHTML = originalHTML;
+                },
+                function(error) {
+                    let msg = "Impossible de vous localiser.";
+                    if(error.code === 1) msg = "Vous devez autoriser la localisation dans votre navigateur.";
+                    else if(error.code === 2) msg = "Position indisponible (vérifiez votre GPS).";
+                    else if(error.code === 3) msg = "Délai d'attente dépassé.";
+
+                    alert(msg);
+                    btnLocate.innerHTML = originalHTML;
+                },
+                { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+            );
+        });
+    }
+
     const sheet   = document.getElementById('bottom-sheet');
     const nav     = document.getElementById('bottom-nav');
     let sheetOpen = false;
 
-    function openSheet()  {
-        sheet.classList.add('open');
-        nav.classList.add('hidden-nav');
-        sheetOpen = true;
-    }
-    function closeSheet() {
-        sheet.classList.remove('open');
-        nav.classList.remove('hidden-nav');
-        sheetOpen = false;
-        sheet.style.transform = '';
-    }
+    function openSheet()  { sheet.classList.add('open'); nav.classList.add('hidden-nav'); sheetOpen = true; }
+    function closeSheet() { sheet.classList.remove('open'); nav.classList.remove('hidden-nav'); sheetOpen = false; sheet.style.transform = ''; }
 
     document.getElementById('sheet-close-btn').addEventListener('click', closeSheet);
 
@@ -94,7 +156,6 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const res   = await fetch(`${window.nearestRiverUrl}?lat=${latlng.lat}&lng=${latlng.lng}`);
             const river = await res.json();
-
             createCard.querySelector('#cc-river').textContent = river?.nom ?? 'Position libre';
             createCard.querySelector('#cc-link').href = buildAnalyseUrl(latlng, river?.id, river?.nom);
         } catch {
@@ -116,7 +177,6 @@ document.addEventListener('DOMContentLoaded', () => {
         createCard.classList.remove('show');
         if (tempMarker) { tempMarker.remove(); tempMarker = null; }
     }
-
     document.getElementById('cc-cancel').addEventListener('click', hideCreateCard);
 
     const points = window.mapPoints ?? [];
@@ -130,11 +190,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function typeLabel(type) {
-        return {
-            bandelette: 'Bandelette JBL',
-            photometre: 'Photomètre',
-            les_deux:   'Bandelette + Photomètre',
-        }[type] ?? type;
+        return { bandelette: 'Bandelette JBL', photometre: 'Photomètre', les_deux: 'Bandelette + Photomètre' }[type] ?? type;
     }
 
     points.forEach(p => {
@@ -150,11 +206,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function populateSheet(p) {
         const a = p.analyse;
-
-        sheet.querySelector('.sheet-coords-text').textContent =
-            p.latitude.toFixed(4) + '° N · ' + p.longitude.toFixed(4) + '° E';
-        sheet.querySelector('.sheet-river-name').textContent =
-            p.cours_d_eau ?? 'Cours d\'eau inconnu';
+        sheet.querySelector('.sheet-coords-text').textContent = p.latitude.toFixed(4) + '° N · ' + p.longitude.toFixed(4) + '° E';
+        sheet.querySelector('.sheet-river-name').textContent = p.cours_d_eau ?? 'Cours d\'eau inconnu';
 
         let mesuresData = {};
         try { mesuresData = typeof a.mesures === 'string' ? JSON.parse(a.mesures) : (a.mesures || {}); }
@@ -166,7 +219,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 nitrites:      { label: 'Nitrites',    unit: 'mg/L' },
                 durete_totale: { label: 'Dur. Tot.',   unit: 'mg/L' },
                 durete_carb:   { label: 'Dur. Carb.',  unit: 'mg/L' },
-                ph:            { label: 'pH',           unit: '' },
+                ph:            { label: 'pH',          unit: '' },
                 chlore:        { label: 'Chlore',      unit: 'mg/L' },
             },
             photometre: {
@@ -249,15 +302,4 @@ document.addEventListener('DOMContentLoaded', () => {
     setTimeout(hideHint, 3500);
     map.on('click', hideHint);
 
-    document.querySelectorAll('.pill').forEach(p => p.addEventListener('click', () => p.classList.toggle('active')));
-    document.querySelectorAll('.nav-item').forEach(item => {
-        item.addEventListener('click', e => {
-            e.preventDefault();
-            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-            item.classList.add('active');
-        });
-    });
-
-    document.getElementById('btn-zoom-in')?.addEventListener('click',  () => map.zoomIn());
-    document.getElementById('btn-zoom-out')?.addEventListener('click', () => map.zoomOut());
 });

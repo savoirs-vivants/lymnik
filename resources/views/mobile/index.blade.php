@@ -3,11 +3,6 @@
 
 @push('styles')
 <style>
-@keyframes pulse-ring {
-    0%   { box-shadow: 0 0 0 0 rgba(21,101,192,0.4); }
-    70%  { box-shadow: 0 0 0 10px rgba(21,101,192,0); }
-    100% { box-shadow: 0 0 0 0 rgba(21,101,192,0); }
-}
 
 #create-card {
     position: absolute;
@@ -88,6 +83,9 @@
 }
 .cc-btn-create:active { opacity: 0.88; }
 
+/* ══════════════════════════════════════
+   BOTTOM SHEET — info mode (analyse)
+══════════════════════════════════════ */
 .sheet-analyse-badge {
     display: inline-flex; align-items: center; gap: 6px;
     border-radius: 99px;
@@ -175,6 +173,14 @@
                 </div>
             </div>
     </div>
+
+    <button id="btn-locate" class="absolute right-4 bottom-28 z-[1000] w-12 h-12 flex items-center justify-center rounded-full shadow-[0_4px_16px_rgba(0,0,0,0.15)] border border-white/80 bg-white/90 backdrop-blur-md text-[#222a60] active:bg-[#1565c0] active:text-white transition-colors cursor-pointer outline-none group">
+        <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" class="transition-transform group-active:scale-95">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M12 2v3m0 14v3M2 12h3m14 0h3"/>
+            <circle cx="12" cy="12" r="7" stroke-dasharray="3 2"/>
+        </svg>
+    </button>
 
     <div id="tap-hint"
          class="absolute bottom-24 left-1/2 -translate-x-1/2 z-10 bg-sv-blue/85 backdrop-blur-md text-white text-[11px] font-mono px-4 py-2 rounded-full pointer-events-none whitespace-nowrap transition-opacity duration-400 [&.fade-out]:opacity-0">
