@@ -41,6 +41,7 @@
 
         <form id="analyse-form" method="POST" action="{{ route('mobile.analyse.store') }}" enctype="multipart/form-data">
             @csrf
+            <input type="hidden" name="cours_d_eau_id" value="{{ old('cours_d_eau_id', $coursDEauId ?? '') }}">
 
             @if(request('point_id'))
                 <input type="hidden" name="point_id" value="{{ request('point_id') }}">

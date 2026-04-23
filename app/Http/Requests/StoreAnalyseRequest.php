@@ -20,6 +20,7 @@ class StoreAnalyseRequest extends FormRequest
             'type'            => ['required', 'in:bandelette,photometre,les_deux'],
             'image'           => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
             'note'            => ['nullable', 'string', 'max:1000'],
+            'cours_d_eau_id' => 'nullable|integer|exists:cours_d_eaus,id',
 
             'mesures.bandelette.nitrates'      => ['nullable', 'numeric', 'min:0'],
             'mesures.bandelette.nitrites'      => ['nullable', 'numeric', 'min:0'],
