@@ -101,7 +101,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         createCard.querySelector('#cc-river').textContent = nomRiviere
             ? nomRiviere
-            : (coursDEauId ? (getNearestRiverName(latlng) ?? 'Cours d\'eau inconnu') : 'Position hors réseau');
+            : (coursDEauId ? (getNearestRiverName(latlng) ?? 'Cours d\'eau inconnu') : 'Position du point');
 
         createCard.classList.add('show');
     }
@@ -149,28 +149,87 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function populateSheet(p) {
         const a = p.analyse;
-        sheet.querySelector('.sheet-coords-text').textContent =
-            p.latitude.toFixed(4) + '° N · ' + p.longitude.toFixed(4) + '° E';
-        sheet.querySelector('.sheet-river-name').textContent = p.cours_d_eau ?? 'Cours d\'eau';
-        sheet.querySelector('.sheet-analyse-info').innerHTML =
-        `<div class="sheet-meta-grid">
-                   <div class="meta-item"><span class="meta-label">Par</span><span class="meta-val">${a.user_name}</span></div>
-                   <div class="meta-item"><span class="meta-label">Date</span><span class="meta-val">${a.created_at ?? '—'}</span></div>
-                   <div class="meta-item"><span class="meta-label">Type</span><span class="meta-val">${typeLabel(a.type)}</span></div>
-               </div>`;
-    const btnHtml = `
-        <div class="mt-4 border-t pt-4">
-            <a href="${window.createAnalyseUrl}?point_id=${p.id}&lat=${p.latitude}&lng=${p.longitude}&cours_d_eau_id=${p.cours_d_eau_id}"
-               class="flex items-center justify-center gap-2 bg-sv-blue text-white py-3 rounded-xl font-bold no-underline active:scale-95 transition-transform">
-                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                    <path d="M12 4v16m8-8H4"/>
-                </svg>
-                Nouvelle mesure ici
-            </a>
-        </div>
-    `;
 
-    sheet.querySelector('.sheet-analyse-info').innerHTML += btnHtml;
+        sheet.querySelector('.sheet-coords-text').textContent = p.latitude.toFixed(4) + '° N · ' + p.longitude.toFixed(4) + '° E';
+        sheet.querySelector('.sheet-river-name').textContent = p.cours_d_eau ?? 'Dernière mesure : Cours d\'eau';
+
+        let mesuresData = {};
+        try {
+            mesuresData = typeof a.mesures === 'string' ? JSON.parse(a.mesures) : (a.mesures || {});
+        } catch (e) {
+            console.error("Erreur de lecture des mesures", e);
+        }
+
+        const dict = {
+            bandelette: {
+                nitrates: { label: 'Nitrates', unit: 'mg/L' },
+                nitrites: { label: 'Nitrites', unit: 'mg/L' },
+                durete_totale: { label: 'Dur. Tot.', unit: 'mg/L' },
+                durete_carb: { label: 'Dur. Carb.', unit: 'mg/L' },
+                ph: { label: 'pH', unit: '' },
+                chlore: { label: 'Chlore', unit: 'mg/L' }
+            },
+            photometre: {
+                phosphate: { label: 'Phosphate', unit: 'mg/L' },
+                nitrate: { label: 'Nitrate', unit: 'mg/L' },
+                ammonium: { label: 'Ammonium', unit: 'mg/L' }
+            }
+        };
+
+        let casesHtml = '';
+        const buildCases = (typeKey) => {
+            if (!mesuresData[typeKey]) return;
+            for (const [key, val] of Object.entries(mesuresData[typeKey])) {
+                if (val !== null && val !== '') {
+                    const info = dict[typeKey][key] || { label: key, unit: '' };
+                    casesHtml += `
+                        <div class="bg-slate-50 border border-slate-100 rounded-xl p-2.5 text-center flex flex-col justify-center">
+                            <div class="text-[9px] text-slate-400 font-mono uppercase tracking-wide mb-1 leading-none">${info.label}</div>
+                            <div class="text-lg font-bold text-[#222a60] leading-none">${val}<span class="text-[9px] font-normal text-slate-400 ml-0.5">${info.unit}</span></div>
+                        </div>
+                    `;
+                }
+            }
+        };
+
+        buildCases('bandelette');
+        buildCases('photometre');
+
+        // Sécurité si tout est vide
+        if (casesHtml === '') {
+            casesHtml = '<div class="col-span-3 text-xs text-slate-400 text-center py-2">Données non renseignées.</div>';
+        }
+
+        sheet.querySelector('.sheet-analyse-info').innerHTML = `
+            <div class="flex gap-2 mb-3">
+                <div class="flex-1 bg-slate-50 border border-slate-100 rounded-lg py-2 px-3">
+                    <div class="font-mono text-[9px] font-bold uppercase tracking-widest text-slate-400 mb-0.5">Date</div>
+                    <div class="text-xs font-bold text-[#222a60]">${a.created_at ?? '—'}</div>
+                </div>
+                <div class="flex-1 bg-slate-50 border border-slate-100 rounded-lg py-2 px-3">
+                    <div class="font-mono text-[9px] font-bold uppercase tracking-widest text-slate-400 mb-0.5">Type</div>
+                    <div class="text-xs font-bold text-[#222a60] truncate">${typeLabel(a.type)}</div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-3 gap-2">
+                ${casesHtml}
+            </div>
+        `;
+
+        const btnHtml = `
+            <div class="mt-4 border-t border-slate-100 pt-4">
+                <a href="${window.createAnalyseUrl}?point_id=${p.id}&lat=${p.latitude}&lng=${p.longitude}&cours_d_eau_id=${p.cours_d_eau_id}"
+                   class="flex items-center justify-center gap-2 bg-gradient-to-br from-[#1a7fc4] to-[#1565c0] text-white py-3.5 rounded-[14px] text-[14px] font-bold shadow-[0_4px_16px_rgba(21,101,192,0.25)] no-underline active:scale-[0.98] transition-transform">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+                    </svg>
+                    Nouvelle mesure ici
+                </a>
+            </div>
+        `;
+
+        sheet.querySelector('.sheet-analyse-info').innerHTML += btnHtml;
     }
 
     map.on('click', e => {

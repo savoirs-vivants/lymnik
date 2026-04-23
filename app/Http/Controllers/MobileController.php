@@ -30,6 +30,7 @@ class MobileController extends Controller
                     substr($p->analyses->first()->user?->name ?? '', 0, 1)
                 ),
                 'created_at' => $p->analyses->first()->created_at?->translatedFormat('d M Y'),
+                'mesures'    => $p->analyses->first()->mesures,
             ] : null,
         ]);
 
