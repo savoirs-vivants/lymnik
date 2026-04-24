@@ -130,7 +130,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const createCard = document.getElementById('create-card');
     let tempMarker   = null;
 
-    async function showCreateCard(latlng) {
+    function showCreateCard(latlng) {
         if (tempMarker) { tempMarker.remove(); tempMarker = null; }
         const pulseIcon = L.divIcon({
             className: '',
@@ -139,21 +139,11 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         tempMarker = L.marker(latlng, { icon: pulseIcon }).addTo(map);
 
-        createCard.querySelector('#cc-lat').textContent  = latlng.lat.toFixed(4) + '° N';
-        createCard.querySelector('#cc-lng').textContent  = latlng.lng.toFixed(4) + '° E';
-        createCard.querySelector('#cc-river').textContent = 'Recherche…';
-        createCard.querySelector('#cc-link').href = '#';
+        createCard.querySelector('#cc-lat').textContent   = latlng.lat.toFixed(4) + '° N';
+        createCard.querySelector('#cc-lng').textContent   = latlng.lng.toFixed(4) + '° E';
+        createCard.querySelector('#cc-river').textContent = 'Cours d\'eau identifié lors de la saisie';
+        createCard.querySelector('#cc-link').href = buildAnalyseUrl(latlng, null, null);
         createCard.classList.add('show');
-
-        try {
-            const res   = await fetch(`${window.nearestRiverUrl}?lat=${latlng.lat}&lng=${latlng.lng}`);
-            const river = await res.json();
-            createCard.querySelector('#cc-river').textContent = river?.nom ?? 'Position libre';
-            createCard.querySelector('#cc-link').href = buildAnalyseUrl(latlng, river?.id, river?.nom);
-        } catch {
-            createCard.querySelector('#cc-river').textContent = 'Position libre';
-            createCard.querySelector('#cc-link').href = buildAnalyseUrl(latlng, null, null);
-        }
     }
 
     function buildAnalyseUrl(latlng, riverId, rivNom) {

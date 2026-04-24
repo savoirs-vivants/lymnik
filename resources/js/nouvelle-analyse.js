@@ -151,4 +151,66 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     setTimeout(() => miniMap.invalidateSize(), 150);
+
+    const riverInput   = document.querySelector('input[name="cours_d_eau_id"]');
+    const riverDisplay = document.getElementById('river-display');
+    const riverStatus  = document.getElementById('river-status');
+    const analyseForm  = document.getElementById('analyse-form');
+
+    let riverFetchDone = true;
+    let riverFetch     = null;
+
+    if (window.initCoursDEauId) {
+        if (riverDisplay) riverDisplay.textContent = window.initNomCoursEau ?? 'Cours d\'eau associé';
+        if (riverStatus)  riverStatus.textContent  = 'Trouvé';
+    } else if (window.nearestRiverUrl) {
+        riverFetchDone = false;
+        riverFetch = fetch(`${window.nearestRiverUrl}?lat=${lat}&lng=${lng}`)
+            .then(r => r.json())
+            .then(river => {
+                riverFetchDone = true;
+                if (river?.id) {
+                    if (riverInput)   riverInput.value         = river.id;
+                    if (riverDisplay) riverDisplay.textContent = river.nom;
+                    if (riverStatus)  riverStatus.textContent  = 'Trouvé';
+                } else {
+                    if (riverDisplay) riverDisplay.textContent = 'Position libre';
+                    if (riverStatus)  riverStatus.textContent  = '—';
+                }
+            })
+            .catch(() => {
+                riverFetchDone = true;
+                if (riverDisplay) riverDisplay.textContent = 'Position libre';
+                if (riverStatus)  riverStatus.textContent  = '—';
+            });
+    }
+
+    let submitted = false;
+    const submitBtn = document.querySelector('[type="submit"][form="analyse-form"], #analyse-form [type="submit"]');
+    const submitBar = document.getElementById('submit-bar');
+
+    function showRiverWait() {
+        if (!submitBar) return;
+        let notice = document.getElementById('river-wait-notice');
+        if (!notice) {
+            notice = document.createElement('p');
+            notice.id = 'river-wait-notice';
+            notice.className = 'text-center text-xs text-[#1565c0] font-medium mt-2 mb-0';
+            notice.textContent = 'Association du cours d\'eau en cours, veuillez patienter…';
+            submitBar.appendChild(notice);
+        }
+    }
+
+    function hideRiverWait() {
+        document.getElementById('river-wait-notice')?.remove();
+    }
+
+    if (analyseForm) {
+        analyseForm.addEventListener('submit', e => {
+            if (submitted || riverFetchDone) return;
+            e.preventDefault();
+            showRiverWait();
+            riverFetch.finally(() => { hideRiverWait(); submitted = true; analyseForm.submit(); });
+        });
+    }
 });

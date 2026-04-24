@@ -75,6 +75,22 @@
                     </div>
                     <div class="text-xs font-semibold text-[#222a60]">{{ $lat ? 'Point placé' : '—' }}</div>
                 </div>
+
+                <div class="flex items-center justify-between py-2.5 px-3 bg-slate-50 rounded-lg border border-slate-100 mt-2">
+                    <div class="flex items-center gap-[7px]">
+                        <div class="w-[7px] h-[7px] rounded-full bg-blue-400 shrink-0" id="river-dot"></div>
+                        <div class="font-mono text-[11px] text-slate-600" id="river-display">
+                            @if($coursDEauId && $nomCoursEau)
+                                {{ $nomCoursEau }}
+                            @else
+                                Recherche du cours d'eau…
+                            @endif
+                        </div>
+                    </div>
+                    <div class="text-xs font-semibold text-[#16987c]" id="river-status">
+                        {{ $coursDEauId ? 'Trouvé' : '' }}
+                    </div>
+                </div>
             </div>
 
             <div class="bg-white rounded-[18px] p-[18px] mb-3.5 shadow-[0_2px_12px_rgba(34,42,96,0.06)]" id="section-2">
@@ -240,8 +256,11 @@
 </div>
 
 <script>
-    window.initLat = parseFloat("{{ $lat ?? '48.5853' }}");
-    window.initLng = parseFloat("{{ $lng ?? '7.7512' }}");
+    window.initLat          = parseFloat("{{ $lat ?? '48.5853' }}");
+    window.initLng          = parseFloat("{{ $lng ?? '7.7512' }}");
+    window.initCoursDEauId  = {{ $coursDEauId ? (int)$coursDEauId : 'null' }};
+    window.initNomCoursEau  = @json($nomCoursEau ?? null);
+    window.nearestRiverUrl  = "{{ route('mobile.cours-d-eau.nearest') }}";
 </script>
 
 <script src="{{ asset('js/nouvelle-analyse.js') }}"></script>
