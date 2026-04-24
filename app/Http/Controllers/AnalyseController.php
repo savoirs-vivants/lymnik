@@ -79,12 +79,41 @@ class AnalyseController extends Controller
                 'type'       => $request->type,
                 'image'      => $imagePath,
                 'mesures'    => json_encode($mesures),
-                'est_valide' => false,
+                'est_valide' => $this->isValid($mesures),
                 'user_id'    => Auth::id(),
             ]);
         });
 
         return redirect()->route('index_mobile')->with('success', 'Analyse enregistrée !');
+    }
+
+    private const SEUILS = [
+        'bandelette' => [
+            'nitrates'      => 500,
+            'nitrites'      => 10,
+            'durete_totale' => 375,
+            'durete_carb'   => 357,
+            'ph'            => 9.0,
+            'chlore'        => 3.0,
+        ],
+        'photometre' => [
+            'ammoniac'  => 5,
+            'nitrate'   => 500,
+            'phosphate' => 1,
+        ],
+    ];
+
+    private function isValid(array $mesures): bool
+    {
+        foreach (self::SEUILS as $type => $seuils) {
+            foreach ($seuils as $key => $max) {
+                $val = $mesures[$type][$key] ?? null;
+                if ($val !== null && (float) $val > $max) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     public function myAnalyses()
