@@ -185,7 +185,7 @@ document.addEventListener("DOMContentLoaded", () => {
             });
     }
 
-    // City background search (Nominatim reverse geocoding)
+    // City background search (API Adresse Gouv)
     const villeInput   = document.getElementById('f-ville');
     const villeDisplay = document.getElementById('ville-display');
     const villeStatus  = document.getElementById('ville-status');
@@ -195,26 +195,31 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (villeInput && !villeInput.value) {
         villeFetchDone = false;
-        villeFetch = fetch(
-            `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&accept-language=fr`,
-            { headers: { 'Accept-Language': 'fr' } }
-        )
+
+        villeFetch = fetch(`https://api-adresse.data.gouv.fr/reverse/?lon=${lng}&lat=${lat}`)
             .then(r => r.json())
             .then(data => {
                 villeFetchDone = true;
-                const addr = data?.address ?? {};
-                const ville = addr.city ?? addr.town ?? addr.municipality ?? addr.village ?? addr.hamlet ?? null;
-                if (ville) {
-                    villeInput.value = ville;
-                    if (villeDisplay) villeDisplay.textContent = ville;
-                    if (villeStatus)  villeStatus.textContent  = 'Trouvé';
-                } else {
-                    if (villeDisplay) villeDisplay.textContent = 'Ville non trouvée';
+
+                if (data && data.features && data.features.length > 0) {
+                    const ville = data.features[0].properties.city;
+
+                    if (ville) {
+                        villeInput.value = ville;
+                        if (villeDisplay) villeDisplay.textContent = ville;
+                        if (villeStatus)  villeStatus.textContent  = 'Trouvé';
+                        return;
+                    }
                 }
+
+                if (villeDisplay) villeDisplay.textContent = 'Ville non trouvée';
+                if (villeStatus)  villeStatus.textContent  = '—';
             })
-            .catch(() => {
+            .catch((err) => {
+                console.error("Erreur géocodage inverse :", err);
                 villeFetchDone = true;
                 if (villeDisplay) villeDisplay.textContent = 'Ville non trouvée';
+                if (villeStatus)  villeStatus.textContent  = '—';
             });
     } else if (villeInput?.value) {
         if (villeDisplay) villeDisplay.textContent = villeInput.value;
