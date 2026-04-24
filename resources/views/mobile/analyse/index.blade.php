@@ -1,8 +1,11 @@
 @extends('layouts.mobile')
 @section('title', 'Toutes mes analyses')
 
-@section('content')
+@push('styles')
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+@endpush
 
+@section('content')
     <div id="page-shell" class="flex flex-col h-[100dvh] overflow-hidden bg-slate-50 font-grotesk text-slate-900 relative">
 
         <div id="page-header"
@@ -39,16 +42,18 @@
                 </div>
             @else
                 @php
+                    // 🌟 LES VRAIS SEUILS POUR DES BARRES PROPORTIONNELLES (Max = 100% de la barre)
                     $seuils = [
-                        'nitrates' => ['max' => 50, 'warn' => 25],
-                        'nitrites' => ['max' => 1, 'warn' => 0.1],
-                        'durete_totale' => ['max' => 500, 'warn' => 300],
-                        'durete_carb' => ['max' => 500, 'warn' => 300],
-                        'ph' => ['max' => 14, 'warn' => 8.5],
-                        'chlore' => ['max' => 5, 'warn' => 0.5],
-                        'phosphate' => ['max' => 1, 'warn' => 0.3],
-                        'nitrate' => ['max' => 50, 'warn' => 25],
-                        'ammonium' => ['max' => 2, 'warn' => 0.5],
+                        'nitrates' => ['max' => 500, 'warn' => 50, 'danger' => 100],
+                        'nitrites' => ['max' => 10, 'warn' => 0.5, 'danger' => 2],
+                        'durete_totale' => ['max' => 375, 'warn' => 250, 'danger' => 300],
+                        'durete_carb' => ['max' => 357, 'warn' => 250, 'danger' => 300],
+                        'ph' => ['max' => 14, 'warn' => 8.5, 'danger' => 9],
+                        'chlore' => ['max' => 3, 'warn' => 0.8, 'danger' => 1.5],
+                        'phosphate' => ['max' => 2, 'warn' => 0.5, 'danger' => 1],
+                        'nitrate' => ['max' => 500, 'warn' => 50, 'danger' => 100],
+                        'ammoniac' => ['max' => 5, 'warn' => 1, 'danger' => 3],
+                        'ammonium' => ['max' => 5, 'warn' => 1, 'danger' => 3],
                     ];
 
                     $dictLabels = [
@@ -71,17 +76,21 @@
                 @foreach ($analyses as $a)
                     @php
                         $mesures = $a['mesures'] ?? [];
-                        $avatarColor = $a['est_valide']
-                            ? 'bg-emerald-500/10 text-emerald-600'
-                            : 'bg-slate-200/50 text-[#222a60]';
-                        $types = match ($a['type']) {
-                            'bandelette' => ['Bandelette JBL'],
-                            'photometre' => ['Photomètre'],
-                            'les_deux' => ['Bandelette JBL', 'Photomètre'],
-                            default => [$a['type']],
-                        };
-                        $hasBand = in_array($a['type'], ['bandelette', 'les_deux']);
-                        $hasPhoto = in_array($a['type'], ['photometre', 'les_deux']);
+                        // Couleur de l'avatar basé sur la qualité globale
+$avatarColor = match ($a['qualite']) {
+    'mauvaise' => 'bg-red-500/10 text-red-600',
+    'moderee' => 'bg-amber-500/10 text-amber-600',
+    default => 'bg-emerald-500/10 text-emerald-600',
+};
+
+$types = match ($a['type']) {
+    'bandelette' => ['Bandelette JBL'],
+    'photometre' => ['Photomètre'],
+    'les_deux' => ['Bandelette JBL', 'Photomètre'],
+    default => [$a['type']],
+};
+$hasBand = in_array($a['type'], ['bandelette', 'les_deux']);
+$hasPhoto = in_array($a['type'], ['photometre', 'les_deux']);
                     @endphp
 
                     <div class="analyse-card bg-white rounded-[18px] shadow-[0_2px_12px_rgba(34,42,96,0.07)] mb-3 overflow-hidden border border-sv-blue/5 group"
@@ -109,10 +118,8 @@
                                 </div>
                                 <div class="font-mono text-[10px] text-slate-400 mb-1.5">
                                     {{ $a['created_at'] }} · {{ $a['time'] }}
-                                    @if ($a['session'])
-                                        · {{ $a['session'] }}
-                                    @endif
                                 </div>
+
                                 <div class="flex flex-wrap gap-1.5">
                                     @foreach ($types as $t)
                                         <span
@@ -120,10 +127,17 @@
                                             {{ $t }}
                                         </span>
                                     @endforeach
-                                    @if ($a['est_valide'])
+
+                                    {{-- 🌟 BADGE DE QUALITÉ GLOBALE 🌟 --}}
+                                    @if ($a['qualite'] === 'bonne')
                                         <span
-                                            class="inline-flex items-center gap-1 py-1 px-2.5 rounded-full text-[10px] font-bold font-mono bg-emerald-500/10 text-emerald-600">✓
-                                            Validée</span>
+                                            class="inline-flex items-center gap-1 py-1 px-2.5 rounded-full text-[10px] font-bold font-mono bg-emerald-500/10 text-emerald-600">Bonne</span>
+                                    @elseif($a['qualite'] === 'moderee')
+                                        <span
+                                            class="inline-flex items-center gap-1 py-1 px-2.5 rounded-full text-[10px] font-bold font-mono bg-amber-500/10 text-amber-600">Modérée</span>
+                                    @elseif($a['qualite'] === 'mauvaise')
+                                        <span
+                                            class="inline-flex items-center gap-1 py-1 px-2.5 rounded-full text-[10px] font-bold font-mono bg-red-500/10 text-red-600">Mauvaise</span>
                                     @endif
                                 </div>
                             </div>
@@ -170,17 +184,17 @@
                                             @if ($val !== null)
                                                 @php
                                                     $s = $seuils[$key] ?? null;
-                                                    $pct = $s ? min(100, round(($val / $s['max']) * 100)) : 50;
-                                                    $thPct = $s
-                                                        ? min(100, round(($s['warn'] / $s['max']) * 100))
-                                                        : null;
-                                                    $barColor = !$s
-                                                        ? 'bg-emerald-500'
-                                                        : ($val > $s['warn']
-                                                            ? 'bg-amber-500'
-                                                            : 'bg-emerald-500');
-                                                    if ($s && $val > $s['max']) {
-                                                        $barColor = 'bg-red-500';
+                                                    // La proportion dépend strictement du seuil MAXIMUM
+                                                    $pct = $s ? min(100, max(0, ($val / $s['max']) * 100)) : 50;
+                                                    $thPct = $s ? min(100, ($s['warn'] / $s['max']) * 100) : null;
+
+                                                    $barColor = 'bg-emerald-500';
+                                                    if ($s) {
+                                                        if ($val >= $s['danger']) {
+                                                            $barColor = 'bg-red-500';
+                                                        } elseif ($val >= $s['warn']) {
+                                                            $barColor = 'bg-amber-500';
+                                                        }
                                                     }
                                                 @endphp
                                                 <div class="flex items-center gap-2 mb-2.5 last:mb-0">
@@ -198,7 +212,8 @@
                                                         </div>
                                                         @if ($thPct)
                                                             <div class="absolute top-0 bottom-0 border-l-[1.5px] border-white/80"
-                                                                style="left:{{ $thPct }}%;"></div>
+                                                                style="left:{{ $thPct }}%;" title="Seuil d'alerte">
+                                                            </div>
                                                         @endif
                                                     </div>
                                                     <div
@@ -230,17 +245,16 @@
                                             @if ($val !== null)
                                                 @php
                                                     $s = $seuils[$key] ?? null;
-                                                    $pct = $s ? min(100, round(($val / $s['max']) * 100)) : 50;
-                                                    $thPct = $s
-                                                        ? min(100, round(($s['warn'] / $s['max']) * 100))
-                                                        : null;
-                                                    $barColor = !$s
-                                                        ? 'bg-emerald-500'
-                                                        : ($val > $s['warn']
-                                                            ? 'bg-amber-500'
-                                                            : 'bg-emerald-500');
-                                                    if ($s && $val > $s['max']) {
-                                                        $barColor = 'bg-red-500';
+                                                    $pct = $s ? min(100, max(0, ($val / $s['max']) * 100)) : 50;
+                                                    $thPct = $s ? min(100, ($s['warn'] / $s['max']) * 100) : null;
+
+                                                    $barColor = 'bg-emerald-500';
+                                                    if ($s) {
+                                                        if ($val >= $s['danger']) {
+                                                            $barColor = 'bg-red-500';
+                                                        } elseif ($val >= $s['warn']) {
+                                                            $barColor = 'bg-amber-500';
+                                                        }
                                                     }
                                                 @endphp
                                                 <div class="flex items-center gap-2 mb-2.5 last:mb-0">
@@ -324,7 +338,8 @@
                         d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
                 </svg>
                 <span
-                    class="text-[10px] font-semibold text-slate-400 transition-colors group-[.active]:text-[#222a60]">Retour à l'accueil</span>
+                    class="text-[10px] font-semibold text-slate-400 transition-colors group-[.active]:text-[#222a60]">Retour
+                    à l'accueil</span>
             </a>
             <a href="{{ route('mobile.analyses') }}"
                 class="active group flex flex-col items-center gap-[3px] cursor-pointer px-5 py-1 rounded-xl transition-colors active:bg-slate-100 select-none no-underline">
@@ -336,7 +351,6 @@
                 <span class="text-[10px] font-semibold text-[#222a60] transition-colors">Mes analyses</span>
             </a>
         </nav>
-
     </div>
 
     <script src="{{ asset('js/mes-analyses.js') }}"></script>

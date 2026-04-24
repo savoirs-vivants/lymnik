@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use App\Models\Analyse;
@@ -74,12 +75,15 @@ class AnalyseController extends Controller
                 );
             }
 
+            $qualite = $this->calculerQualite($mesures);
+
             Analyse::create([
                 'point_id'   => $point->id,
                 'type'       => $request->type,
                 'image'      => $imagePath,
                 'mesures'    => json_encode($mesures),
                 'est_valide' => $this->isValid($mesures),
+                'qualite'    => $qualite,
                 'user_id'    => Auth::id(),
             ]);
         });
@@ -87,25 +91,56 @@ class AnalyseController extends Controller
         return redirect()->route('index_mobile')->with('success', 'Analyse enregistrée !');
     }
 
-    private const SEUILS = [
+    private function calculerQualite(array $mesures): string
+    {
+        $qualite = 'bonne';
+        $seuils = [
+            'nitrates'      => ['warn' => 50,   'danger' => 100],
+            'nitrites'      => ['warn' => 0.5,  'danger' => 2],
+            'durete_totale' => ['warn' => 250,  'danger' => 300],
+            'durete_carb'   => ['warn' => 250,  'danger' => 300],
+            'ph'            => ['warn' => 8.5,  'danger' => 9],
+            'chlore'        => ['warn' => 0.8,  'danger' => 1.5],
+            'phosphate'     => ['warn' => 0.5,  'danger' => 1],
+            'nitrate'       => ['warn' => 50,   'danger' => 100],
+            'ammoniac'      => ['warn' => 1,    'danger' => 3],
+            'ammonium'      => ['warn' => 1,    'danger' => 3],
+        ];
+
+        $toutesMesures = array_merge($mesures['bandelette'] ?? [], $mesures['photometre'] ?? []);
+
+        foreach ($toutesMesures as $key => $val) {
+            if ($val === null || !isset($seuils[$key])) continue;
+
+            $v = (float) $val;
+            if ($v >= $seuils[$key]['danger']) {
+                return 'mauvaise';
+            } elseif ($v >= $seuils[$key]['warn']) {
+                $qualite = 'moderee';
+            }
+        }
+        return $qualite;
+    }
+
+    private const SEUILS_VALIDITE = [
         'bandelette' => [
             'nitrates'      => 500,
             'nitrites'      => 10,
             'durete_totale' => 375,
             'durete_carb'   => 357,
-            'ph'            => 9.0,
-            'chlore'        => 3.0,
+            'ph'            => 14,
+            'chlore'        => 5.0,
         ],
         'photometre' => [
             'ammoniac'  => 5,
             'nitrate'   => 500,
-            'phosphate' => 1,
+            'phosphate' => 5,
         ],
     ];
 
     private function isValid(array $mesures): bool
     {
-        foreach (self::SEUILS as $type => $seuils) {
+        foreach (self::SEUILS_VALIDITE as $type => $seuils) {
             foreach ($seuils as $key => $max) {
                 $val = $mesures[$type][$key] ?? null;
                 if ($val !== null && (float) $val > $max) {
@@ -117,35 +152,35 @@ class AnalyseController extends Controller
     }
 
     public function myAnalyses()
-{
-    $analyses = Analyse::with(['point.coursDEau'])
-        ->where('user_id', Auth::id())
-        ->latest()
-        ->get()
-        ->map(function ($a) {
-            $mesures = is_string($a->mesures) ? json_decode($a->mesures, true) : ($a->mesures ?? []);
+    {
+        $analyses = Analyse::with(['point.coursDEau'])
+            ->where('user_id', Auth::id())
+            ->latest()
+            ->get()
+            ->map(function ($a) {
+                $mesures = is_string($a->mesures) ? json_decode($a->mesures, true) : ($a->mesures ?? []);
 
-            return [
-                'id'          => $a->id,
-                'type'        => $a->type,
-                'est_valide'  => (bool) $a->est_valide,
-                'image'       => $a->image ? asset('storage/' . $a->image) : null,
-                'note'        => $mesures['note'] ?? null,
-                'mesures'     => $mesures,
-                'created_at'  => $a->created_at?->translatedFormat('d M Y'),
-                'time'        => $a->created_at?->format('H\hi'),
-                'cours_d_eau' => $a->point?->coursDEau?->nom ?? 'Cours d\'eau inconnu',
-                'localite'    => $a->point?->coursDEau?->localite ?? null,
-                'latitude'    => $a->point ? (float) $a->point->latitude  : null,
-                'longitude'   => $a->point ? (float) $a->point->longitude : null,
-                'session'     => $a->session_id ? 'Session ' . $a->session_id : null,
-            ];
-        });
+                return [
+                    'id'          => $a->id,
+                    'type'        => $a->type,
+                    'est_valide'  => (bool) $a->est_valide,
+                    'qualite'     => $a->qualite,
+                    'image'       => $a->image ? asset('storage/' . $a->image) : null,
+                    'note'        => $mesures['note'] ?? null,
+                    'mesures'     => $mesures,
+                    'created_at'  => $a->created_at?->translatedFormat('d M Y'),
+                    'time'        => $a->created_at?->format('H\hi'),
+                    'cours_d_eau' => $a->point?->coursDEau?->nom ?? 'Cours d\'eau inconnu',
+                    'localite'    => $a->point?->coursDEau?->localite ?? null,
+                    'latitude'    => $a->point ? (float) $a->point->latitude  : null,
+                    'longitude'   => $a->point ? (float) $a->point->longitude : null,
+                    'session'     => $a->session_id ? 'Session ' . $a->session_id : null,
+                ];
+            });
 
-    $count = $analyses->count();
-    $month = now()->translatedFormat('M Y');
+        $count = $analyses->count();
+        $month = now()->translatedFormat('M Y');
 
-    return view('mobile.analyse.index', compact('analyses', 'count', 'month'));
-}
-
+        return view('mobile.analyse.index', compact('analyses', 'count', 'month'));
+    }
 }
