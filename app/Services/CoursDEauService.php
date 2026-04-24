@@ -83,16 +83,21 @@ class CoursDEauService
         float $bx,
         float $by
     ): float {
-        $dx = $bx - $ax;
+        $cosLat = cos(deg2rad(($py + $ay + $by) / 3));
+
+        $dx = ($bx - $ax) * $cosLat;
         $dy = $by - $ay;
 
+        $qx = ($px - $ax) * $cosLat;
+        $qy = $py - $ay;
+
         if ($dx === 0.0 && $dy === 0.0) {
-            return sqrt(($px - $ax) ** 2 + ($py - $ay) ** 2);
+            return sqrt($qx ** 2 + $qy ** 2);
         }
 
-        $t = (($px - $ax) * $dx + ($py - $ay) * $dy) / ($dx ** 2 + $dy ** 2);
+        $t = ($qx * $dx + $qy * $dy) / ($dx ** 2 + $dy ** 2);
         $t = max(0.0, min(1.0, $t));
 
-        return sqrt(($px - ($ax + $t * $dx)) ** 2 + ($py - ($ay + $t * $dy)) ** 2);
+        return sqrt(($qx - $t * $dx) ** 2 + ($qy - $t * $dy) ** 2);
     }
 }
