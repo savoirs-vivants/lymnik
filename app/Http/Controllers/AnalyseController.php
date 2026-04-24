@@ -82,4 +82,37 @@ class AnalyseController extends Controller
 
         return redirect()->route('index_mobile')->with('success', 'Analyse enregistrée !');
     }
+
+    public function myAnalyses()
+{
+    $analyses = Analyse::with(['point.coursDEau'])
+        ->where('user_id', Auth::id())
+        ->latest()
+        ->get()
+        ->map(function ($a) {
+            $mesures = is_string($a->mesures) ? json_decode($a->mesures, true) : ($a->mesures ?? []);
+
+            return [
+                'id'          => $a->id,
+                'type'        => $a->type,
+                'est_valide'  => (bool) $a->est_valide,
+                'image'       => $a->image ? asset('storage/' . $a->image) : null,
+                'note'        => $mesures['note'] ?? null,
+                'mesures'     => $mesures,
+                'created_at'  => $a->created_at?->translatedFormat('d M Y'),
+                'time'        => $a->created_at?->format('H\hi'),
+                'cours_d_eau' => $a->point?->coursDEau?->nom ?? 'Cours d\'eau inconnu',
+                'localite'    => $a->point?->coursDEau?->localite ?? null,
+                'latitude'    => $a->point ? (float) $a->point->latitude  : null,
+                'longitude'   => $a->point ? (float) $a->point->longitude : null,
+                'session'     => $a->session_id ? 'Session ' . $a->session_id : null,
+            ];
+        });
+
+    $count = $analyses->count();
+    $month = now()->translatedFormat('M Y');
+
+    return view('mobile.analyse.index', compact('analyses', 'count', 'month'));
+}
+
 }
