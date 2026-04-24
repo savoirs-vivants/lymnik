@@ -13,6 +13,7 @@ class Analyse extends Model
         'mesures',
         'est_valide',
         'user_id',
+        'qualite',
     ];
 
     protected $casts = [
