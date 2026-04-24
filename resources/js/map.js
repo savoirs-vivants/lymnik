@@ -6,11 +6,19 @@ document.addEventListener('DOMContentLoaded', () => {
     const mapElement = document.getElementById('map');
     if (!mapElement) return;
 
+    const savedCenter = JSON.parse(localStorage.getItem('lymnik_map_center')) || [48.8153, 7.7884];
+    const savedZoom   = localStorage.getItem('lymnik_map_zoom') || 13;
+
     window.map = L.map('map', {
-        center: [48.8153, 7.7884],
-        zoom: 13,
+        center: savedCenter,
+        zoom: savedZoom,
         zoomControl: false,
         attributionControl: false,
+    });
+
+    map.on('moveend', () => {
+        localStorage.setItem('lymnik_map_center', JSON.stringify(map.getCenter()));
+        localStorage.setItem('lymnik_map_zoom', map.getZoom());
     });
 
     L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
