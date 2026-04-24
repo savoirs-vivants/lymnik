@@ -10,6 +10,7 @@ class Point extends Model
         'cours_d_eau_id',
         'latitude',
         'longitude',
+        'ville',
     ];
 
     public function coursDEau()

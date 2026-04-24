@@ -42,6 +42,7 @@
         <form id="analyse-form" method="POST" action="{{ route('mobile.analyse.store') }}" enctype="multipart/form-data">
             @csrf
             <input type="hidden" name="cours_d_eau_id" value="{{ old('cours_d_eau_id', $coursDEauId ?? '') }}">
+            <input type="hidden" name="ville" id="f-ville" value="{{ old('ville') }}">
 
             @if(request('point_id'))
                 <input type="hidden" name="point_id" value="{{ request('point_id') }}">
@@ -78,18 +79,20 @@
 
                 <div class="flex items-center justify-between py-2.5 px-3 bg-slate-50 rounded-lg border border-slate-100 mt-2">
                     <div class="flex items-center gap-[7px]">
-                        <div class="w-[7px] h-[7px] rounded-full bg-blue-400 shrink-0" id="river-dot"></div>
+                        <div class="w-[7px] h-[7px] rounded-full bg-blue-400 shrink-0"></div>
                         <div class="font-mono text-[11px] text-slate-600" id="river-display">
-                            @if($coursDEauId && $nomCoursEau)
-                                {{ $nomCoursEau }}
-                            @else
-                                Recherche du cours d'eau…
-                            @endif
+                            @if($coursDEauId && $nomCoursEau) {{ $nomCoursEau }} @else Recherche du cours d'eau… @endif
                         </div>
                     </div>
-                    <div class="text-xs font-semibold text-[#16987c]" id="river-status">
-                        {{ $coursDEauId ? 'Trouvé' : '' }}
+                    <div class="text-xs font-semibold text-[#16987c]" id="river-status">{{ $coursDEauId ? 'Trouvé' : '' }}</div>
+                </div>
+
+                <div class="flex items-center justify-between py-2.5 px-3 bg-slate-50 rounded-lg border border-slate-100 mt-2">
+                    <div class="flex items-center gap-[7px]">
+                        <div class="w-[7px] h-[7px] rounded-full bg-slate-400 shrink-0"></div>
+                        <div class="font-mono text-[11px] text-slate-600" id="ville-display">Recherche de la ville…</div>
                     </div>
+                    <div class="text-xs font-semibold text-[#16987c]" id="ville-status"></div>
                 </div>
             </div>
 

@@ -21,6 +21,7 @@ class MobileController extends Controller
             'longitude'      => (float) $p->longitude,
             'cours_d_eau_id' => $p->cours_d_eau_id,
             'cours_d_eau'    => $p->coursDEau?->nom,
+            'ville'          => $p->ville,
             'analyse'        => $p->analyses->first() ? [
                 'id'         => $p->analyses->first()->id,
                 'type'       => $p->analyses->first()->type,

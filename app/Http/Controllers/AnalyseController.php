@@ -27,16 +27,19 @@ class AnalyseController extends Controller
             if ($request->point_id) {
                 $point = Point::findOrFail($request->point_id);
 
+                $updates = [];
                 if (! $point->cours_d_eau_id) {
                     $coursDEauId = $request->integer('cours_d_eau_id') ?: null;
                     if (! $coursDEauId) {
                         $river       = $service->findNearest($point->latitude, $point->longitude);
                         $coursDEauId = $river?->id;
                     }
-                    if ($coursDEauId) {
-                        $point->update(['cours_d_eau_id' => $coursDEauId]);
-                    }
+                    if ($coursDEauId) $updates['cours_d_eau_id'] = $coursDEauId;
                 }
+                if (! $point->ville && $request->filled('ville')) {
+                    $updates['ville'] = $request->ville;
+                }
+                if ($updates) $point->update($updates);
             } else {
                 $coursDEauId = $request->integer('cours_d_eau_id') ?: null;
                 if (! $coursDEauId) {
@@ -48,6 +51,7 @@ class AnalyseController extends Controller
                     'latitude'       => $request->latitude,
                     'longitude'      => $request->longitude,
                     'cours_d_eau_id' => $coursDEauId,
+                    'ville'          => $request->ville,
                 ]);
             }
 

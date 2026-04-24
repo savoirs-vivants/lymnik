@@ -185,8 +185,43 @@ document.addEventListener("DOMContentLoaded", () => {
             });
     }
 
+    // City background search (Nominatim reverse geocoding)
+    const villeInput   = document.getElementById('f-ville');
+    const villeDisplay = document.getElementById('ville-display');
+    const villeStatus  = document.getElementById('ville-status');
+
+    let villeFetchDone = true;
+    let villeFetch     = null;
+
+    if (villeInput && !villeInput.value) {
+        villeFetchDone = false;
+        villeFetch = fetch(
+            `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&accept-language=fr`,
+            { headers: { 'Accept-Language': 'fr' } }
+        )
+            .then(r => r.json())
+            .then(data => {
+                villeFetchDone = true;
+                const addr = data?.address ?? {};
+                const ville = addr.city ?? addr.town ?? addr.municipality ?? addr.village ?? addr.hamlet ?? null;
+                if (ville) {
+                    villeInput.value = ville;
+                    if (villeDisplay) villeDisplay.textContent = ville;
+                    if (villeStatus)  villeStatus.textContent  = 'Trouvé';
+                } else {
+                    if (villeDisplay) villeDisplay.textContent = 'Ville non trouvée';
+                }
+            })
+            .catch(() => {
+                villeFetchDone = true;
+                if (villeDisplay) villeDisplay.textContent = 'Ville non trouvée';
+            });
+    } else if (villeInput?.value) {
+        if (villeDisplay) villeDisplay.textContent = villeInput.value;
+        if (villeStatus)  villeStatus.textContent  = 'Trouvé';
+    }
+
     let submitted = false;
-    const submitBtn = document.querySelector('[type="submit"][form="analyse-form"], #analyse-form [type="submit"]');
     const submitBar = document.getElementById('submit-bar');
 
     function showRiverWait() {
@@ -207,10 +242,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (analyseForm) {
         analyseForm.addEventListener('submit', e => {
-            if (submitted || riverFetchDone) return;
+            if (submitted || (riverFetchDone && villeFetchDone)) return;
             e.preventDefault();
             showRiverWait();
-            riverFetch.finally(() => { hideRiverWait(); submitted = true; analyseForm.submit(); });
+            Promise.allSettled([riverFetch, villeFetch].filter(Boolean))
+                .then(() => { hideRiverWait(); submitted = true; analyseForm.submit(); });
         });
     }
 });
