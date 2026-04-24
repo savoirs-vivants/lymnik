@@ -29,4 +29,5 @@ Route::middleware('auth')->group(function () {
     Route::get('/mobile/cours-d-eau/nearest', [CoursDEauController::class, 'nearest'])
      ->name('mobile.cours-d-eau.nearest');
     Route::get('/mobile/mes-analyses', [AnalyseController::class, 'myAnalyses']) ->name('mobile.analyses');
+    Route::get('/mobile/profil', [MobileController::class, 'profil'])->name('mobile.profil');
 });

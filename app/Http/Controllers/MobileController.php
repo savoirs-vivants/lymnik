@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\CoursDEau;
 use App\Models\Point;
+use Illuminate\Support\Facades\Auth;
 
 class MobileController extends Controller
 {
@@ -51,4 +52,22 @@ class MobileController extends Controller
 
         return view('mobile.index', compact('pointsJson', 'riversJson'));
     }
+
+    public function profil()
+{
+    $user = Auth::user();
+
+    $stats = [
+        'analyses'    => \App\Models\Analyse::where('user_id', $user->id)->count(),
+        'validees'    => \App\Models\Analyse::where('user_id', $user->id)->where('est_valide', true)->count(),
+        'points'      => \App\Models\Point::whereHas('analyses', fn($q) => $q->where('user_id', $user->id))->count(),
+        'cours_d_eau' => \App\Models\Point::whereHas('analyses', fn($q) => $q->where('user_id', $user->id))
+                            ->distinct('cours_d_eau_id')
+                            ->count('cours_d_eau_id'),
+    ];
+
+    return view('mobile.profil', compact('stats'));
+}
+
+
 }

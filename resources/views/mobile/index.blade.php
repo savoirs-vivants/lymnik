@@ -31,7 +31,7 @@
             @endguest
 
             @auth
-                <a href="{{ route('index_mobile') }}"
+                <a href="{{ route('mobile.profil') }}"
                     class="w-[46px] h-[46px] rounded-full bg-sv-blue flex items-center justify-center font-grotesk text-[13px] font-bold text-white shrink-0 shadow-[0_4px_16px_rgba(34,42,96,0.25)] no-underline border-2 border-white transition-transform active:scale-[0.93]">
                     {{ strtoupper(substr(Auth::user()->firstname, 0, 1) . substr(Auth::user()->name, 0, 1)) }}
                 </a>
