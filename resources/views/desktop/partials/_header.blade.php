@@ -3,7 +3,7 @@
     <div class="flex-1 min-w-0">
         <h1 class="text-[15px] font-bold text-[#222a60] truncate">@yield('page-title', 'Backoffice')</h1>
         @hasSection('page-subtitle')
-            <p class="text-[11px] text-slate-400 font-mono truncate mt-0.5">@yield('page-subtitle')</p>
+            <p class="text-[11px] text-slate-400 font-grotesk truncate mt-0.5">@yield('page-subtitle')</p>
         @endif
     </div>
 

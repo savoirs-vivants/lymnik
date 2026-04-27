@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\BackOfficeController;
 use App\Http\Controllers\AnalyseController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
@@ -27,7 +28,14 @@ Route::middleware('auth')->group(function () {
     Route::get('/mobile/analyse/create', [AnalyseController::class, 'create'])->name('mobile.analyse.create');
     Route::post('/mobile/analyse',       [AnalyseController::class, 'store'])->name('mobile.analyse.store');
     Route::get('/mobile/cours-d-eau/nearest', [CoursDEauController::class, 'nearest'])
-     ->name('mobile.cours-d-eau.nearest');
-    Route::get('/mobile/mes-analyses', [AnalyseController::class, 'myAnalyses']) ->name('mobile.analyses');
+        ->name('mobile.cours-d-eau.nearest');
+    Route::get('/mobile/mes-analyses', [AnalyseController::class, 'myAnalyses'])->name('mobile.analyses');
     Route::get('/mobile/profil', [MobileController::class, 'profil'])->name('mobile.profil');
+
+    Route::get('/dashboard', fn() => view('desktop.dashboard'))->name('desktop.dashboard');
+    Route::get('/profil', fn() => view('desktop.dashboard'))->name('desktop.profile');
+
+    Route::get('/backoffice',           [BackOfficeController::class, 'index'])->name('desktop.backoffice');
+    Route::put('/backoffice/{user}',    [BackOfficeController::class, 'update'])->name('desktop.backoffice.update');
+    Route::delete('/backoffice/users/{user}', [BackOfficeController::class, 'destroy'])->name('desktop.backoffice.destroy');
 });
