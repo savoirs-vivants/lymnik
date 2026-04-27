@@ -9,12 +9,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const savedCenter = JSON.parse(localStorage.getItem('lymnik_map_center')) || [48.8153, 7.7884];
     const savedZoom   = localStorage.getItem('lymnik_map_zoom') || 13;
 
-    window.map = L.map('map', {
+    const map = L.map('map', {
         center: savedCenter,
         zoom: savedZoom,
         zoomControl: false,
         attributionControl: false,
     });
+
+    window.map = map;
 
     map.on('moveend', () => {
         localStorage.setItem('lymnik_map_center', JSON.stringify(map.getCenter()));
@@ -169,12 +171,17 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     document.getElementById('cc-cancel').addEventListener('click', hideCreateCard);
 
-    const points = window.mapPoints ?? [];
+    /* ══════════════════════════════════════════════
+       MARQUEURS
+    ══════════════════════════════════════════════ */
+    const points   = window.mapPoints  ?? [];
+    const capteurs = window.mapCapteurs ?? [];
 
-    function makeMarkerIcon(color) {
+    function makeMarkerIcon(color, isSquare = false) {
+        const radius = isSquare ? '4px' : '50%';
         return L.divIcon({
             className: '',
-            html: `<div style="width:16px;height:16px;border-radius:50%;background:${color};border:2.5px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.25);"></div>`,
+            html: `<div style="width:16px;height:16px;border-radius:${radius};background:${color};border:2.5px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.25);"></div>`,
             iconSize: [16, 16], iconAnchor: [8, 8],
         });
     }
@@ -184,8 +191,25 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     points.forEach(p => {
-        const marker = L.marker([p.latitude, p.longitude], { icon: makeMarkerIcon('#1565c0') }).addTo(map);
-        marker.on('click', () => { hideCreateCard(); populateSheet(p); openSheet(); });
+        const marker = L.marker([p.latitude, p.longitude], { icon: makeMarkerIcon('#1565c0', false) }).addTo(map);
+        marker.on('click', e => {
+            L.DomEvent.stopPropagation(e);
+            hideCreateCard();
+            populateSheet(p);
+            openSheet();
+        });
+    });
+
+    capteurs.forEach(c => {
+        const lat = parseFloat(c.lat);
+        const lng = parseFloat(c.long);
+        const marker = L.marker([lat, lng], { icon: makeMarkerIcon('#6d28d9', true) }).addTo(map);
+        marker.on('click', e => {
+            L.DomEvent.stopPropagation(e);
+            hideCreateCard();
+            populateCapteurSheet(c);
+            openSheet();
+        });
     });
 
     map.on('click', async e => {
@@ -194,6 +218,9 @@ document.addEventListener('DOMContentLoaded', () => {
         await showCreateCard(e.latlng);
     });
 
+    /* ══════════════════════════════════════════════
+       BOTTOM SHEET CAPTEURS & ANALYSES
+    ══════════════════════════════════════════════ */
     function populateSheet(p) {
         const a = p.analyse;
         sheet.querySelector('.sheet-coords-text').textContent = p.latitude.toFixed(4) + '° N · ' + p.longitude.toFixed(4) + '° E';
@@ -216,7 +243,7 @@ document.addEventListener('DOMContentLoaded', () => {
             photometre: {
                 phosphate: { label: 'Phosphate', unit: 'mg/L' },
                 nitrate:   { label: 'Nitrate',   unit: 'mg/L' },
-                ammoniaque:  { label: 'Ammoniaque',  unit: 'mg/L' },
+                ammoniac:  { label: 'Ammoniac',  unit: 'mg/L' },
             },
         };
 
@@ -261,6 +288,47 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>`;
     }
 
+    function populateCapteurSheet(c) {
+        sheet.querySelector('.sheet-coords-text').textContent = parseFloat(c.lat).toFixed(4) + '° N · ' + parseFloat(c.long).toFixed(4) + '° E';
+        sheet.querySelector('.sheet-type-text').textContent = 'Station Automatique';
+        sheet.querySelector('.sheet-river-name').textContent = 'Capteur Lymnik';
+
+        let casesHtml = '';
+
+        const metrics = [
+            { label: 'Turbidité',    unit: 'NTU',   val: c.turbidite },
+            { label: 'Conductivité', unit: 'µS/cm', val: c.conductivite },
+            { label: 'Température',  unit: '°C',    val: c.temp_eau },
+            { label: 'Hauteur',      unit: 'm',     val: c.hauteur },
+            { label: 'Débit',        unit: 'm³/s',  val: c.debit }
+        ];
+
+        metrics.forEach(m => {
+            if (m.val !== null && m.val !== undefined) {
+                casesHtml += `
+                    <div class="bg-indigo-50/50 border border-indigo-100/50 rounded-xl p-2.5 text-center flex flex-col justify-center">
+                        <div class="text-[9px] text-indigo-400 font-mono uppercase tracking-wide mb-1 leading-none">${m.label}</div>
+                        <div class="text-lg font-bold text-[#6d28d9] leading-none">${m.val}<span class="text-[9px] font-normal text-indigo-400 ml-0.5">${m.unit}</span></div>
+                    </div>`;
+            }
+        });
+
+        if (!casesHtml) casesHtml = '<div class="col-span-3 text-xs text-slate-400 text-center py-2">Aucune donnée disponible.</div>';
+
+        const dateObj = new Date(c.updated_at || c.created_at);
+        const dateStr = !isNaN(dateObj) ? dateObj.toLocaleDateString('fr-FR', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' }) : '—';
+
+        sheet.querySelector('.sheet-analyse-info').innerHTML = `
+            <div class="flex gap-2 mb-3">
+                <div class="flex-1 bg-indigo-50/50 border border-indigo-100/50 rounded-lg py-2 px-3">
+                    <div class="font-mono text-[9px] font-bold uppercase tracking-widest text-indigo-400 mb-0.5">Dernière synchro</div>
+                    <div class="text-xs font-bold text-[#6d28d9]">${dateStr}</div>
+                </div>
+            </div>
+            <div class="grid grid-cols-3 gap-2">${casesHtml}</div>
+        `;
+    }
+
     function showAuthToast() {
         if (document.getElementById('auth-toast')) return;
         const toast = document.createElement('div');
@@ -293,8 +361,9 @@ document.addEventListener('DOMContentLoaded', () => {
     setTimeout(hideHint, 3500);
     map.on('click', hideHint);
 
-});
-
+    /* ══════════════════════════════════════════════
+       RECHERCHE DE COMMUNE
+    ══════════════════════════════════════════════ */
     const searchInput = document.getElementById('search-input');
     const searchResults = document.getElementById('search-results');
     let searchTimeout = null;
@@ -383,3 +452,5 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
+
+});

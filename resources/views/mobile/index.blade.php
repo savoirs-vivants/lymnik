@@ -141,8 +141,9 @@
 </div>
 
 <script>
-    window.mapPoints          = @json($pointsJson);
-    window.mapRivers          = @json($riversJson);
+    window.mapPoints          = @json($pointsJson ?? []);
+    window.mapRivers          = @json($riversJson ?? []);
+    window.mapCapteurs        = {!! $capteursJson !!};
     window.createAnalyseUrl   = "{{ route('mobile.analyse.create') }}";
     window.nearestRiverUrl    = "{{ route('mobile.cours-d-eau.nearest') }}";
     window.userAuthenticated  = {{ auth()->check() ? 'true' : 'false' }};

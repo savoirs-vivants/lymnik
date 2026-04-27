@@ -5,11 +5,15 @@ namespace App\Http\Controllers;
 use App\Models\CoursDEau;
 use App\Models\Point;
 use Illuminate\Support\Facades\Auth;
+use App\Models\Capteur;
 
 class MobileController extends Controller
 {
     public function index()
     {
+        $capteurs = Capteur::all();
+        $capteursJson = $capteurs->toJson();
+
         $points = Point::with([
             'analyses' => fn($q) => $q->with('user')->latest()->limit(1),
             'coursDEau:id,nom',
@@ -51,24 +55,22 @@ class MobileController extends Controller
                     : $decoded,
             ]);
 
-        return view('mobile.index', compact('pointsJson', 'riversJson'));
+        return view('mobile.index', compact('pointsJson', 'riversJson', 'capteursJson'));
     }
 
     public function profil()
-{
-    $user = Auth::user();
+    {
+        $user = Auth::user();
 
-    $stats = [
-        'analyses'    => \App\Models\Analyse::where('user_id', $user->id)->count(),
-        'validees'    => \App\Models\Analyse::where('user_id', $user->id)->where('est_valide', true)->count(),
-        'points'      => \App\Models\Point::whereHas('analyses', fn($q) => $q->where('user_id', $user->id))->count(),
-        'cours_d_eau' => \App\Models\Point::whereHas('analyses', fn($q) => $q->where('user_id', $user->id))
-                            ->distinct('cours_d_eau_id')
-                            ->count('cours_d_eau_id'),
-    ];
+        $stats = [
+            'analyses'    => \App\Models\Analyse::where('user_id', $user->id)->count(),
+            'validees'    => \App\Models\Analyse::where('user_id', $user->id)->where('est_valide', true)->count(),
+            'points'      => \App\Models\Point::whereHas('analyses', fn($q) => $q->where('user_id', $user->id))->count(),
+            'cours_d_eau' => \App\Models\Point::whereHas('analyses', fn($q) => $q->where('user_id', $user->id))
+                ->distinct('cours_d_eau_id')
+                ->count('cours_d_eau_id'),
+        ];
 
-    return view('mobile.profil', compact('stats'));
-}
-
-
+        return view('mobile.profil', compact('stats'));
+    }
 }
