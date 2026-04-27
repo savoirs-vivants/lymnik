@@ -31,7 +31,7 @@ class AuthController extends Controller
         if (Auth::attempt($credentials, $request->boolean('remember'))) {
             $request->session()->regenerate();
             $source = session('auth_source', 'web');
-            $redirectUrl = $source === 'mobile' ? url('index_mobile') : url('dashboard');
+            $redirectUrl = $source === 'mobile' ? route('mobile') : route('dashboard');
             return redirect()->intended($redirectUrl);
         }
 

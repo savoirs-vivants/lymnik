@@ -103,8 +103,7 @@ class AnalyseController extends Controller
             'chlore'        => ['warn' => 0.8,  'danger' => 1.5],
             'phosphate'     => ['warn' => 0.5,  'danger' => 1],
             'nitrate'       => ['warn' => 50,   'danger' => 100],
-            'ammoniac'      => ['warn' => 1,    'danger' => 3],
-            'ammonium'      => ['warn' => 1,    'danger' => 3],
+            'ammoniaque'      => ['warn' => 1,    'danger' => 3],
         ];
 
         $toutesMesures = array_merge($mesures['bandelette'] ?? [], $mesures['photometre'] ?? []);
@@ -132,7 +131,7 @@ class AnalyseController extends Controller
             'chlore'        => 5.0,
         ],
         'photometre' => [
-            'ammoniac'  => 5,
+            'ammoniaque'  => 5,
             'nitrate'   => 500,
             'phosphate' => 5,
         ],

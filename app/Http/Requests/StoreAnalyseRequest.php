@@ -32,7 +32,7 @@ class StoreAnalyseRequest extends FormRequest
 
             'mesures.photometre.phosphate' => ['nullable', 'numeric', 'min:0'],
             'mesures.photometre.nitrate'   => ['nullable', 'numeric', 'min:0'],
-            'mesures.photometre.ammoniac'  => ['nullable', 'numeric', 'min:0'],
+            'mesures.photometre.ammoniaque'  => ['nullable', 'numeric', 'min:0'],
         ];
     }
 

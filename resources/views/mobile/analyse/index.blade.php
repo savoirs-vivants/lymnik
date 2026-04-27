@@ -52,7 +52,7 @@
                         'chlore' => ['max' => 3, 'warn' => 0.8, 'danger' => 1.5],
                         'phosphate' => ['max' => 2, 'warn' => 0.5, 'danger' => 1],
                         'nitrate' => ['max' => 500, 'warn' => 50, 'danger' => 100],
-                        'ammoniac' => ['max' => 5, 'warn' => 1, 'danger' => 3],
+                        'ammoniaque' => ['max' => 5, 'warn' => 1, 'danger' => 3],
                         'ammonium' => ['max' => 5, 'warn' => 1, 'danger' => 3],
                     ];
 
@@ -68,7 +68,7 @@
                         'photometre' => [
                             'phosphate' => ['label' => 'Phosphate', 'unit' => 'mg/L'],
                             'nitrate' => ['label' => 'Nitrate', 'unit' => 'mg/L'],
-                            'ammoniac' => ['label' => 'Ammoniac', 'unit' => 'mg/L'],
+                            'ammoniaque' => ['label' => 'Ammoniaque', 'unit' => 'mg/L'],
                         ],
                     ];
                 @endphp
