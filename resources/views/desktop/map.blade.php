@@ -1,6 +1,7 @@
 @extends('layouts.desktop')
 
 @section('title', 'Carte Interactive')
+@section('page-title', 'Carte Interactive')
 
 @section('content')
     <div class="relative h-[calc(100vh-64px)] w-full overflow-hidden font-grotesk flex flex-col p-0 m-0">
