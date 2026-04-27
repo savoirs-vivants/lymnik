@@ -177,28 +177,71 @@ document.addEventListener('DOMContentLoaded', () => {
     const points   = window.mapPoints  ?? [];
     const capteurs = window.mapCapteurs ?? [];
 
-    function makeMarkerIcon(color, isSquare = false) {
-        const radius = isSquare ? '4px' : '50%';
-        return L.divIcon({
-            className: '',
-            html: `<div style="width:16px;height:16px;border-radius:${radius};background:${color};border:2.5px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.25);"></div>`,
-            iconSize: [16, 16], iconAnchor: [8, 8],
-        });
-    }
+    const QUALITE_COLORS = {
+    tres_bon : '#3b82f6',   
+    bon      : '#16987c',
+    passable : '#eab308',
+    mediocre : '#f97316',
+    mauvais  : '#ef4444',
+};
+
+function qualiteColor(q) {
+    return QUALITE_COLORS[q] ?? '#94a3b8';
+}
+
+function makeMarkerIcon(color, isSquare = false) {
+    const radius = isSquare ? '4px' : '50%';
+    return L.divIcon({
+        className: '',
+        html: `<div style="width:16px;height:16px;border-radius:${radius};background:${color};border:2.5px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.25);"></div>`,
+        iconSize: [16, 16], iconAnchor: [8, 8],
+    });
+}
 
     function typeLabel(type) {
         return { bandelette: 'Bandelette JBL', photometre: 'Photomètre', les_deux: 'Bandelette + Photomètre' }[type] ?? type;
     }
 
-    points.forEach(p => {
-        const marker = L.marker([p.latitude, p.longitude], { icon: makeMarkerIcon('#1565c0', false) }).addTo(map);
-        marker.on('click', e => {
-            L.DomEvent.stopPropagation(e);
-            hideCreateCard();
-            populateSheet(p);
-            openSheet();
+    // ── Marqueurs points avec filtre qualité ──────────────────────────────
+const pointMarkers = []; //
+
+points.forEach(p => {
+    const q     = p.analyse?.est_valide === false ? 'non_valide' : (p.analyse?.qualite ?? null);
+    const color = q && q !== 'non_valide' ? qualiteColor(q) : '#94a3b8';
+    const marker = L.marker([p.latitude, p.longitude], { icon: makeMarkerIcon(color, false) }).addTo(map);
+    marker.on('click', e => {
+        L.DomEvent.stopPropagation(e);
+        hideCreateCard();
+        populateSheet(p);
+        openSheet();
+    });
+    pointMarkers.push({ marker, qualite: q });
+});
+
+// ── Filtre pills ──────────────────────────────────────────────────────
+    const activePills = new Set();
+
+    document.querySelectorAll('.pill[data-quality]').forEach(pill => {
+        pill.addEventListener('click', () => {
+            const q = pill.dataset.quality;
+            if (activePills.has(q)) {
+                activePills.delete(q);
+                pill.classList.remove('active');
+            } else {
+                activePills.add(q);
+                pill.classList.add('active');
+            }
+            applyFilter();
         });
     });
+
+    function applyFilter() {
+        pointMarkers.forEach(({ marker, qualite }) => {
+            const visible = activePills.size === 0 || activePills.has(qualite);
+            if (visible) marker.addTo(map);
+            else marker.remove();
+        });
+    }
 
     capteurs.forEach(c => {
         const lat = parseFloat(c.lat);

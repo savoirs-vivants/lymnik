@@ -92,34 +92,48 @@ class AnalyseController extends Controller
     }
 
     private function calculerQualite(array $mesures): string
-    {
-        $qualite = 'bonne';
-        $seuils = [
-            'nitrates'      => ['warn' => 50,   'danger' => 100],
-            'nitrites'      => ['warn' => 0.5,  'danger' => 2],
-            'durete_totale' => ['warn' => 250,  'danger' => 300],
-            'durete_carb'   => ['warn' => 250,  'danger' => 300],
-            'ph'            => ['warn' => 8.5,  'danger' => 9],
-            'chlore'        => ['warn' => 0.8,  'danger' => 1.5],
-            'phosphate'     => ['warn' => 0.5,  'danger' => 1],
-            'nitrate'       => ['warn' => 50,   'danger' => 100],
-            'ammoniaque'      => ['warn' => 1,    'danger' => 3],
-        ];
+{
+    $ordre = ['tres_bon' => 0, 'bon' => 1, 'passable' => 2, 'mediocre' => 3, 'mauvais' => 4];
+    $qualite = 'tres_bon';
 
-        $toutesMesures = array_merge($mesures['bandelette'] ?? [], $mesures['photometre'] ?? []);
+    $seuils = [
+        'nitrites'   => [0.03, 0.3,  0.5,  1.0],
+        'nitrates'   => [2,    10,   25,   50],
+        'nitrate'    => [2,    10,   25,   50],   
+        'phosphate'  => [0.05, 0.2,  0.5,  1.0],
+        'chlore'     => [25,   50,   100,  250],
+        'ammoniaque' => [0.1,  0.5,  2.0,  5.0],
+    ];
 
-        foreach ($toutesMesures as $key => $val) {
-            if ($val === null || !isset($seuils[$key])) continue;
+    $toutesMesures = array_merge($mesures['bandelette'] ?? [], $mesures['photometre'] ?? []);
 
-            $v = (float) $val;
-            if ($v >= $seuils[$key]['danger']) {
-                return 'mauvaise';
-            } elseif ($v >= $seuils[$key]['warn']) {
-                $qualite = 'moderee';
-            }
+    foreach ($toutesMesures as $key => $val) {
+        if ($val === null) continue;
+        $v = (float) $val;
+        $q = null;
+
+        if ($key === 'ph') {
+            if ($v >= 6.5 && $v <= 8.5)      $q = 'tres_bon';
+            elseif ($v >= 6.0 && $v <= 9.0)  $q = 'bon';
+            elseif ($v >= 5.5 && $v <= 9.5)  $q = 'passable';
+            elseif ($v >= 5.0 && $v <= 10.0) $q = 'mediocre';
+            else                               $q = 'mauvais';
+        } elseif (isset($seuils[$key])) {
+            [$s1, $s2, $s3, $s4] = $seuils[$key];
+            if      ($v <= $s1) $q = 'tres_bon';
+            elseif  ($v <= $s2) $q = 'bon';
+            elseif  ($v <= $s3) $q = 'passable';
+            elseif  ($v <= $s4) $q = 'mediocre';
+            else                $q = 'mauvais';
         }
-        return $qualite;
+
+        if ($q !== null && $ordre[$q] > $ordre[$qualite]) {
+            $qualite = $q;
+        }
     }
+
+    return $qualite;
+}
 
     private const SEUILS_VALIDITE = [
         'bandelette' => [

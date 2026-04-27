@@ -38,20 +38,26 @@
             @endauth
         </div>
 
-        <div class="flex gap-2 mt-2.5 pl-0.5 pointer-events-auto overflow-x-auto no-scrollbar">
-            <div class="pill active flex items-center gap-1.5 bg-white/95 backdrop-blur-md rounded-full px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-[0_2px_10px_rgba(0,0,0,0.08)] border-[1.5px] border-transparent cursor-pointer transition-all active:scale-95 select-none whitespace-nowrap [&.active]:border-current [&.active]:text-[#16987c] [&.active]:bg-[#16987c]/10">
-                <span class="w-[7px] h-[7px] rounded-full bg-[#16987c]"></span> Bonne
+        <div class="flex gap-1.5 mt-2.5 px-4 pointer-events-auto overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            <div data-quality="tres_bon" class="pill flex items-center gap-1 bg-white/95 backdrop-blur-md rounded-full px-2.5 py-1 text-[10px] font-semibold text-slate-500 shadow-sm border border-slate-100 cursor-pointer transition-all active:scale-95 select-none whitespace-nowrap [&.active]:border-[#3b82f6] [&.active]:text-[#3b82f6] [&.active]:bg-[#3b82f6]/10">
+                <span class="w-1.5 h-1.5 rounded-full bg-[#3b82f6]"></span> Très bon
             </div>
-            <div class="pill active flex items-center gap-1.5 bg-white/95 backdrop-blur-md rounded-full px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-[0_2px_10px_rgba(0,0,0,0.08)] border-[1.5px] border-transparent cursor-pointer transition-all active:scale-95 select-none whitespace-nowrap [&.active]:border-current [&.active]:text-amber-500 [&.active]:bg-amber-500/10">
-                <span class="w-[7px] h-[7px] rounded-full bg-amber-500"></span> Modérée
+            <div data-quality="bon" class="pill flex items-center gap-1 bg-white/95 backdrop-blur-md rounded-full px-2.5 py-1 text-[10px] font-semibold text-slate-500 shadow-sm border border-slate-100 cursor-pointer transition-all active:scale-95 select-none whitespace-nowrap [&.active]:border-[#10b981] [&.active]:text-[#10b981] [&.active]:bg-[#10b981]/10">
+                <span class="w-1.5 h-1.5 rounded-full bg-[#10b981]"></span> Bon
             </div>
-            <div class="pill active flex items-center gap-1.5 bg-white/95 backdrop-blur-md rounded-full px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-[0_2px_10px_rgba(0,0,0,0.08)] border-[1.5px] border-transparent cursor-pointer transition-all active:scale-95 select-none whitespace-nowrap [&.active]:border-current [&.active]:text-red-500 [&.active]:bg-red-500/10">
-                <span class="w-[7px] h-[7px] rounded-full bg-red-500"></span> Mauvaise
+            <div data-quality="passable" class="pill flex items-center gap-1 bg-white/95 backdrop-blur-md rounded-full px-2.5 py-1 text-[10px] font-semibold text-slate-500 shadow-sm border border-slate-100 cursor-pointer transition-all active:scale-95 select-none whitespace-nowrap [&.active]:border-[#eab308] [&.active]:text-[#eab308] [&.active]:bg-[#eab308]/10">
+                <span class="w-1.5 h-1.5 rounded-full bg-[#eab308]"></span> Passable
+            </div>
+            <div data-quality="mediocre" class="pill flex items-center gap-1 bg-white/95 backdrop-blur-md rounded-full px-2.5 py-1 text-[10px] font-semibold text-slate-500 shadow-sm border border-slate-100 cursor-pointer transition-all active:scale-95 select-none whitespace-nowrap [&.active]:border-[#f97316] [&.active]:text-[#f97316] [&.active]:bg-[#f97316]/10">
+                <span class="w-1.5 h-1.5 rounded-full bg-[#f97316]"></span> Médiocre
+            </div>
+            <div data-quality="mauvais" class="pill flex items-center gap-1 bg-white/95 backdrop-blur-md rounded-full px-2.5 py-1 text-[10px] font-semibold text-slate-500 shadow-sm border border-slate-100 cursor-pointer transition-all active:scale-95 select-none whitespace-nowrap [&.active]:border-[#ef4444] [&.active]:text-[#ef4444] [&.active]:bg-[#ef4444]/10">
+                <span class="w-1.5 h-1.5 rounded-full bg-[#ef4444]"></span> Mauvais
             </div>
         </div>
     </div>
 
-    <button id="btn-locate" class="absolute right-4 bottom-28 z-[1000] w-12 h-12 flex items-center justify-center rounded-full shadow-[0_4px_16px_rgba(0,0,0,0.15)] border border-white/80 bg-white/90 backdrop-blur-md text-[#222a60] active:bg-[#1565c0] active:text-white transition-colors cursor-pointer outline-none group">
+    <button id="btn-locate" class="absolute right-4 bottom-28 z-10 w-12 h-12 flex items-center justify-center rounded-full shadow-[0_4px_16px_rgba(0,0,0,0.15)] border border-white/80 bg-white/90 backdrop-blur-md text-[#222a60] active:bg-[#1565c0] active:text-white transition-colors cursor-pointer outline-none group">
         <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" class="transition-transform group-active:scale-95">
             <circle cx="12" cy="12" r="3"/>
             <path d="M12 2v3m0 14v3M2 12h3m14 0h3"/>

@@ -30,6 +30,7 @@ class MobileController extends Controller
                 'id'         => $p->analyses->first()->id,
                 'type'       => $p->analyses->first()->type,
                 'est_valide' => (bool) $p->analyses->first()->est_valide,
+                'qualite'    => $p->analyses->first()->qualite,
                 'user_name'  => trim(
                     ($p->analyses->first()->user?->firstname ?? '') . ' ' .
                         ($p->analyses->first()->user?->name ?? 'Participant')
