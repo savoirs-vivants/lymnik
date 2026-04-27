@@ -122,7 +122,7 @@
         window.mapPoints = @json($pointsJson ?? []);
         window.mapRivers = @json($riversJson ?? []);
         window.mapCapteurs = {!! $capteursJson ?? '[]' !!};
-        window.createAnalyseUrl = "{{ route('mobile.analyse.create') }}";
+        window.createAnalyseUrl = "{{ route('analyse.create') }}";
         window.userAuthenticated = {{ auth()->check() ? 'true' : 'false' }};
         window.loginUrl = "{{ route('login') }}";
     </script>
