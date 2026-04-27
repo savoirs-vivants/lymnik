@@ -98,7 +98,34 @@ document.addEventListener("DOMContentLoaded", () => {
     function selectType(type) {
         typeHidden.value = type;
         document.querySelectorAll(".type-card").forEach((c) => {
-            c.classList.toggle("selected", c.dataset.type === type);
+            const isSelected = c.dataset.type === type;
+            c.setAttribute("aria-checked", isSelected ? "true" : "false");
+            c.classList.toggle("selected", isSelected);
+
+            if (isSelected) {
+                c.classList.add("border-[#222a60]", "bg-blue-50/40");
+                c.classList.remove("border-slate-200", "bg-slate-50", "hover:border-slate-300", "hover:bg-white");
+            } else {
+                c.classList.remove("border-[#222a60]", "bg-blue-50/40");
+                c.classList.add("border-slate-200", "bg-slate-50", "hover:border-slate-300", "hover:bg-white");
+            }
+
+            const radioWrapper = c.querySelector(".w-4.h-4.rounded-full.border-2");
+            if (radioWrapper) {
+                if (isSelected) {
+                    radioWrapper.classList.add("border-[#222a60]");
+                    radioWrapper.classList.remove("border-slate-300");
+                } else {
+                    radioWrapper.classList.remove("border-[#222a60]");
+                    radioWrapper.classList.add("border-slate-300");
+                }
+
+                const dot = radioWrapper.querySelector("div");
+                if (dot) {
+                    dot.classList.toggle("opacity-100", isSelected);
+                    dot.classList.toggle("opacity-0", !isSelected);
+                }
+            }
         });
 
         if (["bandelette", "les_deux"].includes(type)) {

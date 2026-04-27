@@ -18,7 +18,7 @@ class AnalyseController extends Controller
         $coursDEauId = $request->query('cours_d_eau_id');
         $nomCoursEau = $request->query('nom_cours_eau');
 
-        return view('mobile.analyse.create', compact('lat', 'lng', 'coursDEauId', 'nomCoursEau'));
+        return view('analyse', compact('lat', 'lng', 'coursDEauId', 'nomCoursEau'));
     }
 
     public function store(StoreAnalyseRequest $request, CoursDEauService $service)
@@ -88,6 +88,11 @@ class AnalyseController extends Controller
             ]);
         });
 
+        $redirectTo = $request->input('redirect_to');
+        if ($redirectTo && is_string($redirectTo) && str_starts_with($redirectTo, '/') && !str_contains($redirectTo, '://')) {
+            return redirect($redirectTo)->with('success', 'Analyse enregistrée !');
+        }
+
         return redirect()->route('index_mobile')->with('success', 'Analyse enregistrée !');
     }
 
@@ -99,7 +104,7 @@ class AnalyseController extends Controller
     $seuils = [
         'nitrites'   => [0.03, 0.3,  0.5,  1.0],
         'nitrates'   => [2,    10,   25,   50],
-        'nitrate'    => [2,    10,   25,   50],   
+        'nitrate'    => [2,    10,   25,   50],
         'phosphate'  => [0.05, 0.2,  0.5,  1.0],
         'chlore'     => [25,   50,   100,  250],
         'ammoniaque' => [0.1,  0.5,  2.0,  5.0],

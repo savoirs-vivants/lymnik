@@ -162,6 +162,7 @@ document.addEventListener('DOMContentLoaded', () => {
         url.searchParams.set('lng', latlng.lng.toFixed(6));
         if (riverId) url.searchParams.set('cours_d_eau_id', riverId);
         if (rivNom)  url.searchParams.set('nom_cours_eau', rivNom);
+        url.searchParams.set('redirect_to', window.location.pathname);
         return url.toString();
     }
 
@@ -178,7 +179,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const capteurs = window.mapCapteurs ?? [];
 
     const QUALITE_COLORS = {
-    tres_bon : '#3b82f6',   
+    tres_bon : '#3b82f6',
     bon      : '#16987c',
     passable : '#eab308',
     mediocre : '#f97316',
@@ -321,14 +322,14 @@ points.forEach(p => {
             </div>
             <div class="grid grid-cols-3 gap-2">${casesHtml}</div>
             <div class="mt-4 border-t border-slate-100 pt-4">
-                <a href="${window.createAnalyseUrl}?point_id=${p.id}&lat=${p.latitude}&lng=${p.longitude}${p.cours_d_eau_id ? '&cours_d_eau_id=' + p.cours_d_eau_id : ''}"
+                <a href="${window.createAnalyseUrl}?point_id=${p.id}&lat=${p.latitude}&lng=${p.longitude}${p.cours_d_eau_id ? '&cours_d_eau_id=' + p.cours_d_eau_id : ''}&redirect_to=${encodeURIComponent(window.location.pathname)}"
                    class="flex items-center justify-center gap-2 bg-gradient-to-br from-[#1a7fc4] to-[#1565c0] text-white py-3.5 rounded-[14px] text-[14px] font-bold shadow-[0_4px_16px_rgba(21,101,192,0.25)] no-underline active:scale-[0.98] transition-transform">
                     <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
                     </svg>
                     Nouvelle mesure ici
                 </a>
-            </div>`;
+            </div>`
     }
 
     function populateCapteurSheet(c) {
