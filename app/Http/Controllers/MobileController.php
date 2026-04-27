@@ -63,15 +63,13 @@ class MobileController extends Controller
     {
         $user = Auth::user();
 
+        $isAdmin = $user->role === 'admin';
+
         $stats = [
             'analyses'    => \App\Models\Analyse::where('user_id', $user->id)->count(),
-            'validees'    => \App\Models\Analyse::where('user_id', $user->id)->where('est_valide', true)->count(),
             'points'      => \App\Models\Point::whereHas('analyses', fn($q) => $q->where('user_id', $user->id))->count(),
-            'cours_d_eau' => \App\Models\Point::whereHas('analyses', fn($q) => $q->where('user_id', $user->id))
-                ->distinct('cours_d_eau_id')
-                ->count('cours_d_eau_id'),
         ];
 
-        return view('mobile.profil', compact('stats'));
+        return view('mobile.profil', compact('stats', 'user', 'isAdmin'));
     }
 }
