@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CoursDEauController;
 use App\Http\Controllers\MobileController;
+use App\Http\Controllers\MapController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -38,4 +39,6 @@ Route::middleware('auth')->group(function () {
     Route::get('/backoffice',           [BackOfficeController::class, 'index'])->name('desktop.backoffice');
     Route::put('/backoffice/{user}',    [BackOfficeController::class, 'update'])->name('desktop.backoffice.update');
     Route::delete('/backoffice/users/{user}', [BackOfficeController::class, 'destroy'])->name('desktop.backoffice.destroy');
+
+    Route::get('/map', [MapController::class, 'index'])->name('desktop.map');
 });
