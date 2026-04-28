@@ -26,4 +26,9 @@ class Capteur extends Model
     {
         return $this->hasMany(Mesure::class);
     }
+
+    public function latestMesure()
+    {
+        return $this->hasOne(Mesure::class)->latestOfMany();
+    }
 }

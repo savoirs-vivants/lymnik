@@ -4,6 +4,7 @@ use App\Http\Controllers\BackOfficeController;
 use App\Http\Controllers\AnalyseController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CapteurController;
 use App\Http\Controllers\CoursDEauController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\MobileController;
@@ -41,4 +42,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/backoffice/users/{user}',  [BackOfficeController::class, 'destroy'])->name('backoffice.destroy');
 
     Route::get('/map', [MapController::class, 'index'])->name('map');
+
+    Route::get('/capteurs', [CapteurController::class, 'index'])->name('capteurs.index');
+    Route::get('/capteurs/{id}', [CapteurController::class, 'show'])->name('capteurs.show');
 });
