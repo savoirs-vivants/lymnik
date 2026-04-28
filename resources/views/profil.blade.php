@@ -172,7 +172,7 @@
                     <div class="w-2 h-2 rounded-full bg-[#16987c] shrink-0" title="Interface active"></div>
                 </div>
 
-                <a href="{{ url('index_web') }}"
+                <a href="{{ route('desktop.dashboard') }}"
                     class="flex items-center gap-3 p-3.5 no-underline transition-colors active:bg-slate-50 [touch-action:manipulation] tap-highlight-transparent">
                     <div
                         class="w-10 h-10 rounded-[12px] flex items-center justify-center shrink-0 bg-emerald-500/10 text-[#16987c]">
@@ -249,7 +249,7 @@
                 <span class="text-[10px] font-semibold text-slate-400 transition-colors group-[.active]:text-[#222a60]">Mes
                     analyses</span>
             </a>
-            <a href="{{ route('mobile.profil') }}"
+            <a href="{{ route('profil') }}"
                 class="active group flex flex-col items-center gap-[3px] cursor-pointer px-5 py-1 rounded-xl transition-colors active:bg-slate-100 select-none no-underline [touch-action:manipulation] tap-highlight-transparent">
                 <svg class="text-[#222a60] transition-colors" width="22" height="22" fill="none"
                     stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">

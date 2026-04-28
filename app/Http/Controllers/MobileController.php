@@ -59,17 +59,4 @@ class MobileController extends Controller
         return view('mobile.index', compact('pointsJson', 'riversJson', 'capteursJson'));
     }
 
-    public function profil()
-    {
-        $user = Auth::user();
-
-        $isAdmin = $user->role === 'admin';
-
-        $stats = [
-            'analyses'    => \App\Models\Analyse::where('user_id', $user->id)->count(),
-            'points'      => \App\Models\Point::whereHas('analyses', fn($q) => $q->where('user_id', $user->id))->count(),
-        ];
-
-        return view('mobile.profil', compact('stats', 'user', 'isAdmin'));
-    }
 }
