@@ -5,6 +5,7 @@ use App\Http\Controllers\AnalyseController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CoursDEauController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\MobileController;
 use App\Http\Controllers\MapController;
 
@@ -34,7 +35,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/mobile/mes-analyses', [AnalyseController::class, 'myAnalyses'])->name('mobile.analyses');
     Route::get('/mobile/profil', [MobileController::class, 'profil'])->name('mobile.profil');
 
-    Route::get('/dashboard', fn() => view('desktop.dashboard'))->name('desktop.dashboard');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('desktop.dashboard');
     Route::get('/profil', fn() => view('desktop.dashboard'))->name('desktop.profile');
 
     Route::get('/backoffice',           [BackOfficeController::class, 'index'])->name('desktop.backoffice');
