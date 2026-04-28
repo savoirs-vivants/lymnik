@@ -93,7 +93,7 @@ class AnalyseController extends Controller
             return redirect($redirectTo)->with('success', 'Analyse enregistrée !');
         }
 
-        return redirect()->route('index_mobile')->with('success', 'Analyse enregistrée !');
+        return redirect()->route('mobile')->with('success', 'Analyse enregistrée !');
     }
 
     private function calculerQualite(array $mesures): string

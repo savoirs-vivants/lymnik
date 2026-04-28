@@ -21,27 +21,24 @@ Route::post('/register', [AuthController::class, 'register']);
 
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middleware('auth');
 
-Route::get('/mobile', [MobileController::class, 'index'])->name('index_mobile');
-
-Route::get('/index_web', function () {
-    return view('web/dashboard');
-});
+Route::get('/mobile', [MobileController::class, 'index'])->name('mobile');
 
 Route::middleware('auth')->group(function () {
     Route::get('/analyse/create', [AnalyseController::class, 'create'])->name('analyse.create');
     Route::post('/analyse',       [AnalyseController::class, 'store'])->name('analyse.store');
 
-    Route::get('/profil', [ProfilController::class, 'profil'])->name('profil');
+    Route::get('/profil',          [ProfilController::class, 'profil'])->name('profil');
+    Route::get('/profil/modifier', [ProfilController::class, 'edit'])->name('profil.edit');
+    Route::put('/profil/modifier', [ProfilController::class, 'update'])->name('profil.update');
 
-    Route::get('/mobile/cours-d-eau/nearest', [CoursDEauController::class, 'nearest'])
-        ->name('mobile.cours-d-eau.nearest');
-    Route::get('/mobile/mes-analyses', [AnalyseController::class, 'myAnalyses'])->name('mobile.analyses');
+    Route::get('/mobile/cours-d-eau/nearest', [CoursDEauController::class, 'nearest'])->name('cours-d-eau.nearest');
+    Route::get('/mobile/mes-analyses', [AnalyseController::class, 'myAnalyses'])->name('analyses');
 
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('desktop.dashboard');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-    Route::get('/backoffice',           [BackOfficeController::class, 'index'])->name('desktop.backoffice');
-    Route::put('/backoffice/{user}',    [BackOfficeController::class, 'update'])->name('desktop.backoffice.update');
-    Route::delete('/backoffice/users/{user}', [BackOfficeController::class, 'destroy'])->name('desktop.backoffice.destroy');
+    Route::get('/backoffice',                  [BackOfficeController::class, 'index'])->name('backoffice');
+    Route::put('/backoffice/{user}',           [BackOfficeController::class, 'update'])->name('backoffice.update');
+    Route::delete('/backoffice/users/{user}',  [BackOfficeController::class, 'destroy'])->name('backoffice.destroy');
 
-    Route::get('/map', [MapController::class, 'index'])->name('desktop.map');
+    Route::get('/map', [MapController::class, 'index'])->name('map');
 });

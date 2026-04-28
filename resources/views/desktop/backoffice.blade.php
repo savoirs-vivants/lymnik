@@ -127,7 +127,7 @@
                         <tr id="edit-{{ $user->id }}"
                             class="hidden target:table-row bg-sv-blue/5 border-b border-sv-blue/10">
                             <td colspan="5" class="px-6 py-5">
-                                <form method="POST" action="{{ route('desktop.backoffice.update', $user) }}"
+                                <form method="POST" action="{{ route('backoffice.update', $user) }}"
                                     class="flex flex-wrap items-end gap-4">
                                     @csrf @method('PUT')
                                     <div class="flex flex-col gap-1 min-w-[160px]">
@@ -218,7 +218,7 @@
                             class="flex-1 flex items-center justify-center h-10 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-[13px] font-bold font-grotesk transition-colors cursor-pointer no-underline">
                             Annuler
                         </a>
-                        <form method="POST" action="{{ route('desktop.backoffice.destroy', $user) }}" class="flex-1">
+                        <form method="POST" action="{{ route('backoffice.destroy', $user) }}" class="flex-1">
                             @csrf @method('DELETE')
                             <button type="submit"
                                 class="w-full h-10 rounded-xl bg-red-500 hover:bg-red-600 text-white text-[13px] font-bold font-grotesk transition-colors cursor-pointer border-none outline-none">

@@ -62,7 +62,7 @@
                         <input type="hidden" name="point_id" value="{{ request('point_id') }}">
                     @endif
                     <input type="hidden" name="redirect_to"
-                        value="{{ old('redirect_to', request('redirect_to', route('index_mobile'))) }}">
+                        value="{{ old('redirect_to', request('redirect_to', route('mobile'))) }}">
 
                     {{-- SECTION 1 : Localisation --}}
                     <section aria-labelledby="section-1-title"
@@ -426,7 +426,7 @@
         window.initLng = parseFloat("{{ $lng ?? '7.7512' }}");
         window.initCoursDEauId = {{ $coursDEauId ? (int) $coursDEauId : 'null' }};
         window.initNomCoursEau = @json($nomCoursEau ?? null);
-        window.nearestRiverUrl = "{{ route('mobile.cours-d-eau.nearest') }}";
+        window.nearestRiverUrl = "{{ route('cours-d-eau.nearest') }}";
     </script>
 
     <script src="{{ asset('js/nouvelle-analyse.js') }}"></script>

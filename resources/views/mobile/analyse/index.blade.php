@@ -35,7 +35,7 @@
                     <div class="text-base font-bold text-slate-700">Aucune analyse</div>
                     <div class="text-[13px] text-slate-400 leading-relaxed max-w-[260px]">Retournez sur la carte et appuyez
                         sur un cours d'eau pour déposer votre première mesure.</div>
-                    <a href="{{ route('index_mobile') }}"
+                    <a href="{{ route('mobile') }}"
                         class="mt-2 px-6 py-3 bg-[#222a60] text-white rounded-xl text-[13px] font-bold no-underline active:scale-95 transition-transform">
                         Voir la carte
                     </a>
@@ -320,7 +320,7 @@ $hasPhoto = in_array($a['type'], ['photometre', 'les_deux']);
 
         <nav id="bottom-nav"
             class="absolute bottom-0 inset-x-0 z-30 bg-white/95 backdrop-blur-md border-t border-sv-blue/5 flex justify-around items-center pt-2.5 pb-[calc(10px+env(safe-area-inset-bottom,0px))]">
-            <a href="{{ route('index_mobile') }}"
+            <a href="{{ route('mobile') }}"
                 class="group flex flex-col items-center gap-[3px] cursor-pointer px-5 py-1 rounded-xl transition-colors active:bg-slate-100 select-none no-underline">
                 <svg class="text-slate-400 transition-colors group-[.active]:text-[#222a60]" width="22"
                     height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -341,7 +341,7 @@ $hasPhoto = in_array($a['type'], ['photometre', 'les_deux']);
                     class="text-[10px] font-semibold text-slate-400 transition-colors group-[.active]:text-[#222a60]">Retour
                     à l'accueil</span>
             </a>
-            <a href="{{ route('mobile.analyses') }}"
+            <a href="{{ route('analyses') }}"
                 class="active group flex flex-col items-center gap-[3px] cursor-pointer px-5 py-1 rounded-xl transition-colors active:bg-slate-100 select-none no-underline">
                 <svg class="text-[#222a60] transition-colors" width="22" height="22" fill="none"
                     stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">

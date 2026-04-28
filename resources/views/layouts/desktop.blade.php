@@ -32,7 +32,7 @@
 
             @include('desktop.partials._header')
 
-            <main class="flex-1 {{ request()->routeIs('desktop.map') ? 'p-0 overflow-hidden flex flex-col' : 'p-8 overflow-y-auto' }}">
+            <main class="flex-1 {{ request()->routeIs('map') ? 'p-0 overflow-hidden flex flex-col' : 'p-8 overflow-y-auto' }}">
                 @yield('content')
             </main>
 

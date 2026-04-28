@@ -14,7 +14,7 @@
             class="shrink-0 bg-gradient-to-br from-[#0d1533] via-[#0f1d42] to-[#1a2a6c] pt-[max(48px,env(safe-area-inset-top))] relative z-10">
 
             <div class="flex items-center justify-between px-4 pb-5">
-                <a href="{{ route('index_mobile') }}"
+                <a href="{{ route('mobile') }}"
                     class="w-[34px] h-[34px] rounded-full bg-white/10 flex items-center justify-center text-white no-underline cursor-pointer active:bg-white/20 transition-colors [touch-action:manipulation] tap-highlight-transparent shrink-0"
                     aria-label="Retour">
                     <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5"
@@ -172,7 +172,7 @@
                     <div class="w-2 h-2 rounded-full bg-[#16987c] shrink-0" title="Interface active"></div>
                 </div>
 
-                <a href="{{ route('desktop.dashboard') }}"
+                <a href="{{ route('dashboard') }}"
                     class="flex items-center gap-3 p-3.5 no-underline transition-colors active:bg-slate-50 [touch-action:manipulation] tap-highlight-transparent">
                     <div
                         class="w-10 h-10 rounded-[12px] flex items-center justify-center shrink-0 bg-emerald-500/10 text-[#16987c]">
@@ -229,7 +229,7 @@
 
         <nav id="bottom-nav"
             class="absolute bottom-0 inset-x-0 z-30 bg-white/95 backdrop-blur-md border-t border-sv-blue/5 flex justify-around items-center pt-2.5 pb-[calc(10px+env(safe-area-inset-bottom,0px))]">
-            <a href="{{ route('index_mobile') }}"
+            <a href="{{ route('mobile') }}"
                 class="group flex flex-col items-center gap-[3px] cursor-pointer px-5 py-1 rounded-xl transition-colors active:bg-slate-100 select-none no-underline [touch-action:manipulation] tap-highlight-transparent">
                 <svg class="text-slate-400 transition-colors group-[.active]:text-[#222a60]" width="22"
                     height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -239,7 +239,7 @@
                 <span
                     class="text-[10px] font-semibold text-slate-400 transition-colors group-[.active]:text-[#222a60]">Carte</span>
             </a>
-            <a href="{{ route('mobile.analyses') }}"
+            <a href="{{ route('analyses') }}"
                 class="group flex flex-col items-center gap-[3px] cursor-pointer px-5 py-1 rounded-xl transition-colors active:bg-slate-100 select-none no-underline [touch-action:manipulation] tap-highlight-transparent">
                 <svg class="text-slate-400 transition-colors group-[.active]:text-[#222a60]" width="22"
                     height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
