@@ -9,12 +9,18 @@ class Capteur extends Model
     protected $fillable = [
         'lat',
         'long',
+        'cours_d_eau_id',
         'turbidite',
         'conductivite',
         'temp_eau',
         'hauteur',
         'debit',
     ];
+
+    public function coursDEau()
+    {
+        return $this->belongsTo(CoursDEau::class);
+    }
 
     public function mesures()
     {
