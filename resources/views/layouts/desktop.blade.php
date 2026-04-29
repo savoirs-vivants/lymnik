@@ -18,9 +18,10 @@
         href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap"
         rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3"></script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    @vite(['resources/css/app.css', 'resources/js/app.js', 'resources/js/map.js', 'resources/js/dashboard.js', 'resources/js/analyses-desktop.js'])
+    @vite(['resources/css/app.css', 'resources/js/app.js', 'resources/js/map.js', 'resources/js/dashboard.js', 'resources/js/analyses-desktop.js', 'resources/js/statistiques.js'])
     @stack('styles')
 </head>
 
@@ -34,7 +35,7 @@
 
             @include('desktop.partials._header')
 
-            <main class="flex-1 {{ request()->routeIs('map') || request()->routeIs('analyses.index') ? 'p-0 overflow-hidden flex flex-col' : 'p-8 overflow-y-auto' }}">
+            <main class="flex-1 {{ request()->routeIs('map') || request()->routeIs('analyses.index') || request()->routeIs('statistiques.index') ? 'p-0 overflow-hidden flex flex-col' : 'p-8 overflow-y-auto' }}">
                 @yield('content')
             </main>
 

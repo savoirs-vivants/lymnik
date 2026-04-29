@@ -10,6 +10,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\MobileController;
 use App\Http\Controllers\MapController;
 use App\Http\Controllers\ProfilController;
+use App\Http\Controllers\StatistiqueController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -46,4 +47,6 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/capteurs', [CapteurController::class, 'index'])->name('capteurs.index');
     Route::get('/capteurs/{id}', [CapteurController::class, 'show'])->name('capteurs.show');
+
+    Route::get('/statistiques', [StatistiqueController::class, 'index'])->name('statistiques.index');
 });

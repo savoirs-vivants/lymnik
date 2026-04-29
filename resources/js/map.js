@@ -287,7 +287,7 @@ points.forEach(p => {
             photometre: {
                 phosphate: { label: 'Phosphate', unit: 'mg/L' },
                 nitrate:   { label: 'Nitrate',   unit: 'mg/L' },
-                ammoniac:  { label: 'Ammoniac',  unit: 'mg/L' },
+                ammoniaque:  { label: 'Ammoniaque',  unit: 'mg/L' },
             },
         };
 
