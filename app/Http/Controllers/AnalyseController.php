@@ -54,14 +54,14 @@ class AnalyseController extends Controller
 
     private function qualiteGlobale($counts): string
     {
-        $ordre = ['mauvais' => 4, 'mediocre' => 3, 'passable' => 2, 'bon' => 1, 'tres_bon' => 0];
-        $worst = 'tres_bon';
-        foreach ($counts as $q => $n) {
-            if ($n > 0 && isset($ordre[$q]) && $ordre[$q] > $ordre[$worst]) {
-                $worst = $q;
-            }
+        $valid = ['tres_bon', 'bon', 'passable', 'mediocre', 'mauvais'];
+        $best  = null;
+        $max   = 0;
+        foreach ($valid as $q) {
+            $n = $counts[$q] ?? 0;
+            if ($n > $max) { $max = $n; $best = $q; }
         }
-        return $worst;
+        return $best ?? 'tres_bon';
     }
 
     private function formatAnalyse(Analyse $a): array
