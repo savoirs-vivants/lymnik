@@ -12,6 +12,74 @@ use Illuminate\Support\Facades\DB;
 
 class AnalyseController extends Controller
 {
+    public function invalides()
+    {
+        $analyses = Analyse::with(['point.coursDEau', 'user'])
+            ->where('est_valide', false)
+            ->latest()
+            ->get()
+            ->map(fn($a) => $this->formatAnalyseInvalide($a));
+
+        return response()->json($analyses);
+    }
+
+    public function valider(Analyse $analyse)
+    {
+        $analyse->update(['est_valide' => true]);
+
+        return response()->json([
+            'ok'            => true,
+            'remaining'     => Analyse::where('est_valide', false)->count(),
+        ]);
+    }
+
+    private function formatAnalyseInvalide(Analyse $a): array
+    {
+        $mesures = is_string($a->mesures) ? json_decode($a->mesures, true) : ($a->mesures ?? []);
+        $b = $mesures['bandelette'] ?? [];
+        $p = $mesures['photometre'] ?? [];
+
+        $allMesures = [];
+        $labels = [
+            'nitrates'      => ['label' => 'Nitrates',       'unit' => 'mg/L'],
+            'nitrites'      => ['label' => 'Nitrites',        'unit' => 'mg/L'],
+            'durete_totale' => ['label' => 'Dureté totale',   'unit' => 'mg/L'],
+            'durete_carb'   => ['label' => 'Dureté carb.',    'unit' => 'mg/L'],
+            'ph'            => ['label' => 'pH',              'unit' => ''],
+            'chlore'        => ['label' => 'Chlore',          'unit' => 'mg/L'],
+        ];
+        foreach ($labels as $key => $meta) {
+            if (isset($b[$key])) {
+                $allMesures[] = ['label' => $meta['label'], 'value' => $b[$key], 'unit' => $meta['unit']];
+            }
+        }
+        $photoLabels = [
+            'phosphate'  => ['label' => 'Phosphate',  'unit' => 'mg/L'],
+            'nitrate'    => ['label' => 'Nitrate',     'unit' => 'mg/L'],
+            'ammoniaque' => ['label' => 'Ammoniaque',  'unit' => 'mg/L'],
+        ];
+        foreach ($photoLabels as $key => $meta) {
+            if (isset($p[$key])) {
+                $allMesures[] = ['label' => $meta['label'], 'value' => $p[$key], 'unit' => $meta['unit']];
+            }
+        }
+
+        return [
+            'id'          => $a->id,
+            'qualite'     => $a->qualite,
+            'type'        => $a->type,
+            'date'        => $a->created_at?->translatedFormat('d M Y'),
+            'time'        => $a->created_at?->format('H:i'),
+            'image'       => $a->image ? asset('storage/' . $a->image) : null,
+            'note'        => $mesures['note'] ?? null,
+            'mesures'     => $allMesures,
+            'cours_d_eau' => $a->point?->coursDEau?->nom ?? 'Inconnu',
+            'latitude'    => $a->point ? (float) $a->point->latitude  : null,
+            'longitude'   => $a->point ? (float) $a->point->longitude : null,
+            'user'        => trim(($a->user?->firstname ?? '') . ' ' . ($a->user?->name ?? '')),
+        ];
+    }
+
     public function index()
     {
         $coursDEaux = CoursDEau::whereHas('points.analyses')

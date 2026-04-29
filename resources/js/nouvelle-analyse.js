@@ -66,10 +66,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const phCamera = document.getElementById("ph-camera");
     const photoThumb = document.getElementById("photo-thumb");
 
-    phCamera.addEventListener("click", () => {
-        fileInput.click();
-    });
-
     fileInput.addEventListener("change", () => {
         const file = fileInput.files[0];
         if (!file) return;

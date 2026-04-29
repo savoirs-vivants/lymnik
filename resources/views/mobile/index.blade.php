@@ -172,6 +172,7 @@
             <textarea id="bt-console" class="w-full h-40 bg-[#1e1e1e] text-[#00ff00] font-mono text-xs p-3 rounded-xl outline-none resize-none shadow-inner" readonly>Prêt à scanner...</textarea>
         </div>
     </div>
+    @if (Auth::check())
     <nav id="bottom-nav" class="absolute bottom-0 inset-x-0 z-[15] bg-white/95 backdrop-blur-md border-t border-sv-blue/5 flex justify-around items-center pt-2.5 pb-[calc(10px+env(safe-area-inset-bottom,0px))] translate-y-0 [&.hidden-nav]:translate-y-full transition-transform duration-[380ms] ease-[cubic-bezier(0.34,1.1,0.64,1)]">
         <a href="{{ route('mobile')}}" class="nav-item active group flex flex-col items-center gap-[3px] cursor-pointer px-5 py-1 rounded-xl transition-colors active:bg-slate-100 select-none no-underline">
             <svg class="text-slate-400 transition-colors group-[.active]:text-sv-blue" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -199,6 +200,7 @@
             <span class="text-[10px] font-semibold text-slate-400 transition-colors group-active:text-sv-blue">Capteur</span>
         </button>
     </nav>
+    @endif
 </div>
 
 <script>

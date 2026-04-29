@@ -27,6 +27,8 @@ Route::get('/mobile', [MobileController::class, 'index'])->name('mobile');
 
 Route::middleware('auth')->group(function () {
     Route::get('/analyses', [AnalyseController::class, 'index'])->name('analyses.index');
+    Route::get('/analyses/invalides', [AnalyseController::class, 'invalides'])->name('analyses.invalides');
+    Route::patch('/analyse/{analyse}/valider', [AnalyseController::class, 'valider'])->name('analyse.valider');
     Route::get('/analyse/create', [AnalyseController::class, 'create'])->name('analyse.create');
     Route::post('/analyse',       [AnalyseController::class, 'store'])->name('analyse.store');
 
