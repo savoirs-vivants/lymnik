@@ -401,3 +401,14 @@
     font-size: 13px; font-weight: 700;
     color: #222a60;
 }
+
+.custom-point-marker {
+            width: 14px;
+            height: 14px;
+            background-color: #ef4444; 
+            border: 3px solid white;
+            border-radius: 50%;
+            box-shadow: 0 0 10px rgba(0,0,0,0.3);
+            margin-left: -7px;
+            margin-top: -7px;
+        }

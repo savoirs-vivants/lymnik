@@ -6,6 +6,8 @@ const qualiteConfig = window.__qualiteConfig || {};
 
 let activeChart = null;
 let activeId = null;
+let overlayMap = null;
+let overlayMarker = null;
 
 // =========================================================================
 // HELPERS (Fonctions utilitaires)
@@ -248,7 +250,7 @@ function renderTable(cd) {
 
         const detailBtnHTML = `
             <button onclick='openOverlay(${pt.id})' class="flex items-center justify-center gap-2 px-3 py-1.5 rounded-lg bg-blue-50 text-[#1565c0] hover:bg-[#1565c0] hover:text-white text-xs font-bold transition-colors w-full">
-                Historique ${analyses.length > 1 ? `(${analyses.length})` : ""}
+                Détails ${analyses.length > 1 ? `(${analyses.length})` : ""}
             </button>
         `;
 
@@ -286,8 +288,36 @@ window.openOverlay = function (pointId) {
     if (!pt) return;
 
     document.getElementById("overlay-title").textContent = pointLabel(pt);
-    document.getElementById("overlay-subtitle").textContent =
-        `${parseFloat(pt.latitude).toFixed(5)}, ${parseFloat(pt.longitude).toFixed(5)} · Historique complet (${pt.analyses.length} analyse${pt.analyses.length > 1 ? "s" : ""})`;
+    document.getElementById('overlay-subtitle').textContent =
+        `Coordonnées : ${parseFloat(pt.latitude).toFixed(5)}, ${parseFloat(pt.longitude).toFixed(5)} · Historique (${pt.analyses.length})`;
+
+    const lat = parseFloat(pt.latitude);
+    const lng = parseFloat(pt.longitude);
+
+    const pointIcon = L.divIcon({
+        className: 'custom-point-marker',
+        iconSize: [14, 14],
+    });
+
+    setTimeout(() => {
+        if (!overlayMap) {
+            overlayMap = L.map('overlay-map', {
+            }).setView([lat, lng], 15);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '© OpenStreetMap'
+            }).addTo(overlayMap);
+
+            overlayMarker = L.marker([lat, lng], { icon: pointIcon }).addTo(overlayMap);
+        } else {
+            overlayMap.setView([lat, lng], 15);
+            overlayMarker.setLatLng([lat, lng]);
+            overlayMarker.setIcon(pointIcon);
+
+            overlayMap.invalidateSize();
+        }
+    }, 50);
 
     const container = document.getElementById("overlay-content");
     container.innerHTML = pt.analyses

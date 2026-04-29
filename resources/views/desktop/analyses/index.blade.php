@@ -207,7 +207,7 @@
                     </svg>
                 </button>
             </div>
-
+            <div id="overlay-map" class="w-full h-48 shrink-0 bg-slate-200 border-b border-slate-100 relative z-0"></div>
             <div id="overlay-content" class="flex-1 overflow-y-auto p-8 space-y-6 bg-slate-50/30"></div>
         </div>
     </div>
