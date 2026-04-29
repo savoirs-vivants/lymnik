@@ -223,6 +223,7 @@ function renderChart(cd) {
     });
 }
 
+// ── Tableau des points (Affichage dynamique des résultats) ────────────────
 function renderTable(cd) {
     const tbody = document.getElementById("points-tbody");
     tbody.innerHTML = "";
@@ -231,7 +232,7 @@ function renderTable(cd) {
         const analyses = pt.analyses;
         if (!analyses.length) return;
 
-        const a = analyses[0];
+        const a = analyses[0]; // On prend la dernière mesure
 
         const ptLabel = pointLabel(pt);
         const coordLabel = `${parseFloat(pt.latitude).toFixed(5)}, ${parseFloat(pt.longitude).toFixed(5)}`;
@@ -243,14 +244,27 @@ function renderTable(cd) {
         const b = a.bandelette || {};
         const p = a.photometre || {};
 
+        // 1. Affichage du Point
         const pointDisplayHTML = `
             <div class="text-sm font-bold text-[#222a60] truncate max-w-[180px]">${ptLabel}</div>
             <div class="font-mono text-[10px] text-slate-400 mt-0.5">${coordLabel}</div>
         `;
 
+        // 2. Génération DYNAMIQUE des badges de résultats
+        let resultatsHtml = '<div class="flex flex-wrap gap-2">';
+
+        // Helper pour créer un petit badge
+        const makeBadge = (label, val, unit = "") => {
+            if (val === undefined || val === null || val === "") return "";
+            return `<div class="border border-slate-200 bg-white px-2 py-1 rounded-md text-[11px] text-slate-500 font-mono shadow-sm">
+                        ${label} <strong class="text-[#222a60] ml-1">${val}</strong> <span class="text-[9px] text-slate-400">${unit}</span>
+                    </div>`;
+        };
+
+        // 3. Bouton historique
         const detailBtnHTML = `
             <button onclick='openOverlay(${pt.id})' class="flex items-center justify-center gap-2 px-3 py-1.5 rounded-lg bg-blue-50 text-[#1565c0] hover:bg-[#1565c0] hover:text-white text-xs font-bold transition-colors w-full">
-                Détails ${analyses.length > 1 ? `(${analyses.length})` : ""}
+                Historique ${analyses.length > 1 ? `(${analyses.length})` : ""}
             </button>
         `;
 
@@ -263,11 +277,7 @@ function renderTable(cd) {
                 <span class="text-[11px] font-bold text-slate-600 bg-slate-100 border border-slate-200 px-2 py-1 rounded-md">${typeLabel(a.type)}</span>
             </td>
             <td class="py-4 pr-4 align-top">${qualiteBadgeHtml(a.qualite)}</td>
-            <td class="py-4 pr-4 align-top text-sm">${printData(b.nitrates)}</td>
-            <td class="py-4 pr-4 align-top text-sm">${printData(b.nitrites)}</td>
-            <td class="py-4 pr-4 align-top text-sm">${printData(b.ph)}</td>
-            <td class="py-4 pr-4 align-top text-sm">${printData(p.phosphate)}</td>
-            <td class="py-4 pr-4 align-top text-sm">${printData(p.ammoniaque)}</td>
+
             <td class="py-4 pr-4 align-top text-center w-28">
                 ${detailBtnHTML}
             </td>
@@ -288,28 +298,29 @@ window.openOverlay = function (pointId) {
     if (!pt) return;
 
     document.getElementById("overlay-title").textContent = pointLabel(pt);
-    document.getElementById('overlay-subtitle').textContent =
+    document.getElementById("overlay-subtitle").textContent =
         `Coordonnées : ${parseFloat(pt.latitude).toFixed(5)}, ${parseFloat(pt.longitude).toFixed(5)} · Historique (${pt.analyses.length})`;
 
     const lat = parseFloat(pt.latitude);
     const lng = parseFloat(pt.longitude);
 
     const pointIcon = L.divIcon({
-        className: 'custom-point-marker',
+        className: "custom-point-marker",
         iconSize: [14, 14],
     });
 
     setTimeout(() => {
         if (!overlayMap) {
-            overlayMap = L.map('overlay-map', {
-            }).setView([lat, lng], 15);
+            overlayMap = L.map("overlay-map", {}).setView([lat, lng], 15);
 
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
                 maxZoom: 19,
-                attribution: '© OpenStreetMap'
+                attribution: "© OpenStreetMap",
             }).addTo(overlayMap);
 
-            overlayMarker = L.marker([lat, lng], { icon: pointIcon }).addTo(overlayMap);
+            overlayMarker = L.marker([lat, lng], { icon: pointIcon }).addTo(
+                overlayMap,
+            );
         } else {
             overlayMap.setView([lat, lng], 15);
             overlayMarker.setLatLng([lat, lng]);

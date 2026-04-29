@@ -172,11 +172,6 @@
                                     <th class="pb-4 pl-4 pr-4">Point & Date</th>
                                     <th class="pb-4 pr-4">Type</th>
                                     <th class="pb-4 pr-4">Qualité</th>
-                                    <th class="pb-4 pr-4">Nitrates</th>
-                                    <th class="pb-4 pr-4">Nitrites</th>
-                                    <th class="pb-4 pr-4">pH</th>
-                                    <th class="pb-4 pr-4">Phosphate</th>
-                                    <th class="pb-4 pr-4">Ammoniaque</th>
                                     <th class="pb-4 pr-4 text-center">Action</th>
                                 </tr>
                             </thead>
