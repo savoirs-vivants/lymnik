@@ -429,4 +429,60 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     updateDashboard();
+
+    window.exportData = function (format) {
+        const selectedRivers = Array.from(
+            document.querySelectorAll(".filter-river:checked"),
+        ).map((el) => el.value);
+        const dateStart = document.getElementById("date-start").value;
+        const dateEnd = document.getElementById("date-end").value;
+
+        const form = document.createElement("form");
+        form.method = "POST";
+        form.action = "/statistiques/export";
+
+        const csrfToken = document.querySelector(
+            'meta[name="csrf-token"]',
+        )?.content;
+        if (csrfToken) {
+            const csrfInput = document.createElement("input");
+            csrfInput.type = "hidden";
+            csrfInput.name = "_token";
+            csrfInput.value = csrfToken;
+            form.appendChild(csrfInput);
+        }
+
+        const formatInput = document.createElement("input");
+        formatInput.type = "hidden";
+        formatInput.name = "format";
+        formatInput.value = format;
+        form.appendChild(formatInput);
+
+        if (dateStart) {
+            const startInput = document.createElement("input");
+            startInput.type = "hidden";
+            startInput.name = "date_start";
+            startInput.value = dateStart;
+            form.appendChild(startInput);
+        }
+        if (dateEnd) {
+            const endInput = document.createElement("input");
+            endInput.type = "hidden";
+            endInput.name = "date_end";
+            endInput.value = dateEnd;
+            form.appendChild(endInput);
+        }
+
+        selectedRivers.forEach((riverId) => {
+            const riverInput = document.createElement("input");
+            riverInput.type = "hidden";
+            riverInput.name = "rivers[]";
+            riverInput.value = riverId;
+            form.appendChild(riverInput);
+        });
+
+        document.body.appendChild(form);
+        form.submit();
+        document.body.removeChild(form);
+    };
 });

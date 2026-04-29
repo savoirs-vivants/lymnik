@@ -49,4 +49,5 @@ Route::middleware('auth')->group(function () {
     Route::get('/capteurs/{id}', [CapteurController::class, 'show'])->name('capteurs.show');
 
     Route::get('/statistiques', [StatistiqueController::class, 'index'])->name('statistiques.index');
+    Route::post('/statistiques/export', [App\Http\Controllers\StatistiqueController::class, 'export'])->name('statistiques.export');
 });
