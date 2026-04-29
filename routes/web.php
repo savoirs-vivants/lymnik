@@ -25,6 +25,7 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middl
 Route::get('/mobile', [MobileController::class, 'index'])->name('mobile');
 
 Route::middleware('auth')->group(function () {
+    Route::get('/analyses', [AnalyseController::class, 'index'])->name('analyses.index');
     Route::get('/analyse/create', [AnalyseController::class, 'create'])->name('analyse.create');
     Route::post('/analyse',       [AnalyseController::class, 'store'])->name('analyse.store');
 

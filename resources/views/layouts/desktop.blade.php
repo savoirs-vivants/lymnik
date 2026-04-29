@@ -18,7 +18,7 @@
         href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap"
         rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    @vite(['resources/css/app.css', 'resources/js/app.js', 'resources/js/map.js', 'resources/js/dashboard.js'])
+    @vite(['resources/css/app.css', 'resources/js/app.js', 'resources/js/map.js', 'resources/js/dashboard.js', 'resources/js/analyses-desktop.js'])
     @stack('styles')
 </head>
 
@@ -32,7 +32,7 @@
 
             @include('desktop.partials._header')
 
-            <main class="flex-1 {{ request()->routeIs('map') ? 'p-0 overflow-hidden flex flex-col' : 'p-8 overflow-y-auto' }}">
+            <main class="flex-1 {{ request()->routeIs('map') || request()->routeIs('analyses.index') ? 'p-0 overflow-hidden flex flex-col' : 'p-8 overflow-y-auto' }}">
                 @yield('content')
             </main>
 

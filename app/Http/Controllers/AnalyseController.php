@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Analyse;
+use App\Models\CoursDEau;
 use App\Models\Point;
 use App\Services\CoursDEauService;
 use App\Http\Requests\StoreAnalyseRequest;
@@ -11,6 +12,77 @@ use Illuminate\Support\Facades\DB;
 
 class AnalyseController extends Controller
 {
+    public function index()
+    {
+        $coursDEaux = CoursDEau::whereHas('points.analyses')
+            ->with(['points' => function ($q) {
+                $q->whereHas('analyses')
+                  ->with(['analyses' => function ($q2) {
+                      $q2->latest()->with('user');
+                  }]);
+            }])
+            ->orderBy('nom')
+            ->get()
+            ->map(function ($cd) {
+                $allAnalyses = $cd->points->flatMap->analyses;
+                $qualiteCounts = $allAnalyses->countBy('qualite');
+
+                return [
+                    'id'             => $cd->id,
+                    'nom'            => $cd->nom,
+                    'type_cours'     => $cd->type_cours,
+                    'total_analyses' => $allAnalyses->count(),
+                    'total_points'   => $cd->points->count(),
+                    'qualite_counts' => $qualiteCounts,
+                    'qualite_globale' => $this->qualiteGlobale($qualiteCounts),
+                    'derniere_date'  => $allAnalyses->sortByDesc('created_at')->first()?->created_at,
+                    'points'         => $cd->points->map(function ($pt) {
+                        $analyses = $pt->analyses->sortByDesc('created_at')->values();
+                        return [
+                            'id'        => $pt->id,
+                            'latitude'  => $pt->latitude,
+                            'longitude' => $pt->longitude,
+                            'ville'     => $pt->ville,
+                            'analyses'  => $analyses->map(fn($a) => $this->formatAnalyse($a)),
+                        ];
+                    })->values(),
+                ];
+            });
+
+        return view('desktop.analyses.index', compact('coursDEaux'));
+    }
+
+    private function qualiteGlobale($counts): string
+    {
+        $ordre = ['mauvais' => 4, 'mediocre' => 3, 'passable' => 2, 'bon' => 1, 'tres_bon' => 0];
+        $worst = 'tres_bon';
+        foreach ($counts as $q => $n) {
+            if ($n > 0 && isset($ordre[$q]) && $ordre[$q] > $ordre[$worst]) {
+                $worst = $q;
+            }
+        }
+        return $worst;
+    }
+
+    private function formatAnalyse(Analyse $a): array
+    {
+        $mesures = is_string($a->mesures) ? json_decode($a->mesures, true) : ($a->mesures ?? []);
+        return [
+            'id'         => $a->id,
+            'type'       => $a->type,
+            'qualite'    => $a->qualite,
+            'est_valide' => (bool) $a->est_valide,
+            'image'      => $a->image ? asset('storage/' . $a->image) : null,
+            'note'       => $mesures['note'] ?? null,
+            'bandelette' => $mesures['bandelette'] ?? null,
+            'photometre' => $mesures['photometre'] ?? null,
+            'user'       => $a->user?->firstname . ' ' . $a->user?->name,
+            'date'       => $a->created_at?->translatedFormat('d M Y'),
+            'time'       => $a->created_at?->format('H:i'),
+            'created_at' => $a->created_at?->toISOString(),
+        ];
+    }
+
     public function create(\Illuminate\Http\Request $request)
     {
         $lat         = $request->query('lat');
