@@ -34,28 +34,30 @@
 </div>
 
 {{-- Infos capteur + statut --}}
-<div class="bg-white rounded-2xl border border-slate-100 shadow-[0_2px_12px_rgba(34,42,96,0.06)] p-5 mb-6 flex flex-wrap items-center gap-6">
-    <div>
-        <p class="text-[9px] font-mono font-bold uppercase tracking-widest text-slate-400 mb-1">Cours d'eau</p>
-        <p class="text-sm font-semibold text-slate-800">{{ $capteur->coursDEau->nom ?? '—' }}</p>
+<div class="bg-white rounded-2xl border border-slate-100 shadow-[0_2px_12px_rgba(34,42,96,0.06)] p-4 sm:p-5 mb-6">
+    <div class="flex flex-wrap items-center gap-4 sm:gap-6">
+        <div>
+            <p class="text-[9px] font-mono font-bold uppercase tracking-widest text-slate-400 mb-1">Cours d'eau</p>
+            <p class="text-sm font-semibold text-slate-800">{{ $capteur->coursDEau->nom ?? '—' }}</p>
+        </div>
+        <div>
+            <p class="text-[9px] font-mono font-bold uppercase tracking-widest text-slate-400 mb-1">Coordonnées</p>
+            <p class="font-mono text-xs sm:text-sm text-slate-600">{{ $capteur->lat }}, {{ $capteur->long }}</p>
+        </div>
+        <div>
+            <p class="text-[9px] font-mono font-bold uppercase tracking-widest text-slate-400 mb-1">Mesures (50 dern.)</p>
+            <p class="text-sm font-semibold text-slate-800">{{ $mesures->count() }}</p>
+        </div>
+        @if ($derniere)
+        <div>
+            <p class="text-[9px] font-mono font-bold uppercase tracking-widest text-slate-400 mb-1">Dernière mesure</p>
+            <p class="text-sm font-semibold text-slate-800">{{ $derniere->created_at->diffForHumans() }}</p>
+        </div>
+        @endif
     </div>
-    <div>
-        <p class="text-[9px] font-mono font-bold uppercase tracking-widest text-slate-400 mb-1">Coordonnées</p>
-        <p class="font-mono text-sm text-slate-600">{{ $capteur->lat }}, {{ $capteur->long }}</p>
-    </div>
-    <div>
-        <p class="text-[9px] font-mono font-bold uppercase tracking-widest text-slate-400 mb-1">Mesures (50 dern.)</p>
-        <p class="text-sm font-semibold text-slate-800">{{ $mesures->count() }}</p>
-    </div>
-    @if ($derniere)
-    <div>
-        <p class="text-[9px] font-mono font-bold uppercase tracking-widest text-slate-400 mb-1">Dernière mesure</p>
-        <p class="text-sm font-semibold text-slate-800">{{ $derniere->created_at->diffForHumans() }}</p>
-    </div>
-    @endif
-    <div class="ml-auto">
+    <div class="mt-4 pt-4 border-t border-slate-100">
         <a href="{{ route('capteurs.index') }}"
-            class="flex items-center gap-2 px-4 py-2 rounded-xl border border-slate-200 text-sm font-semibold text-slate-600 hover:bg-slate-50 transition-colors no-underline">
+            class="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-slate-200 text-sm font-semibold text-slate-600 hover:bg-slate-50 transition-colors no-underline">
             <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
             </svg>

@@ -51,10 +51,21 @@
         ];
     @endphp
 
-    <div class="flex h-[calc(100vh-80px)] overflow-hidden">
+    <div id="mobile-analyses-nav"
+        class="lg:hidden hidden items-center gap-3 px-4 py-3 bg-white border-b border-slate-100 shrink-0 z-10">
+        <button onclick="showAnalysesList()" class="flex items-center gap-1.5 text-sm font-semibold text-[#222a60] shrink-0">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+            </svg>
+            Liste
+        </button>
+        <span id="mobile-detail-title" class="text-sm font-bold text-slate-700 truncate"></span>
+    </div>
 
-        <aside
-            class="w-80 flex-shrink-0 border-r border-slate-100 bg-white flex flex-col h-full overflow-hidden shadow-[2px_0_10px_rgba(0,0,0,0.02)] z-10">
+    <div class="flex flex-col lg:flex-row flex-1 overflow-hidden">
+
+        <aside id="analyses-aside"
+            class="w-full lg:w-80 flex-shrink-0 border-r border-slate-100 bg-white flex flex-col flex-1 lg:flex-none overflow-hidden shadow-[2px_0_10px_rgba(0,0,0,0.02)] z-10">
 
             <div class="p-5 border-b border-slate-100 space-y-3">
                 <div class="relative">
@@ -115,7 +126,7 @@
             </div>
         </aside>
 
-        <div class="flex-1 overflow-y-auto bg-slate-50/50 relative">
+        <div id="analyses-detail" class="hidden lg:flex flex-col flex-1 overflow-y-auto bg-slate-50/50 relative">
 
             <div id="empty-state" class="absolute inset-0 flex flex-col items-center justify-center text-center px-8 z-10">
                 <div
@@ -131,40 +142,40 @@
                     l'historique complet de ses analyses.</p>
             </div>
 
-            <div id="detail-panel" class="hidden max-w-6xl mx-auto p-8 lg:p-10 space-y-8">
+            <div id="detail-panel" class="hidden max-w-6xl mx-auto p-4 sm:p-6 lg:p-10 space-y-6 sm:space-y-8">
 
                 <div
-                    class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm">
+                    class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-4 sm:p-6 rounded-2xl sm:rounded-[2rem] border border-slate-100 shadow-sm">
                     <div>
-                        <div class="flex items-center gap-4 mb-2">
-                            <h2 id="detail-nom" class="text-3xl font-black text-[#222a60] font-grotesk"></h2>
+                        <div class="flex flex-wrap items-center gap-2 sm:gap-4 mb-2">
+                            <h2 id="detail-nom" class="text-xl sm:text-3xl font-black text-[#222a60] font-grotesk"></h2>
                             <span id="detail-qualite-badge"
                                 class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider"></span>
                         </div>
-                        <p id="detail-meta" class="text-sm text-slate-500 font-mono"></p>
+                        <p id="detail-meta" class="text-xs sm:text-sm text-slate-500 font-mono"></p>
                     </div>
                 </div>
 
-                <div id="detail-kpis" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4"></div>
+                <div id="detail-kpis" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4"></div>
 
                 <div
-                    class="bg-white rounded-[2rem] border border-slate-100 shadow-[0_4px_20px_rgba(34,42,96,0.03)] p-6 lg:p-8">
-                    <div class="flex items-center justify-between mb-6">
-                        <h3 class="text-lg font-bold text-[#222a60]">Évolution de la qualité</h3>
+                    class="bg-white rounded-2xl sm:rounded-[2rem] border border-slate-100 shadow-[0_4px_20px_rgba(34,42,96,0.03)] p-4 sm:p-6 lg:p-8">
+                    <div class="flex items-center justify-between mb-4 sm:mb-6">
+                        <h3 class="text-base sm:text-lg font-bold text-[#222a60]">Évolution de la qualité</h3>
                         <span
-                            class="text-[11px] font-mono font-bold uppercase tracking-widest text-slate-400">Chronologique</span>
+                            class="text-[11px] font-mono font-bold uppercase tracking-widest text-slate-400 hidden sm:block">Chronologique</span>
                     </div>
-                    <div class="relative w-full h-[250px]">
+                    <div class="relative w-full h-[200px] sm:h-[250px]">
                         <canvas id="qualite-chart"></canvas>
                     </div>
                 </div>
 
                 <div
-                    class="bg-white rounded-[2rem] border border-slate-100 shadow-[0_4px_20px_rgba(34,42,96,0.03)] overflow-hidden">
-                    <div class="p-6 lg:p-8 border-b border-slate-50">
-                        <h3 class="text-lg font-bold text-[#222a60]">Analyses détaillées par point de mesure</h3>
+                    class="bg-white rounded-2xl sm:rounded-[2rem] border border-slate-100 shadow-[0_4px_20px_rgba(34,42,96,0.03)] overflow-hidden">
+                    <div class="p-4 sm:p-6 lg:p-8 border-b border-slate-50">
+                        <h3 class="text-sm sm:text-lg font-bold text-[#222a60]">Analyses détaillées par point de mesure</h3>
                     </div>
-                    <div class="overflow-x-auto p-4">
+                    <div class="overflow-x-auto p-2 sm:p-4">
                         <table class="w-full text-sm">
                             <thead>
                                 <tr
@@ -185,25 +196,30 @@
     </div>
 
     <div id="point-overlay" class="fixed inset-0 z-50 hidden">
-        <div class="absolute inset-0 bg-[#0f1d42]/60 backdrop-blur-sm transition-opacity" onclick="closeOverlay()"></div>
+        <div class="absolute inset-0 bg-[#0f1d42]/60 backdrop-blur-sm transition-opacity hidden sm:block"
+            onclick="closeOverlay()"></div>
         <div
-            class="absolute right-0 top-0 h-full w-full max-w-xl bg-white shadow-2xl flex flex-col overflow-hidden transform transition-transform">
+            class="absolute right-0 top-0 h-full w-full sm:max-w-xl bg-white shadow-2xl flex flex-col overflow-hidden transform transition-transform">
 
-            <div class="flex items-center justify-between px-8 py-6 border-b border-slate-100 bg-slate-50/50">
-                <div>
-                    <h3 id="overlay-title" class="text-xl font-black text-[#222a60] font-grotesk"></h3>
-                    <p id="overlay-subtitle" class="text-xs text-slate-500 font-mono mt-1"></p>
+            <div
+                class="flex items-center justify-between px-4 sm:px-8 py-4 sm:py-6 border-b border-slate-100 bg-slate-50/50">
+                <div class="min-w-0 flex-1 mr-3">
+                    <h3 id="overlay-title" class="text-base sm:text-xl font-black text-[#222a60] font-grotesk truncate">
+                    </h3>
+                    <p id="overlay-subtitle" class="text-[10px] sm:text-xs text-slate-500 font-mono mt-1 truncate"></p>
                 </div>
                 <button onclick="closeOverlay()"
-                    class="w-10 h-10 rounded-full bg-white border border-slate-200 hover:bg-slate-100 flex items-center justify-center transition-colors shadow-sm text-slate-500">
-                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5"
+                    class="shrink-0 w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white border border-slate-200 hover:bg-slate-100 flex items-center justify-center transition-colors shadow-sm text-slate-500">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5"
                         viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
                     </svg>
                 </button>
             </div>
-            <div id="overlay-map" class="w-full h-48 shrink-0 bg-slate-200 border-b border-slate-100 relative z-0"></div>
-            <div id="overlay-content" class="flex-1 overflow-y-auto p-8 space-y-6 bg-slate-50/30"></div>
+            <div id="overlay-map"
+                class="w-full h-40 sm:h-48 shrink-0 bg-slate-200 border-b border-slate-100 relative z-0"></div>
+            <div id="overlay-content" class="flex-1 overflow-y-auto p-4 sm:p-8 space-y-4 sm:space-y-6 bg-slate-50/30">
+            </div>
         </div>
     </div>
 

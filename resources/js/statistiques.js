@@ -485,4 +485,20 @@ document.addEventListener("DOMContentLoaded", function () {
         form.submit();
         document.body.removeChild(form);
     };
+
+    let _statsFiltersOpen = false;
+    window.toggleStatsFilters = function () {
+        _statsFiltersOpen = !_statsFiltersOpen;
+        const aside = document.getElementById("stats-aside");
+        const backdrop = document.getElementById("stats-filters-backdrop");
+        if (_statsFiltersOpen) {
+            aside.classList.remove("-translate-x-full");
+            backdrop.classList.remove("hidden");
+            document.body.classList.add("overflow-hidden");
+        } else {
+            aside.classList.add("-translate-x-full");
+            backdrop.classList.add("hidden");
+            document.body.classList.remove("overflow-hidden");
+        }
+    };
 });
