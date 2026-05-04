@@ -7,6 +7,7 @@ use App\Models\CoursDEau;
 use App\Models\Point;
 use App\Services\CoursDEauService;
 use App\Http\Requests\StoreAnalyseRequest;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -80,14 +81,33 @@ class AnalyseController extends Controller
         ];
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $coursDEaux = CoursDEau::whereHas('points.analyses')
-            ->with(['points' => function ($q) {
-                $q->whereHas('analyses')
-                  ->with(['analyses' => function ($q2) {
-                      $q2->latest()->with('user');
-                  }]);
+        $mode = $request->query('mode', 'participants');
+
+        $coursDEaux = CoursDEau::whereHas('points.analyses', function ($q) use ($mode) {
+                if ($mode === 'campagnes') {
+                    $q->whereNotNull('session_id')->whereNotNull('participant_id');
+                } else {
+                    $q->whereNull('session_id')->whereNull('participant_id');
+                }
+            })
+            ->with(['points' => function ($q) use ($mode) {
+                $q->whereHas('analyses', function ($q2) use ($mode) {
+                    if ($mode === 'campagnes') {
+                        $q2->whereNotNull('session_id')->whereNotNull('participant_id');
+                    } else {
+                        $q2->whereNull('session_id')->whereNull('participant_id');
+                    }
+                })
+                ->with(['analyses' => function ($q3) use ($mode) {
+                    if ($mode === 'campagnes') {
+                        $q3->whereNotNull('session_id')->whereNotNull('participant_id');
+                    } else {
+                        $q3->whereNull('session_id')->whereNull('participant_id');
+                    }
+                    $q3->latest()->with('user');
+                }]);
             }])
             ->orderBy('nom')
             ->get()
@@ -96,15 +116,15 @@ class AnalyseController extends Controller
                 $qualiteCounts = $allAnalyses->countBy('qualite');
 
                 return [
-                    'id'             => $cd->id,
-                    'nom'            => $cd->nom,
-                    'type_cours'     => $cd->type_cours,
-                    'total_analyses' => $allAnalyses->count(),
-                    'total_points'   => $cd->points->count(),
-                    'qualite_counts' => $qualiteCounts,
+                    'id'              => $cd->id,
+                    'nom'             => $cd->nom,
+                    'type_cours'      => $cd->type_cours,
+                    'total_analyses'  => $allAnalyses->count(),
+                    'total_points'    => $cd->points->count(),
+                    'qualite_counts'  => $qualiteCounts,
                     'qualite_globale' => $this->qualiteGlobale($qualiteCounts),
-                    'derniere_date'  => $allAnalyses->sortByDesc('created_at')->first()?->created_at,
-                    'points'         => $cd->points->map(function ($pt) {
+                    'derniere_date'   => $allAnalyses->sortByDesc('created_at')->first()?->created_at,
+                    'points'          => $cd->points->map(function ($pt) {
                         $analyses = $pt->analyses->sortByDesc('created_at')->values();
                         return [
                             'id'        => $pt->id,
@@ -117,7 +137,7 @@ class AnalyseController extends Controller
                 ];
             });
 
-        return view('desktop.analyses.index', compact('coursDEaux'));
+        return view('desktop.analyses.index', compact('coursDEaux', 'mode'));
     }
 
     private function qualiteGlobale($counts): string
@@ -148,6 +168,8 @@ class AnalyseController extends Controller
             'date'       => $a->created_at?->translatedFormat('d M Y'),
             'time'       => $a->created_at?->format('H:i'),
             'created_at' => $a->created_at?->toISOString(),
+            'session_id'     => $a->session_id,
+            'participant_id' => $a->participant_id,
         ];
     }
 
@@ -282,17 +304,17 @@ class AnalyseController extends Controller
 
     private const SEUILS_VALIDITE = [
         'bandelette' => [
-            'nitrates'      => 500,
-            'nitrites'      => 10,
+            'nitrates'      => 50,
+            'nitrites'      => 1,
             'durete_totale' => 375,
             'durete_carb'   => 357,
-            'ph'            => 14,
-            'chlore'        => 5.0,
+            'ph'            => 20,
+            'chlore'        => 500,
         ],
         'photometre' => [
             'ammoniaque'  => 5,
-            'nitrate'   => 500,
-            'phosphate' => 5,
+            'nitrate'   => 50,
+            'phosphate' => 1,
         ],
     ];
 
