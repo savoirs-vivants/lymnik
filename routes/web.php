@@ -60,6 +60,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/campagne', [CampagneController::class, 'store'])->name('campagne.store');
 
     Route::get('/backoffice',                  [BackOfficeController::class, 'index'])->name('backoffice.index');
+    Route::post('/backoffice/users',           [BackOfficeController::class, 'store'])->name('backoffice.store');
     Route::get('/backoffice/users/{id}',       [BackofficeController::class, 'showUser'])->name('backoffice.show');
     Route::put('/backoffice/{user}',           [BackOfficeController::class, 'update'])->name('backoffice.update');
     Route::delete('/backoffice/users/{user}',  [BackOfficeController::class, 'destroy'])->name('backoffice.destroy');

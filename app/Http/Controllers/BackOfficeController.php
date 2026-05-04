@@ -8,6 +8,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Hash;
 
 class BackOfficeController extends Controller
 {
@@ -47,13 +48,34 @@ class BackOfficeController extends Controller
         ));
     }
 
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'firstname' => ['required', 'string', 'max:100'],
+            'name'      => ['required', 'string', 'max:100'],
+            'email'     => ['required', 'email', 'unique:users,email'],
+            'password'  => ['required', 'string', 'min:8'],
+            'role'      => ['nullable', 'string', 'in:admin,participant'],
+        ]);
+
+        $validated['password'] = Hash::make($validated['password']);
+
+        if (empty($validated['role'])) {
+            $validated['role'] = 'participant';
+        }
+
+        User::create($validated);
+
+        return back()->with('success', 'Le nouvel utilisateur a été créé avec succès.');
+    }
+
     public function update(Request $request, User $user)
     {
         $validated = $request->validate([
             'firstname' => ['required', 'string', 'max:100'],
             'name'      => ['required', 'string', 'max:100'],
             'email'     => ['required', 'email', Rule::unique('users')->ignore($user->id)],
-            'role'      => ['nullable', 'string', 'in:admin,moderateur,utilisateur'],
+            'role'      => ['nullable', 'string', 'in:admin,participant'],
         ]);
 
         $user->update($validated);

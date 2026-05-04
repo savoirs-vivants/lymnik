@@ -31,12 +31,16 @@
 
     <div class="bg-white rounded-2xl shadow-[0_2px_16px_rgba(34,42,96,0.07)] border border-slate-100 overflow-hidden">
 
-        <div class="px-4 sm:px-6 py-4 border-b border-slate-100 flex items-center gap-3">
+        <div class="px-4 sm:px-6 py-4 border-b border-slate-100 flex items-center justify-between gap-3">
             <div class="flex-1">
                 <h2 class="text-[14px] font-bold text-sv-blue font-grotesk">Comptes utilisateurs</h2>
                 <p class="text-[11px] text-slate-400 mt-0.5 font-grotesk">Modifier les informations ou supprimer un compte
                 </p>
             </div>
+            <a href="#create-user"
+                class="h-9 px-4 bg-[#16987C] hover:bg-[#138a6f] text-white text-[13px] font-bold font-grotesk rounded-lg transition-colors flex items-center no-underline">
+                + Ajouter
+            </a>
         </div>
 
         <div class="overflow-x-auto">
@@ -87,10 +91,9 @@
                                 @php
                                     $roleColors = [
                                         'admin' => 'bg-sv-blue/10 text-sv-blue',
-                                        'moderateur' => 'bg-sv-green/10 text-sv-green',
-                                        'utilisateur' => 'bg-slate-100 text-slate-500',
+                                        'participant' => 'bg-sv-green/10 text-sv-green',
                                     ];
-                                    $role = $user->role ?? 'utilisateur';
+                                    $role = $user->role ?? 'participant';
                                     $cls = $roleColors[$role] ?? 'bg-slate-100 text-slate-500';
                                 @endphp
                                 <span
@@ -158,9 +161,9 @@
                                             class="text-[10px] font-mono font-bold uppercase tracking-widest text-slate-400">Rôle</label>
                                         <select name="role"
                                             class="h-9 px-3 bg-white border border-slate-200 rounded-lg text-sm text-slate-800 font-grotesk focus:outline-none focus:ring-2 focus:ring-sv-blue/20 focus:border-sv-blue/40 transition-all cursor-pointer">
-                                            @foreach (['utilisateur', 'moderateur', 'admin'] as $r)
+                                            @foreach (['participant', 'admin'] as $r)
                                                 <option value="{{ $r }}"
-                                                    {{ ($user->role ?? 'utilisateur') === $r ? 'selected' : '' }}>
+                                                    {{ ($user->role ?? 'participant') === $r ? 'selected' : '' }}>
                                                     {{ ucfirst($r) }}
                                                 </option>
                                             @endforeach
@@ -235,4 +238,69 @@
         @endif
     @endforeach
 
+    <div id="create-user" class="hidden target:flex fixed inset-0 z-50 items-center justify-center p-4">
+        <a href="#!" class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm cursor-default"></a>
+
+        <div class="relative bg-white rounded-2xl shadow-[0_24px_60px_rgba(34,42,96,0.2)] p-6 w-full max-w-md">
+            <div class="flex items-center justify-between mb-5">
+                <div>
+                    <h3 class="text-[16px] font-bold text-slate-900 font-grotesk">Nouvel utilisateur</h3>
+                    <p class="text-[12px] text-slate-500 mt-0.5 font-grotesk">Création d'un nouveau compte d'accès.</p>
+                </div>
+                <a href="#!"
+                    class="w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 transition-colors no-underline">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"
+                        viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </a>
+            </div>
+
+            <form method="POST" action="{{ route('backoffice.store') }}" class="space-y-4">
+                @csrf
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="flex flex-col gap-1">
+                        <label
+                            class="text-[10px] font-mono font-bold uppercase tracking-widest text-slate-400">Prénom</label>
+                        <input type="text" name="firstname" value="{{ old('firstname') }}" required
+                            class="h-10 px-3 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-800 font-grotesk focus:outline-none focus:ring-2 focus:ring-sv-blue/20 transition-all">
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <label class="text-[10px] font-mono font-bold uppercase tracking-widest text-slate-400">Nom</label>
+                        <input type="text" name="name" value="{{ old('name') }}" required
+                            class="h-10 px-3 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-800 font-grotesk focus:outline-none focus:ring-2 focus:ring-sv-blue/20 transition-all">
+                    </div>
+                </div>
+
+                <div class="flex flex-col gap-1">
+                    <label class="text-[10px] font-mono font-bold uppercase tracking-widest text-slate-400">Email</label>
+                    <input type="email" name="email" value="{{ old('email') }}" required autocomplete="off"
+                        class="h-10 px-3 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-800 font-mono focus:outline-none focus:ring-2 focus:ring-sv-blue/20 transition-all">
+                </div>
+
+                <div class="flex flex-col gap-1">
+                    <label class="text-[10px] font-mono font-bold uppercase tracking-widest text-slate-400">Mot de
+                        passe</label>
+                    <input type="password" name="password" required autocomplete="new-password"
+                        class="h-10 px-3 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-800 font-mono focus:outline-none focus:ring-2 focus:ring-sv-blue/20 transition-all">
+                </div>
+
+                <div class="flex flex-col gap-1">
+                    <label class="text-[10px] font-mono font-bold uppercase tracking-widest text-slate-400">Rôle</label>
+                    <select name="role"
+                        class="h-10 px-3 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-800 font-grotesk focus:outline-none focus:ring-2 focus:ring-sv-blue/20 cursor-pointer transition-all">
+                        <option value="participant">Participant</option>
+                        <option value="admin">Administrateur</option>
+                    </select>
+                </div>
+
+                <div class="pt-2">
+                    <button type="submit"
+                        class="w-full h-11 rounded-xl bg-[#16987C] hover:bg-[#138a6f] text-white text-[14px] font-bold font-grotesk transition-colors border-none outline-none">
+                        Créer le compte
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
 @endsection
