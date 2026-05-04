@@ -1,21 +1,28 @@
-import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
+import { QUALITE_CONFIG } from "./core/config.js";
+import { createBaseMap, createCustomMarker } from "./core/map-utils.js";
 
 document.addEventListener('DOMContentLoaded', () => {
-
     const mapElement = document.getElementById('map');
     if (!mapElement) return;
 
-    const savedCenter = JSON.parse(localStorage.getItem('lymnik_map_center')) || [48.8153, 7.7884];
-    const savedZoom   = localStorage.getItem('lymnik_map_zoom') || 13;
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlLat = urlParams.get('lat');
+    const urlLng = urlParams.get('lng');
 
-    const map = L.map('map', {
-        center: savedCenter,
-        zoom: savedZoom,
-        zoomControl: false,
-        attributionControl: false,
-    });
+    const savedCenter = JSON.parse(localStorage.getItem('lymnik_map_center'));
+    const savedZoom   = localStorage.getItem('lymnik_map_zoom');
 
+    let initialCenter = savedCenter || [48.8153, 7.7884];
+    let initialZoom   = savedZoom || 13;
+
+    if (urlLat && urlLng) {
+        initialCenter = [parseFloat(urlLat), parseFloat(urlLng)];
+        initialZoom = 16;
+    }
+
+    const map = createBaseMap('map', initialCenter[0], initialCenter[1], initialZoom, true);
     window.map = map;
 
     map.on('moveend', () => {
@@ -23,37 +30,49 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem('lymnik_map_zoom', map.getZoom());
     });
 
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-        maxZoom: 19,
-        attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
-    }).addTo(map);
+    map.on("moveend", () => {
+        localStorage.setItem(
+            "lymnik_map_center",
+            JSON.stringify(map.getCenter()),
+        );
+        localStorage.setItem("lymnik_map_zoom", map.getZoom());
+    });
 
     if (window.mapRivers?.length) {
-        const features = window.mapRivers.map(r => ({
-            type: 'Feature',
+        const features = window.mapRivers.map((r) => ({
+            type: "Feature",
             properties: { nom: r.nom, id: r.id },
             geometry: r.geometry,
         }));
 
-        L.geoJSON({ type: 'FeatureCollection', features }, {
-            style: { color: '#222a60', weight: 4, opacity: 0.95 },
-            onEachFeature(feature, layer) {
-                layer.bindTooltip(feature.properties.nom ?? '', {
-                    sticky: true,
-                    className: 'font-mono text-xs',
-                });
-                layer.on('click', async e => {
-                    L.DomEvent.stopPropagation(e);
-                    if (sheetOpen) { closeSheet(); return; }
-                    if (!window.userAuthenticated) { showAuthToast(); return; }
-                    await showCreateCard(e.latlng);
-                });
+        L.geoJSON(
+            { type: "FeatureCollection", features },
+            {
+                style: { color: "#222a60", weight: 4, opacity: 0.95 },
+                onEachFeature(feature, layer) {
+                    layer.bindTooltip(feature.properties.nom ?? "", {
+                        sticky: true,
+                        className: "font-mono text-xs",
+                    });
+                    layer.on("click", async (e) => {
+                        L.DomEvent.stopPropagation(e);
+                        if (sheetOpen) {
+                            closeSheet();
+                            return;
+                        }
+                        if (!window.userAuthenticated) {
+                            showAuthToast();
+                            return;
+                        }
+                        await showCreateCard(e.latlng);
+                    });
+                },
             },
-        }).addTo(map);
+        ).addTo(map);
     }
 
     const userIcon = L.divIcon({
-        className: 'user-location-marker',
+        className: "user-location-marker",
         html: `
             <div style="position: relative; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center;">
                 <div style="position: absolute; width: 100%; height: 100%; background-color: #eca438; border-radius: 50%; animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;"></div>
@@ -61,194 +80,219 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>
         `,
         iconSize: [20, 20],
-        iconAnchor: [10, 10]
+        iconAnchor: [10, 10],
     });
 
-    const style = document.createElement('style');
-    style.innerHTML = `
-        @keyframes ping {
-            0% { transform: scale(1); opacity: 1; }
-            75%, 100% { transform: scale(2.5); opacity: 0; }
-        }
-    `;
+    const style = document.createElement("style");
+    style.innerHTML = `@keyframes ping { 0% { transform: scale(1); opacity: 1; } 75%, 100% { transform: scale(2.5); opacity: 0; } }`;
     document.head.appendChild(style);
 
     let userMarker = null;
-    const btnLocate = document.getElementById('btn-locate');
+    const btnLocate = document.getElementById("btn-locate");
 
     if (btnLocate) {
-        btnLocate.addEventListener('click', function() {
+        btnLocate.addEventListener("click", function () {
             if (!navigator.geolocation) {
                 alert("Votre navigateur ne supporte pas la géolocalisation.");
                 return;
             }
 
             const originalHTML = btnLocate.innerHTML;
-            btnLocate.innerHTML = `
-                <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="animation: spin 1s linear infinite; color: #2563eb;">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"/>
-                </svg>
-            `;
-            if(!document.getElementById('spin-anim')) {
-                 const spinStyle = document.createElement('style');
-                 spinStyle.id = 'spin-anim';
-                 spinStyle.innerHTML = `@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`;
-                 document.head.appendChild(spinStyle);
+            btnLocate.innerHTML = `<svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="animation: spin 1s linear infinite; color: #2563eb;"><path stroke-linecap="round" stroke-linejoin="round" d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"/></svg>`;
+            if (!document.getElementById("spin-anim")) {
+                const spinStyle = document.createElement("style");
+                spinStyle.id = "spin-anim";
+                spinStyle.innerHTML = `@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`;
+                document.head.appendChild(spinStyle);
             }
 
             navigator.geolocation.getCurrentPosition(
-                function(position) {
+                function (position) {
                     const lat = position.coords.latitude;
                     const lng = position.coords.longitude;
-
                     if (userMarker) map.removeLayer(userMarker);
-
-                    userMarker = L.marker([lat, lng], {icon: userIcon}).addTo(map);
+                    userMarker = L.marker([lat, lng], { icon: userIcon }).addTo(
+                        map,
+                    );
                     userMarker.setZIndexOffset(1000);
-
                     map.flyTo([lat, lng], 17, { animate: true, duration: 1.5 });
                     btnLocate.innerHTML = originalHTML;
                 },
-                function(error) {
+                function (error) {
                     let msg = "Impossible de vous localiser.";
-                    if(error.code === 1) msg = "Vous devez autoriser la localisation dans votre navigateur.";
-                    else if(error.code === 2) msg = "Position indisponible (vérifiez votre GPS).";
-                    else if(error.code === 3) msg = "Délai d'attente dépassé.";
-
+                    if (error.code === 1)
+                        msg =
+                            "Vous devez autoriser la localisation dans votre navigateur.";
+                    else if (error.code === 2)
+                        msg = "Position indisponible (vérifiez votre GPS).";
+                    else if (error.code === 3) msg = "Délai d'attente dépassé.";
                     alert(msg);
                     btnLocate.innerHTML = originalHTML;
                 },
-                { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+                { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 },
             );
         });
     }
 
-    const sheet   = document.getElementById('bottom-sheet');
-    const nav     = document.getElementById('bottom-nav');
+    // 4. Modales (Bottom Sheet & Create Card)
+    const sheet = document.getElementById("bottom-sheet");
+    const nav = document.getElementById("bottom-nav");
     let sheetOpen = false;
 
-    function openSheet()  { sheet.classList.add('open'); nav.classList.add('hidden-nav'); sheetOpen = true; }
-    function closeSheet() { sheet.classList.remove('open'); nav.classList.remove('hidden-nav'); sheetOpen = false; sheet.style.transform = ''; }
+    function openSheet() {
+        sheet.classList.add("open");
+        nav.classList.add("hidden-nav");
+        sheetOpen = true;
+    }
+    function closeSheet() {
+        sheet.classList.remove("open");
+        nav.classList.remove("hidden-nav");
+        sheetOpen = false;
+        sheet.style.transform = "";
+    }
 
-    document.getElementById('sheet-close-btn').addEventListener('click', closeSheet);
+    document
+        .getElementById("sheet-close-btn")
+        ?.addEventListener("click", closeSheet);
 
-    let startY = 0, dragging = false;
-    sheet.addEventListener('touchstart', e => { startY = e.touches[0].clientY; dragging = true; }, { passive: true });
-    sheet.addEventListener('touchmove',  e => { if (!dragging) return; const d = e.touches[0].clientY - startY; if (d > 0) sheet.style.transform = `translateY(${d}px)`; }, { passive: true });
-    sheet.addEventListener('touchend',   e => { dragging = false; const d = e.changedTouches[0].clientY - startY; sheet.style.transform = ''; if (d > 80) closeSheet(); });
+    let startY = 0,
+        dragging = false;
+    sheet?.addEventListener(
+        "touchstart",
+        (e) => {
+            startY = e.touches[0].clientY;
+            dragging = true;
+        },
+        { passive: true },
+    );
+    sheet?.addEventListener(
+        "touchmove",
+        (e) => {
+            if (!dragging) return;
+            const d = e.touches[0].clientY - startY;
+            if (d > 0) sheet.style.transform = `translateY(${d}px)`;
+        },
+        { passive: true },
+    );
+    sheet?.addEventListener("touchend", (e) => {
+        dragging = false;
+        const d = e.changedTouches[0].clientY - startY;
+        sheet.style.transform = "";
+        if (d > 80) closeSheet();
+    });
 
-    const createCard = document.getElementById('create-card');
-    let tempMarker   = null;
+    const createCard = document.getElementById("create-card");
+    let tempMarker = null;
 
     function showCreateCard(latlng) {
-        if (tempMarker) { tempMarker.remove(); tempMarker = null; }
+        if (tempMarker) {
+            tempMarker.remove();
+            tempMarker = null;
+        }
         const pulseIcon = L.divIcon({
-            className: '',
+            className: "",
             html: `<div style="width:18px;height:18px;border-radius:50%;background:#1565c0;border:3px solid white;box-shadow:0 0 0 4px rgba(21,101,192,0.25);animation:pulse-ring 1.5s ease infinite;"></div>`,
-            iconSize: [18, 18], iconAnchor: [9, 9],
+            iconSize: [18, 18],
+            iconAnchor: [9, 9],
         });
         tempMarker = L.marker(latlng, { icon: pulseIcon }).addTo(map);
 
-        createCard.querySelector('#cc-lat').textContent   = latlng.lat.toFixed(4) + '° N';
-        createCard.querySelector('#cc-lng').textContent   = latlng.lng.toFixed(4) + '° E';
-        createCard.querySelector('#cc-river').textContent = 'Cours d\'eau identifié lors de la saisie';
-        createCard.querySelector('#cc-link').href = buildAnalyseUrl(latlng, null, null);
-        createCard.classList.add('show');
+        createCard.querySelector("#cc-lat").textContent =
+            latlng.lat.toFixed(4) + "° N";
+        createCard.querySelector("#cc-lng").textContent =
+            latlng.lng.toFixed(4) + "° E";
+        createCard.querySelector("#cc-river").textContent =
+            "Cours d'eau identifié lors de la saisie";
+        createCard.querySelector("#cc-link").href = buildAnalyseUrl(
+            latlng,
+            null,
+            null,
+        );
+        createCard.classList.add("show");
     }
 
     function buildAnalyseUrl(latlng, riverId, rivNom) {
         const url = new URL(window.createAnalyseUrl, window.location.origin);
-        url.searchParams.set('lat', latlng.lat.toFixed(6));
-        url.searchParams.set('lng', latlng.lng.toFixed(6));
-        if (riverId) url.searchParams.set('cours_d_eau_id', riverId);
-        if (rivNom)  url.searchParams.set('nom_cours_eau', rivNom);
-        url.searchParams.set('redirect_to', window.location.pathname);
+        url.searchParams.set("lat", latlng.lat.toFixed(6));
+        url.searchParams.set("lng", latlng.lng.toFixed(6));
+        if (riverId) url.searchParams.set("cours_d_eau_id", riverId);
+        if (rivNom) url.searchParams.set("nom_cours_eau", rivNom);
+        url.searchParams.set("redirect_to", window.location.pathname);
         return url.toString();
     }
 
     function hideCreateCard() {
-        createCard.classList.remove('show');
-        if (tempMarker) { tempMarker.remove(); tempMarker = null; }
+        createCard.classList.remove("show");
+        if (tempMarker) {
+            tempMarker.remove();
+            tempMarker = null;
+        }
     }
-    document.getElementById('cc-cancel').addEventListener('click', hideCreateCard);
+    document
+        .getElementById("cc-cancel")
+        ?.addEventListener("click", hideCreateCard);
 
-    /* ══════════════════════════════════════════════
-       MARQUEURS
-    ══════════════════════════════════════════════ */
-    const points   = window.mapPoints  ?? [];
+    // 5. MARQUEURS (Utilisation de map-utils.js)
+    const points = window.mapPoints ?? [];
     const capteurs = window.mapCapteurs ?? [];
-
-    const QUALITE_COLORS = {
-    tres_bon : '#3b82f6',
-    bon      : '#16987c',
-    passable : '#eab308',
-    mediocre : '#f97316',
-    mauvais  : '#ef4444',
-};
-
-function qualiteColor(q) {
-    return QUALITE_COLORS[q] ?? '#94a3b8';
-}
-
-function makeMarkerIcon(color, isSquare = false) {
-    const radius = isSquare ? '4px' : '50%';
-    return L.divIcon({
-        className: '',
-        html: `<div style="width:16px;height:16px;border-radius:${radius};background:${color};border:2.5px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.25);"></div>`,
-        iconSize: [16, 16], iconAnchor: [8, 8],
-    });
-}
+    const pointMarkers = [];
 
     function typeLabel(type) {
-        return { bandelette: 'Bandelette JBL', photometre: 'Photomètre', les_deux: 'Bandelette + Photomètre' }[type] ?? type;
+        return (
+            {
+                bandelette: "Bandelette JBL",
+                photometre: "Photomètre",
+                les_deux: "Bandelette + Photomètre",
+            }[type] ?? type
+        );
     }
 
-    // ── Marqueurs points avec filtre qualité ──────────────────────────────
-const pointMarkers = []; //
-
-points.forEach(p => {
-    const q     = p.analyse?.est_valide === false ? 'non_valide' : (p.analyse?.qualite ?? null);
-    const color = q && q !== 'non_valide' ? qualiteColor(q) : '#94a3b8';
-    const marker = L.marker([p.latitude, p.longitude], { icon: makeMarkerIcon(color, false) }).addTo(map);
-    marker.on('click', e => {
-        L.DomEvent.stopPropagation(e);
-        hideCreateCard();
-        populateSheet(p);
-        openSheet();
+    points.forEach((p) => {
+        const q =
+            p.analyse?.est_valide === false
+                ? "non_valide"
+                : (p.analyse?.qualite ?? null);
+        const color =
+            q && q !== "non_valide"
+                ? QUALITE_CONFIG[q]?.hex || "#94a3b8"
+                : "#94a3b8";
+        const marker = L.marker([p.latitude, p.longitude], {
+            icon: createCustomMarker(color, false),
+        }).addTo(map);
+        marker.on("click", (e) => {
+            L.DomEvent.stopPropagation(e);
+            hideCreateCard();
+            populateSheet(p);
+            openSheet();
+        });
+        pointMarkers.push({ marker, qualite: q });
     });
-    pointMarkers.push({ marker, qualite: q });
-});
 
-// ── Filtre pills ──────────────────────────────────────────────────────
     const activePills = new Set();
-
-    document.querySelectorAll('.pill[data-quality]').forEach(pill => {
-        pill.addEventListener('click', () => {
+    document.querySelectorAll(".pill[data-quality]").forEach((pill) => {
+        pill.addEventListener("click", () => {
             const q = pill.dataset.quality;
             if (activePills.has(q)) {
                 activePills.delete(q);
-                pill.classList.remove('active');
+                pill.classList.remove("active");
             } else {
                 activePills.add(q);
-                pill.classList.add('active');
+                pill.classList.add("active");
             }
-            applyFilter();
+            pointMarkers.forEach(({ marker, qualite }) => {
+                const visible =
+                    activePills.size === 0 || activePills.has(qualite);
+                if (visible) marker.addTo(map);
+                else marker.remove();
+            });
         });
     });
 
-    function applyFilter() {
-        pointMarkers.forEach(({ marker, qualite }) => {
-            const visible = activePills.size === 0 || activePills.has(qualite);
-            if (visible) marker.addTo(map);
-            else marker.remove();
-        });
-    }
-
-    capteurs.forEach(c => {
-        const lat = parseFloat(c.lat);
-        const lng = parseFloat(c.long);
-        const marker = L.marker([lat, lng], { icon: makeMarkerIcon('#6d28d9', true) }).addTo(map);
-        marker.on('click', e => {
+    capteurs.forEach((c) => {
+        const marker = L.marker([parseFloat(c.lat), parseFloat(c.long)], {
+            icon: createCustomMarker("#6d28d9", true),
+        }).addTo(map);
+        marker.on("click", (e) => {
             L.DomEvent.stopPropagation(e);
             hideCreateCard();
             populateCapteurSheet(c);
@@ -256,245 +300,232 @@ points.forEach(p => {
         });
     });
 
-    map.on('click', async e => {
-        if (sheetOpen) { closeSheet(); return; }
-        if (!window.userAuthenticated) { showAuthToast(); return; }
+    map.on("click", async (e) => {
+        if (sheetOpen) {
+            closeSheet();
+            return;
+        }
+        if (!window.userAuthenticated) {
+            showAuthToast();
+            return;
+        }
         await showCreateCard(e.latlng);
     });
 
-    /* ══════════════════════════════════════════════
-       BOTTOM SHEET CAPTEURS & ANALYSES
-    ══════════════════════════════════════════════ */
+    // 6. Remplissage des Bottom Sheets
     function populateSheet(p) {
         const a = p.analyse;
-        sheet.querySelector('.sheet-coords-text').textContent = p.latitude.toFixed(4) + '° N · ' + p.longitude.toFixed(4) + '° E';
-        sheet.querySelector('.sheet-type-text').textContent = p.ville ?? '';
-        sheet.querySelector('.sheet-river-name').textContent = p.cours_d_eau ?? 'Cours d\'eau inconnu';
+        sheet.querySelector(".sheet-coords-text").textContent =
+            p.latitude.toFixed(4) + "° N · " + p.longitude.toFixed(4) + "° E";
+        sheet.querySelector(".sheet-type-text").textContent = p.ville ?? "";
+        sheet.querySelector(".sheet-river-name").textContent =
+            p.cours_d_eau ?? "Cours d'eau inconnu";
 
         let mesuresData = {};
-        try { mesuresData = typeof a.mesures === 'string' ? JSON.parse(a.mesures) : (a.mesures || {}); }
-        catch (e) { console.error('Erreur lecture mesures', e); }
+        try {
+            mesuresData =
+                typeof a.mesures === "string"
+                    ? JSON.parse(a.mesures)
+                    : a.mesures || {};
+        } catch (e) {}
 
         const dict = {
             bandelette: {
-                nitrates:      { label: 'Nitrates',    unit: 'mg/L' },
-                nitrites:      { label: 'Nitrites',    unit: 'mg/L' },
-                durete_totale: { label: 'Dur. Tot.',   unit: 'mg/L' },
-                durete_carb:   { label: 'Dur. Carb.',  unit: 'mg/L' },
-                ph:            { label: 'pH',          unit: '' },
-                chlore:        { label: 'Chlore',      unit: 'mg/L' },
+                nitrates: { label: "Nitrates", unit: "mg/L" },
+                nitrites: { label: "Nitrites", unit: "mg/L" },
+                durete_totale: { label: "Dur. Tot.", unit: "mg/L" },
+                durete_carb: { label: "Dur. Carb.", unit: "mg/L" },
+                ph: { label: "pH", unit: "" },
+                chlore: { label: "Chlore", unit: "mg/L" },
             },
             photometre: {
-                phosphate: { label: 'Phosphate', unit: 'mg/L' },
-                nitrate:   { label: 'Nitrate',   unit: 'mg/L' },
-                ammoniaque:  { label: 'Ammoniaque',  unit: 'mg/L' },
+                phosphate: { label: "Phosphate", unit: "mg/L" },
+                nitrate: { label: "Nitrate", unit: "mg/L" },
+                ammoniaque: { label: "Ammoniaque", unit: "mg/L" },
             },
         };
 
-        let casesHtml = '';
-        const buildCases = typeKey => {
+        let casesHtml = "";
+        const buildCases = (typeKey) => {
             if (!mesuresData[typeKey]) return;
             for (const [key, val] of Object.entries(mesuresData[typeKey])) {
-                if (val !== null && val !== '') {
-                    const info = dict[typeKey][key] || { label: key, unit: '' };
-                    casesHtml += `
-                        <div class="bg-slate-50 border border-slate-100 rounded-xl p-2.5 text-center flex flex-col justify-center">
-                            <div class="text-[9px] text-slate-400 font-mono uppercase tracking-wide mb-1 leading-none">${info.label}</div>
-                            <div class="text-lg font-bold text-[#222a60] leading-none">${val}<span class="text-[9px] font-normal text-slate-400 ml-0.5">${info.unit}</span></div>
-                        </div>`;
+                if (val !== null && val !== "") {
+                    const info = dict[typeKey][key] || { label: key, unit: "" };
+                    casesHtml += `<div class="bg-slate-50 border border-slate-100 rounded-xl p-2.5 text-center flex flex-col justify-center"><div class="text-[9px] text-slate-400 font-mono uppercase tracking-wide mb-1 leading-none">${info.label}</div><div class="text-lg font-bold text-[#222a60] leading-none">${val}<span class="text-[9px] font-normal text-slate-400 ml-0.5">${info.unit}</span></div></div>`;
                 }
             }
         };
-        buildCases('bandelette');
-        buildCases('photometre');
-        if (!casesHtml) casesHtml = '<div class="col-span-3 text-xs text-slate-400 text-center py-2">Données non renseignées.</div>';
+        buildCases("bandelette");
+        buildCases("photometre");
+        if (!casesHtml)
+            casesHtml =
+                '<div class="col-span-3 text-xs text-slate-400 text-center py-2">Données non renseignées.</div>';
 
-        sheet.querySelector('.sheet-analyse-info').innerHTML = `
+        sheet.querySelector(".sheet-analyse-info").innerHTML = `
             <div class="flex gap-2 mb-3">
-                <div class="flex-1 bg-slate-50 border border-slate-100 rounded-lg py-2 px-3">
-                    <div class="font-mono text-[9px] font-bold uppercase tracking-widest text-slate-400 mb-0.5">Date</div>
-                    <div class="text-xs font-bold text-[#222a60]">${a.created_at ?? '—'}</div>
-                </div>
-                <div class="flex-1 bg-slate-50 border border-slate-100 rounded-lg py-2 px-3">
-                    <div class="font-mono text-[9px] font-bold uppercase tracking-widest text-slate-400 mb-0.5">Type</div>
-                    <div class="text-xs font-bold text-[#222a60] truncate">${typeLabel(a.type)}</div>
-                </div>
+                <div class="flex-1 bg-slate-50 border border-slate-100 rounded-lg py-2 px-3"><div class="font-mono text-[9px] font-bold uppercase tracking-widest text-slate-400 mb-0.5">Date</div><div class="text-xs font-bold text-[#222a60]">${a.created_at ?? "—"}</div></div>
+                <div class="flex-1 bg-slate-50 border border-slate-100 rounded-lg py-2 px-3"><div class="font-mono text-[9px] font-bold uppercase tracking-widest text-slate-400 mb-0.5">Type</div><div class="text-xs font-bold text-[#222a60] truncate">${typeLabel(a.type)}</div></div>
             </div>
             <div class="grid grid-cols-3 gap-2">${casesHtml}</div>
             <div class="mt-4 border-t border-slate-100 pt-4">
-                <a href="${window.createAnalyseUrl}?point_id=${p.id}&lat=${p.latitude}&lng=${p.longitude}${p.cours_d_eau_id ? '&cours_d_eau_id=' + p.cours_d_eau_id : ''}&redirect_to=${encodeURIComponent(window.location.pathname)}"
-                   class="flex items-center justify-center gap-2 bg-gradient-to-br from-[#1a7fc4] to-[#1565c0] text-white py-3.5 rounded-[14px] text-[14px] font-bold shadow-[0_4px_16px_rgba(21,101,192,0.25)] no-underline active:scale-[0.98] transition-transform">
-                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
-                    </svg>
-                    Nouvelle mesure ici
+                <a href="${window.createAnalyseUrl}?point_id=${p.id}&lat=${p.latitude}&lng=${p.longitude}${p.cours_d_eau_id ? "&cours_d_eau_id=" + p.cours_d_eau_id : ""}&redirect_to=${encodeURIComponent(window.location.pathname)}" class="flex items-center justify-center gap-2 bg-gradient-to-br from-[#1a7fc4] to-[#1565c0] text-white py-3.5 rounded-[14px] text-[14px] font-bold shadow-[0_4px_16px_rgba(21,101,192,0.25)] no-underline active:scale-[0.98] transition-transform">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg> Nouvelle mesure ici
                 </a>
-            </div>`
+            </div>`;
     }
 
     function populateCapteurSheet(c) {
-        sheet.querySelector('.sheet-coords-text').textContent = parseFloat(c.lat).toFixed(4) + '° N · ' + parseFloat(c.long).toFixed(4) + '° E';
-        sheet.querySelector('.sheet-type-text').textContent = 'Station Automatique';
-        sheet.querySelector('.sheet-river-name').textContent = 'Capteur Lymnik';
-
-        let casesHtml = '';
+        sheet.querySelector(".sheet-coords-text").textContent =
+            parseFloat(c.lat).toFixed(4) +
+            "° N · " +
+            parseFloat(c.long).toFixed(4) +
+            "° E";
+        sheet.querySelector(".sheet-type-text").textContent =
+            "Station Automatique";
+        sheet.querySelector(".sheet-river-name").textContent = "Capteur Lymnik";
 
         const metrics = [
-            { label: 'Turbidité',    unit: 'NTU',   val: c.turbidite },
-            { label: 'Conductivité', unit: 'µS/cm', val: c.conductivite },
-            { label: 'Température',  unit: '°C',    val: c.temp_eau },
-            { label: 'Hauteur',      unit: 'm',     val: c.hauteur },
-            { label: 'Débit',        unit: 'm³/s',  val: c.debit }
+            { label: "Turbidité", unit: "NTU", val: c.turbidite },
+            { label: "Conductivité", unit: "µS/cm", val: c.conductivite },
+            { label: "Température", unit: "°C", val: c.temp_eau },
+            { label: "Hauteur", unit: "m", val: c.hauteur },
+            { label: "Débit", unit: "m³/s", val: c.debit },
         ];
 
-        metrics.forEach(m => {
-            if (m.val !== null && m.val !== undefined) {
-                casesHtml += `
-                    <div class="bg-indigo-50/50 border border-indigo-100/50 rounded-xl p-2.5 text-center flex flex-col justify-center">
-                        <div class="text-[9px] text-indigo-400 font-mono uppercase tracking-wide mb-1 leading-none">${m.label}</div>
-                        <div class="text-lg font-bold text-[#6d28d9] leading-none">${m.val}<span class="text-[9px] font-normal text-indigo-400 ml-0.5">${m.unit}</span></div>
-                    </div>`;
-            }
-        });
-
-        if (!casesHtml) casesHtml = '<div class="col-span-3 text-xs text-slate-400 text-center py-2">Aucune donnée disponible.</div>';
+        let casesHtml =
+            metrics
+                .filter((m) => m.val !== null && m.val !== undefined)
+                .map(
+                    (m) =>
+                        `<div class="bg-indigo-50/50 border border-indigo-100/50 rounded-xl p-2.5 text-center flex flex-col justify-center"><div class="text-[9px] text-indigo-400 font-mono uppercase tracking-wide mb-1 leading-none">${m.label}</div><div class="text-lg font-bold text-[#6d28d9] leading-none">${m.val}<span class="text-[9px] font-normal text-indigo-400 ml-0.5">${m.unit}</span></div></div>`,
+                )
+                .join("") ||
+            '<div class="col-span-3 text-xs text-slate-400 text-center py-2">Aucune donnée disponible.</div>';
 
         const dateObj = new Date(c.updated_at || c.created_at);
-        const dateStr = !isNaN(dateObj) ? dateObj.toLocaleDateString('fr-FR', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' }) : '—';
+        const dateStr = !isNaN(dateObj)
+            ? dateObj.toLocaleDateString("fr-FR", {
+                  day: "2-digit",
+                  month: "short",
+                  hour: "2-digit",
+                  minute: "2-digit",
+              })
+            : "—";
 
-        sheet.querySelector('.sheet-analyse-info').innerHTML = `
-            <div class="flex gap-2 mb-3">
-                <div class="flex-1 bg-indigo-50/50 border border-indigo-100/50 rounded-lg py-2 px-3">
-                    <div class="font-mono text-[9px] font-bold uppercase tracking-widest text-indigo-400 mb-0.5">Dernière synchro</div>
-                    <div class="text-xs font-bold text-[#6d28d9]">${dateStr}</div>
-                </div>
-            </div>
-            <div class="grid grid-cols-3 gap-2">${casesHtml}</div>
-        `;
+        sheet.querySelector(".sheet-analyse-info").innerHTML = `
+            <div class="flex gap-2 mb-3"><div class="flex-1 bg-indigo-50/50 border border-indigo-100/50 rounded-lg py-2 px-3"><div class="font-mono text-[9px] font-bold uppercase tracking-widest text-indigo-400 mb-0.5">Dernière synchro</div><div class="text-xs font-bold text-[#6d28d9]">${dateStr}</div></div></div>
+            <div class="grid grid-cols-3 gap-2">${casesHtml}</div>`;
     }
 
     function showAuthToast() {
-        if (document.getElementById('auth-toast')) return;
-        const toast = document.createElement('div');
-        toast.id = 'auth-toast';
-        toast.innerHTML = `
-            <div style="display:flex;align-items:center;gap:10px;">
-                <div style="width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
-                </div>
-                <div style="flex:1;">
-                    <div style="font-weight:700;font-size:13px;margin-bottom:1px;">Connexion requise</div>
-                    <div style="font-size:11px;opacity:0.75;">Connectez-vous pour déposer une analyse.</div>
-                </div>
-                <a href="${window.loginUrl}" style="padding:7px 14px;background:white;color:#222a60;border-radius:8px;font-size:12px;font-weight:700;text-decoration:none;flex-shrink:0;">Se connecter</a>
-            </div>`;
+        if (document.getElementById("auth-toast")) return;
+        const toast = document.createElement("div");
+        toast.id = "auth-toast";
+        toast.innerHTML = `<div style="display:flex;align-items:center;gap:10px;"><div style="width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg></div><div style="flex:1;"><div style="font-weight:700;font-size:13px;margin-bottom:1px;">Connexion requise</div><div style="font-size:11px;opacity:0.75;">Connectez-vous pour déposer une analyse.</div></div><a href="${window.loginUrl}" style="padding:7px 14px;background:white;color:#222a60;border-radius:8px;font-size:12px;font-weight:700;text-decoration:none;flex-shrink:0;">Se connecter</a></div>`;
         Object.assign(toast.style, {
-            position: 'absolute', bottom: '88px', left: '16px', right: '16px', zIndex: '50',
-            background: 'linear-gradient(135deg,#0f1d42,#1a2a6c)', color: 'white',
-            borderRadius: '14px', padding: '12px 14px', boxShadow: '0 8px 30px rgba(34,42,96,0.3)',
-            fontFamily: "'Space Grotesk',sans-serif", opacity: '0', transform: 'translateY(8px)',
-            transition: 'opacity 0.25s ease, transform 0.25s ease',
+            position: "absolute",
+            bottom: "88px",
+            left: "16px",
+            right: "16px",
+            zIndex: "50",
+            background: "linear-gradient(135deg,#0f1d42,#1a2a6c)",
+            color: "white",
+            borderRadius: "14px",
+            padding: "12px 14px",
+            boxShadow: "0 8px 30px rgba(34,42,96,0.3)",
+            fontFamily: "'Space Grotesk',sans-serif",
+            opacity: "0",
+            transform: "translateY(8px)",
+            transition: "opacity 0.25s ease, transform 0.25s ease",
         });
-        document.getElementById('app-shell').appendChild(toast);
-        requestAnimationFrame(() => { toast.style.opacity = '1'; toast.style.transform = 'translateY(0)'; });
-        setTimeout(() => { toast.style.opacity = '0'; toast.style.transform = 'translateY(8px)'; setTimeout(() => toast.remove(), 280); }, 4000);
+        document.getElementById("app-shell").appendChild(toast);
+        requestAnimationFrame(() => {
+            toast.style.opacity = "1";
+            toast.style.transform = "translateY(0)";
+        });
+        setTimeout(() => {
+            toast.style.opacity = "0";
+            toast.style.transform = "translateY(8px)";
+            setTimeout(() => toast.remove(), 280);
+        }, 4000);
     }
 
-    const hint = document.getElementById('tap-hint');
-    const hideHint = () => { if (hint && !hint.classList.contains('fade-out')) { hint.classList.add('fade-out'); setTimeout(() => hint?.remove(), 500); } };
+    const hint = document.getElementById("tap-hint");
+    const hideHint = () => {
+        if (hint && !hint.classList.contains("fade-out")) {
+            hint.classList.add("fade-out");
+            setTimeout(() => hint?.remove(), 500);
+        }
+    };
     setTimeout(hideHint, 3500);
-    map.on('click', hideHint);
+    map.on("click", hideHint);
 
-    /* ══════════════════════════════════════════════
-       RECHERCHE DE COMMUNE
-    ══════════════════════════════════════════════ */
-    const searchInput = document.getElementById('search-input');
-    const searchResults = document.getElementById('search-results');
+    // 7. Recherche de ville
+    const searchInput = document.getElementById("search-input");
+    const searchResults = document.getElementById("search-results");
     let searchTimeout = null;
 
     if (searchInput && searchResults) {
-        searchInput.addEventListener('input', (e) => {
+        searchInput.addEventListener("input", (e) => {
             const query = e.target.value.trim();
-
             clearTimeout(searchTimeout);
-
             if (query.length < 2) {
-                searchResults.innerHTML = '';
-                searchResults.classList.add('hidden');
+                searchResults.innerHTML = "";
+                searchResults.classList.add("hidden");
                 return;
             }
-
             searchTimeout = setTimeout(async () => {
                 try {
                     const isPostalCode = /^\d+$/.test(query);
                     const url = isPostalCode
                         ? `https://geo.api.gouv.fr/communes?codePostal=${query}&fields=nom,code,codesPostaux,centre&limit=5`
                         : `https://geo.api.gouv.fr/communes?nom=${query}&fields=nom,code,codesPostaux,centre&boost=population&limit=5`;
-
                     const response = await fetch(url);
                     const data = await response.json();
-
                     if (data.length === 0) {
-                        searchResults.innerHTML = '<div class="p-3.5 text-sm text-slate-400 font-medium text-center">Aucune commune trouvée</div>';
-                        searchResults.classList.remove('hidden');
+                        searchResults.innerHTML =
+                            '<div class="p-3.5 text-sm text-slate-400 font-medium text-center">Aucune commune trouvée</div>';
+                        searchResults.classList.remove("hidden");
                         return;
                     }
-
-                    searchResults.innerHTML = data.map(city => {
-                        const coords = city.centre ? city.centre.coordinates : null;
-                        const lng = coords ? coords[0] : null;
-                        const lat = coords ? coords[1] : null;
-
-                        return `
-                            <div class="search-item flex items-center gap-3 p-3 hover:bg-blue-50 border-b border-slate-50 last:border-b-0 cursor-pointer transition-colors"
-                                 data-lat="${lat}" data-lng="${lng}">
-                                <div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 shrink-0 pointer-events-none">
-                                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 21s-8-4.5-8-11.8A8 8 0 0112 1.2a8 8 0 018 8c0 7.3-8 11.8-8 11.8z"/>
-                                        <circle cx="12" cy="9.2" r="2.5"/>
-                                    </svg>
-                                </div>
-                                <div class="flex-1 min-w-0 pointer-events-none">
-                                    <div class="text-[13px] font-bold text-slate-800 truncate">${city.nom}</div>
-                                    <div class="text-[10px] text-slate-400 font-mono mt-0.5">${city.codesPostaux[0]}</div>
-                                </div>
-                            </div>
-                        `;
-                    }).join('');
-
-                    searchResults.classList.remove('hidden');
-
+                    searchResults.innerHTML = data
+                        .map((city) => {
+                            const coords = city.centre
+                                ? city.centre.coordinates
+                                : null;
+                            return `<div class="search-item flex items-center gap-3 p-3 hover:bg-blue-50 border-b border-slate-50 cursor-pointer transition-colors" data-lat="${coords ? coords[1] : null}" data-lng="${coords ? coords[0] : null}">
+                                    <div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 shrink-0 pointer-events-none"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21s-8-4.5-8-11.8A8 8 0 0112 1.2a8 8 0 018 8c0 7.3-8 11.8-8 11.8z"/><circle cx="12" cy="9.2" r="2.5"/></svg></div>
+                                    <div class="flex-1 min-w-0 pointer-events-none"><div class="text-[13px] font-bold text-slate-800 truncate">${city.nom}</div><div class="text-[10px] text-slate-400 font-mono mt-0.5">${city.codesPostaux[0]}</div></div>
+                                </div>`;
+                        })
+                        .join("");
+                    searchResults.classList.remove("hidden");
                 } catch (error) {
-                    console.error('Erreur API Geo:', error);
+                    console.error("Erreur API Geo:", error);
                 }
             }, 300);
         });
 
-        searchResults.addEventListener('mousedown', (e) => {
-            const item = e.target.closest('.search-item');
+        searchResults.addEventListener("mousedown", (e) => {
+            const item = e.target.closest(".search-item");
             if (!item) return;
-
             const lat = parseFloat(item.dataset.lat);
             const lng = parseFloat(item.dataset.lng);
-
-            if (!isNaN(lat) && !isNaN(lng)) {
+            if (!isNaN(lat) && !isNaN(lng))
                 map.flyTo([lat, lng], 14, { animate: true, duration: 1.5 });
-            } else {
-                console.error("Coordonnées introuvables pour cette ville");
-            }
-
             setTimeout(() => {
-                searchInput.value = '';
+                searchInput.value = "";
                 searchInput.blur();
-                searchResults.classList.add('hidden');
+                searchResults.classList.add("hidden");
             }, 50);
         });
 
-        document.addEventListener('click', (e) => {
-            if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
-                searchResults.classList.add('hidden');
-            }
+        document.addEventListener("click", (e) => {
+            if (
+                !searchInput.contains(e.target) &&
+                !searchResults.contains(e.target)
+            )
+                searchResults.classList.add("hidden");
         });
     }
-
 });

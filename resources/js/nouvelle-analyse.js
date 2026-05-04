@@ -1,3 +1,5 @@
+import { createBaseMap } from "./core/map-utils.js";
+
 document.addEventListener("DOMContentLoaded", () => {
     let lat = window.initLat || 48.5853;
     let lng = window.initLng || 7.7512;
@@ -5,21 +7,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const mapElement = document.getElementById("mini-map");
     if (!mapElement) return;
 
-    const miniMap = L.map("mini-map", {
-        center: [lat, lng],
-        zoom: 15,
-        zoomControl: false,
-        attributionControl: false,
-        dragging: true,
-        scrollWheelZoom: false,
-    });
-
-    L.tileLayer(
-        "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",
-        {
-            maxZoom: 19,
-        },
-    ).addTo(miniMap);
+    const miniMap = createBaseMap("mini-map", lat, lng, 15, true);
+    if (miniMap.zoomControl) miniMap.removeControl(miniMap.zoomControl); // Enlève les boutons + et -
 
     const markerIcon = L.divIcon({
         className: "",
@@ -100,13 +89,25 @@ document.addEventListener("DOMContentLoaded", () => {
 
             if (isSelected) {
                 c.classList.add("border-[#222a60]", "bg-blue-50/40");
-                c.classList.remove("border-slate-200", "bg-slate-50", "hover:border-slate-300", "hover:bg-white");
+                c.classList.remove(
+                    "border-slate-200",
+                    "bg-slate-50",
+                    "hover:border-slate-300",
+                    "hover:bg-white",
+                );
             } else {
                 c.classList.remove("border-[#222a60]", "bg-blue-50/40");
-                c.classList.add("border-slate-200", "bg-slate-50", "hover:border-slate-300", "hover:bg-white");
+                c.classList.add(
+                    "border-slate-200",
+                    "bg-slate-50",
+                    "hover:border-slate-300",
+                    "hover:bg-white",
+                );
             }
 
-            const radioWrapper = c.querySelector(".w-4.h-4.rounded-full.border-2");
+            const radioWrapper = c.querySelector(
+                ".w-4.h-4.rounded-full.border-2",
+            );
             if (radioWrapper) {
                 if (isSelected) {
                     radioWrapper.classList.add("border-[#222a60]");
@@ -175,53 +176,58 @@ document.addEventListener("DOMContentLoaded", () => {
 
     setTimeout(() => miniMap.invalidateSize(), 150);
 
-    const riverInput   = document.querySelector('input[name="cours_d_eau_id"]');
-    const riverDisplay = document.getElementById('river-display');
-    const riverStatus  = document.getElementById('river-status');
-    const analyseForm  = document.getElementById('analyse-form');
+    const riverInput = document.querySelector('input[name="cours_d_eau_id"]');
+    const riverDisplay = document.getElementById("river-display");
+    const riverStatus = document.getElementById("river-status");
+    const analyseForm = document.getElementById("analyse-form");
 
     let riverFetchDone = true;
-    let riverFetch     = null;
+    let riverFetch = null;
 
     if (window.initCoursDEauId) {
-        if (riverDisplay) riverDisplay.textContent = window.initNomCoursEau ?? 'Cours d\'eau associé';
-        if (riverStatus)  riverStatus.textContent  = 'Trouvé';
+        if (riverDisplay)
+            riverDisplay.textContent =
+                window.initNomCoursEau ?? "Cours d'eau associé";
+        if (riverStatus) riverStatus.textContent = "Trouvé";
     } else if (window.nearestRiverUrl) {
         riverFetchDone = false;
         riverFetch = fetch(`${window.nearestRiverUrl}?lat=${lat}&lng=${lng}`)
-            .then(r => r.json())
-            .then(river => {
+            .then((r) => r.json())
+            .then((river) => {
                 riverFetchDone = true;
                 if (river?.id) {
-                    if (riverInput)   riverInput.value         = river.id;
+                    if (riverInput) riverInput.value = river.id;
                     if (riverDisplay) riverDisplay.textContent = river.nom;
-                    if (riverStatus)  riverStatus.textContent  = 'Trouvé';
+                    if (riverStatus) riverStatus.textContent = "Trouvé";
                 } else {
-                    if (riverDisplay) riverDisplay.textContent = 'Position libre';
-                    if (riverStatus)  riverStatus.textContent  = '—';
+                    if (riverDisplay)
+                        riverDisplay.textContent = "Position libre";
+                    if (riverStatus) riverStatus.textContent = "—";
                 }
             })
             .catch(() => {
                 riverFetchDone = true;
-                if (riverDisplay) riverDisplay.textContent = 'Position libre';
-                if (riverStatus)  riverStatus.textContent  = '—';
+                if (riverDisplay) riverDisplay.textContent = "Position libre";
+                if (riverStatus) riverStatus.textContent = "—";
             });
     }
 
     // City background search (API Adresse Gouv)
-    const villeInput   = document.getElementById('f-ville');
-    const villeDisplay = document.getElementById('ville-display');
-    const villeStatus  = document.getElementById('ville-status');
+    const villeInput = document.getElementById("f-ville");
+    const villeDisplay = document.getElementById("ville-display");
+    const villeStatus = document.getElementById("ville-status");
 
     let villeFetchDone = true;
-    let villeFetch     = null;
+    let villeFetch = null;
 
     if (villeInput && !villeInput.value) {
         villeFetchDone = false;
 
-        villeFetch = fetch(`https://api-adresse.data.gouv.fr/reverse/?lon=${lng}&lat=${lat}`)
-            .then(r => r.json())
-            .then(data => {
+        villeFetch = fetch(
+            `https://api-adresse.data.gouv.fr/reverse/?lon=${lng}&lat=${lat}`,
+        )
+            .then((r) => r.json())
+            .then((data) => {
                 villeFetchDone = true;
 
                 if (data && data.features && data.features.length > 0) {
@@ -230,51 +236,73 @@ document.addEventListener("DOMContentLoaded", () => {
                     if (ville) {
                         villeInput.value = ville;
                         if (villeDisplay) villeDisplay.textContent = ville;
-                        if (villeStatus)  villeStatus.textContent  = 'Trouvé';
+                        if (villeStatus) villeStatus.textContent = "Trouvé";
                         return;
                     }
                 }
 
-                if (villeDisplay) villeDisplay.textContent = 'Ville non trouvée';
-                if (villeStatus)  villeStatus.textContent  = '—';
+                if (villeDisplay)
+                    villeDisplay.textContent = "Ville non trouvée";
+                if (villeStatus) villeStatus.textContent = "—";
             })
             .catch((err) => {
                 console.error("Erreur géocodage inverse :", err);
                 villeFetchDone = true;
-                if (villeDisplay) villeDisplay.textContent = 'Ville non trouvée';
-                if (villeStatus)  villeStatus.textContent  = '—';
+                if (villeDisplay)
+                    villeDisplay.textContent = "Ville non trouvée";
+                if (villeStatus) villeStatus.textContent = "—";
             });
     } else if (villeInput?.value) {
         if (villeDisplay) villeDisplay.textContent = villeInput.value;
-        if (villeStatus)  villeStatus.textContent  = 'Trouvé';
+        if (villeStatus) villeStatus.textContent = "Trouvé";
     }
 
     let submitted = false;
-    const submitBar = document.getElementById('submit-bar');
+    const submitBar = document.getElementById("submit-bar");
 
     function showRiverWait() {
         if (!submitBar) return;
-        let notice = document.getElementById('river-wait-notice');
+        let notice = document.getElementById("river-wait-notice");
         if (!notice) {
-            notice = document.createElement('p');
-            notice.id = 'river-wait-notice';
-            notice.className = 'text-center text-xs text-[#1565c0] font-medium mt-2 mb-0';
-            notice.textContent = 'Association du cours d\'eau en cours, veuillez patienter…';
+            notice = document.createElement("p");
+            notice.id = "river-wait-notice";
+            notice.className =
+                "text-center text-xs text-[#1565c0] font-medium mt-2 mb-0";
+            notice.textContent =
+                "Association du cours d'eau en cours, veuillez patienter…";
             submitBar.appendChild(notice);
         }
     }
 
     function hideRiverWait() {
-        document.getElementById('river-wait-notice')?.remove();
+        document.getElementById("river-wait-notice")?.remove();
     }
 
     if (analyseForm) {
-        analyseForm.addEventListener('submit', e => {
+        analyseForm.addEventListener("submit", (e) => {
+            const currentLat = document.getElementById("f-lat").value;
+            const currentLng = document.getElementById("f-lng").value;
+
+            if (currentLat && currentLng) {
+                localStorage.setItem(
+                    "lymnik_map_center",
+                    JSON.stringify({
+                        lat: parseFloat(currentLat),
+                        lng: parseFloat(currentLng),
+                    }),
+                );
+                localStorage.setItem("lymnik_map_zoom", 16);
+            }
             if (submitted || (riverFetchDone && villeFetchDone)) return;
             e.preventDefault();
             showRiverWait();
-            Promise.allSettled([riverFetch, villeFetch].filter(Boolean))
-                .then(() => { hideRiverWait(); submitted = true; analyseForm.submit(); });
+            Promise.allSettled([riverFetch, villeFetch].filter(Boolean)).then(
+                () => {
+                    hideRiverWait();
+                    submitted = true;
+                    analyseForm.submit();
+                },
+            );
         });
     }
 });

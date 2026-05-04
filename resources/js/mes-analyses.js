@@ -1,3 +1,5 @@
+import { createBaseMap, createCustomMarker } from './core/map-utils.js';
+
 document.addEventListener("DOMContentLoaded", () => {
     const initializedMaps = new Set();
 
@@ -22,34 +24,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 const lngVal = parseFloat(card.dataset.lng || 7.7512);
 
                 setTimeout(() => {
-                    const m = L.map(mapEl, {
-                        center: [latVal, lngVal],
-                        zoom: 14,
-                        zoomControl: false,
-                        attributionControl: false,
-                        dragging: false,
-                        scrollWheelZoom: false,
-                        doubleClickZoom: false,
-                    });
-
-                    L.tileLayer(
-                        "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
-                        {
-                            maxZoom: 19,
-                        },
-                    ).addTo(m);
-
-                    if (L.divIcon) {
-                        L.marker([latVal, lngVal], {
-                            icon: L.divIcon({
-                                className: "",
-                                html: `<div style="width:16px;height:16px;border-radius:50%;background:#222a60;border:3px solid white;box-shadow:0 2px 8px rgba(34,42,96,0.3);"></div>`,
-                                iconSize: [16, 16],
-                                iconAnchor: [8, 8],
-                            }),
-                        }).addTo(m);
-                    }
-
+                    const m = createBaseMap("map-" + id, latVal, lngVal, 14, false);
+                    L.marker([latVal, lngVal], { icon: createCustomMarker('#222a60', false, 16) }).addTo(m);
                     m.invalidateSize();
                 }, 200);
             }

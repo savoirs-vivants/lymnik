@@ -86,12 +86,12 @@ class AnalyseController extends Controller
         $mode = $request->query('mode', 'participants');
 
         $coursDEaux = CoursDEau::whereHas('points.analyses', function ($q) use ($mode) {
-                if ($mode === 'campagnes') {
-                    $q->whereNotNull('session_id')->whereNotNull('participant_id');
-                } else {
-                    $q->whereNull('session_id')->whereNull('participant_id');
-                }
-            })
+            if ($mode === 'campagnes') {
+                $q->whereNotNull('session_id')->whereNotNull('participant_id');
+            } else {
+                $q->whereNull('session_id')->whereNull('participant_id');
+            }
+        })
             ->with(['points' => function ($q) use ($mode) {
                 $q->whereHas('analyses', function ($q2) use ($mode) {
                     if ($mode === 'campagnes') {
@@ -100,14 +100,14 @@ class AnalyseController extends Controller
                         $q2->whereNull('session_id')->whereNull('participant_id');
                     }
                 })
-                ->with(['analyses' => function ($q3) use ($mode) {
-                    if ($mode === 'campagnes') {
-                        $q3->whereNotNull('session_id')->whereNotNull('participant_id');
-                    } else {
-                        $q3->whereNull('session_id')->whereNull('participant_id');
-                    }
-                    $q3->latest()->with('user');
-                }]);
+                    ->with(['analyses' => function ($q3) use ($mode) {
+                        if ($mode === 'campagnes') {
+                            $q3->whereNotNull('session_id')->whereNotNull('participant_id');
+                        } else {
+                            $q3->whereNull('session_id')->whereNull('participant_id');
+                        }
+                        $q3->latest()->with('user');
+                    }]);
             }])
             ->orderBy('nom')
             ->get()
@@ -147,7 +147,10 @@ class AnalyseController extends Controller
         $max   = 0;
         foreach ($valid as $q) {
             $n = $counts[$q] ?? 0;
-            if ($n > $max) { $max = $n; $best = $q; }
+            if ($n > $max) {
+                $max = $n;
+                $best = $q;
+            }
         }
         return $best ?? 'tres_bon';
     }
@@ -186,10 +189,8 @@ class AnalyseController extends Controller
     public function store(StoreAnalyseRequest $request, CoursDEauService $service)
     {
         DB::transaction(function () use ($request, $service) {
-
             if ($request->point_id) {
                 $point = Point::findOrFail($request->point_id);
-
                 $updates = [];
                 if (! $point->cours_d_eau_id) {
                     $coursDEauId = $request->integer('cours_d_eau_id') ?: null;
@@ -209,7 +210,6 @@ class AnalyseController extends Controller
                     $river       = $service->findNearest($request->latitude, $request->longitude);
                     $coursDEauId = $river?->id;
                 }
-
                 $point = Point::create([
                     'latitude'       => $request->latitude,
                     'longitude'      => $request->longitude,
@@ -250,57 +250,67 @@ class AnalyseController extends Controller
             ]);
         });
 
+        $lat = $request->input('latitude');
+        $lng = $request->input('longitude');
+
         $redirectTo = $request->input('redirect_to');
+
         if ($redirectTo && is_string($redirectTo) && str_starts_with($redirectTo, '/') && !str_contains($redirectTo, '://')) {
-            return redirect($redirectTo)->with('success', 'Analyse enregistrée !');
+            $separator = str_contains($redirectTo, '?') ? '&' : '?';
+            $redirectWithCoords = $redirectTo . $separator . "lat={$lat}&lng={$lng}";
+
+            return redirect($redirectWithCoords)->with('success', 'Analyse enregistrée !');
         }
 
-        return redirect()->route('mobile')->with('success', 'Analyse enregistrée !');
+        return redirect()->route('mobile', [
+            'lat' => $lat,
+            'lng' => $lng
+        ])->with('success', 'Analyse enregistrée !');
     }
 
     private function calculerQualite(array $mesures): string
-{
-    $ordre = ['tres_bon' => 0, 'bon' => 1, 'passable' => 2, 'mediocre' => 3, 'mauvais' => 4];
-    $qualite = 'tres_bon';
+    {
+        $ordre = ['tres_bon' => 0, 'bon' => 1, 'passable' => 2, 'mediocre' => 3, 'mauvais' => 4];
+        $qualite = 'tres_bon';
 
-    $seuils = [
-        'nitrites'   => [0.03, 0.3,  0.5,  1.0],
-        'nitrates'   => [2,    10,   25,   50],
-        'nitrate'    => [2,    10,   25,   50],
-        'phosphate'  => [0.05, 0.2,  0.5,  1.0],
-        'chlore'     => [25,   50,   100,  250],
-        'ammoniaque' => [0.1,  0.5,  2.0,  5.0],
-    ];
+        $seuils = [
+            'nitrites'   => [0.03, 0.3,  0.5,  1.0],
+            'nitrates'   => [2,    10,   25,   50],
+            'nitrate'    => [2,    10,   25,   50],
+            'phosphate'  => [0.05, 0.2,  0.5,  1.0],
+            'chlore'     => [25,   50,   100,  250],
+            'ammoniaque' => [0.1,  0.5,  2.0,  5.0],
+        ];
 
-    $toutesMesures = array_merge($mesures['bandelette'] ?? [], $mesures['photometre'] ?? []);
+        $toutesMesures = array_merge($mesures['bandelette'] ?? [], $mesures['photometre'] ?? []);
 
-    foreach ($toutesMesures as $key => $val) {
-        if ($val === null) continue;
-        $v = (float) $val;
-        $q = null;
+        foreach ($toutesMesures as $key => $val) {
+            if ($val === null) continue;
+            $v = (float) $val;
+            $q = null;
 
-        if ($key === 'ph') {
-            if ($v >= 6.5 && $v <= 8.5)      $q = 'tres_bon';
-            elseif ($v >= 6.0 && $v <= 9.0)  $q = 'bon';
-            elseif ($v >= 5.5 && $v <= 9.5)  $q = 'passable';
-            elseif ($v >= 5.0 && $v <= 10.0) $q = 'mediocre';
-            else                               $q = 'mauvais';
-        } elseif (isset($seuils[$key])) {
-            [$s1, $s2, $s3, $s4] = $seuils[$key];
-            if      ($v <= $s1) $q = 'tres_bon';
-            elseif  ($v <= $s2) $q = 'bon';
-            elseif  ($v <= $s3) $q = 'passable';
-            elseif  ($v <= $s4) $q = 'mediocre';
-            else                $q = 'mauvais';
+            if ($key === 'ph') {
+                if ($v >= 6.5 && $v <= 8.5)      $q = 'tres_bon';
+                elseif ($v >= 6.0 && $v <= 9.0)  $q = 'bon';
+                elseif ($v >= 5.5 && $v <= 9.5)  $q = 'passable';
+                elseif ($v >= 5.0 && $v <= 10.0) $q = 'mediocre';
+                else                               $q = 'mauvais';
+            } elseif (isset($seuils[$key])) {
+                [$s1, $s2, $s3, $s4] = $seuils[$key];
+                if ($v <= $s1) $q = 'tres_bon';
+                elseif ($v <= $s2) $q = 'bon';
+                elseif ($v <= $s3) $q = 'passable';
+                elseif ($v <= $s4) $q = 'mediocre';
+                else                $q = 'mauvais';
+            }
+
+            if ($q !== null && $ordre[$q] > $ordre[$qualite]) {
+                $qualite = $q;
+            }
         }
 
-        if ($q !== null && $ordre[$q] > $ordre[$qualite]) {
-            $qualite = $q;
-        }
+        return $qualite;
     }
-
-    return $qualite;
-}
 
     private const SEUILS_VALIDITE = [
         'bandelette' => [

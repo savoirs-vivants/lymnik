@@ -97,6 +97,14 @@
 
         <div class="bg-emerald-50/50 rounded-2xl border border-emerald-100 shadow-sm p-4 sm:p-5 relative overflow-hidden">
             <div class="flex items-center gap-3 mb-2">
+                <div class="p-2 bg-blue-100 text-blue-600 rounded-lg">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"
+                        viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                </div>
                 <p class="text-[11px] font-mono font-bold uppercase tracking-widest text-emerald-900/60">
                     {{ $isAdmin ? 'Analyses' : 'Mes analyses' }}</p>
             </div>

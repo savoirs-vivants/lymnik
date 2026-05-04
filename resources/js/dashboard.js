@@ -1,38 +1,23 @@
+import { QUALITE_CONFIG } from "./core/config";
+import { DEFAULT_TOOLTIP, CHART_FONTS } from "./core/chart-utils";
+
 document.addEventListener("DOMContentLoaded", function () {
     const qualiteRaw = window.dashboardData.qualite || {};
     const typeRaw = window.dashboardData.types || {};
 
     if (Object.keys(qualiteRaw).length > 0) {
-        const ctxQualite = document
-            .getElementById("qualiteChart")
-            .getContext("2d");
-
-        const colorMap = {
-            tres_bon: "#3b82f6",
-            bon: "#10b981",
-            passable: "#fbbf24",
-            mediocre: "#f97316",
-            mauvais: "#ef4444",
-        };
-
-        const labelsQ = Object.keys(qualiteRaw).map((k) => {
-            let clean = k.replace("_", " ");
-            return clean.charAt(0).toUpperCase() + clean.slice(1);
-        });
-
-        const dataQ = Object.values(qualiteRaw);
-        const bgQ = Object.keys(qualiteRaw).map(
-            (k) => colorMap[k.toLowerCase()] || "#94a3b8",
-        );
-
-        new Chart(ctxQualite, {
+        new Chart(document.getElementById("qualiteChart").getContext("2d"), {
             type: "doughnut",
             data: {
-                labels: labelsQ,
+                labels: Object.keys(qualiteRaw).map((k) => k.replace("_", " ")),
                 datasets: [
                     {
-                        data: dataQ,
-                        backgroundColor: bgQ,
+                        data: Object.values(qualiteRaw),
+                        backgroundColor: Object.keys(qualiteRaw).map(
+                            (k) =>
+                                QUALITE_CONFIG[k.toLowerCase()]?.hex ||
+                                "#94a3b8",
+                        ),
                         borderWidth: 0,
                         hoverOffset: 4,
                     },
@@ -43,12 +28,12 @@ document.addEventListener("DOMContentLoaded", function () {
                 maintainAspectRatio: false,
                 cutout: "70%",
                 plugins: {
+                    tooltip: DEFAULT_TOOLTIP,
                     legend: {
                         position: "bottom",
                         labels: {
                             usePointStyle: true,
-                            padding: 20,
-                            font: { family: "'Space Grotesk', sans-serif" },
+                            font: CHART_FONTS.title,
                         },
                     },
                 },
@@ -57,24 +42,16 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     if (Object.keys(typeRaw).length > 0) {
-        const ctxType = document.getElementById("typeChart").getContext("2d");
-
-        const labelsT = Object.keys(typeRaw).map(
-            (k) => k.charAt(0).toUpperCase() + k.slice(1),
-        );
-        const dataT = Object.values(typeRaw);
-
-        new Chart(ctxType, {
+        new Chart(document.getElementById("typeChart").getContext("2d"), {
             type: "bar",
             data: {
-                labels: labelsT,
+                labels: Object.keys(typeRaw),
                 datasets: [
                     {
-                        label: "Nombre d'analyses",
-                        data: dataT,
+                        label: "Analyses",
+                        data: Object.values(typeRaw),
                         backgroundColor: "#4f46e5",
                         borderRadius: 6,
-                        barThickness: 30,
                     },
                 ],
             },
@@ -83,25 +60,11 @@ document.addEventListener("DOMContentLoaded", function () {
                 maintainAspectRatio: false,
                 plugins: {
                     legend: { display: false },
+                    tooltip: DEFAULT_TOOLTIP,
                 },
                 scales: {
-                    y: {
-                        beginAtZero: true,
-                        grid: { borderDash: [4, 4] },
-                        ticks: {
-                            stepSize: 1,
-                            font: { family: "'Space Mono', monospace" },
-                        },
-                    },
-                    x: {
-                        grid: { display: false },
-                        ticks: {
-                            font: {
-                                family: "'Space Grotesk', sans-serif",
-                                weight: "bold",
-                            },
-                        },
-                    },
+                    x: { grid: { display: false } },
+                    y: { beginAtZero: true },
                 },
             },
         });
