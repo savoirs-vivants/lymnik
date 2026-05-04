@@ -4,11 +4,13 @@ use App\Http\Controllers\BackOfficeController;
 use App\Http\Controllers\AnalyseController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CampagneController;
 use App\Http\Controllers\CapteurController;
 use App\Http\Controllers\CoursDEauController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\MobileController;
 use App\Http\Controllers\MapController;
+use App\Http\Controllers\ParticipantController;
 use App\Http\Controllers\ProfilController;
 use App\Http\Controllers\StatistiqueController;
 
@@ -25,6 +27,20 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middl
 
 Route::get('/mobile', [MobileController::class, 'index'])->name('mobile');
 
+// ─── Session participant (sans compte) ────────────────────────────────────────
+Route::get('/code',             [ParticipantController::class, 'showJoin'])->name('participant.join');
+Route::post('/code/valider',    [ParticipantController::class, 'validateCode'])->name('participant.validateCode');
+Route::post('/session/rejoindre', [ParticipantController::class, 'register'])->name('participant.register');
+Route::post('/session/quitter', [ParticipantController::class, 'logout'])->name('participant.logout');
+
+Route::middleware(\App\Http\Middleware\ParticipantSession::class)->prefix('session')->name('participant.')->group(function () {
+    Route::get('/analyses',  [ParticipantController::class, 'analyses'])->name('analyses');
+    Route::get('/map',       [ParticipantController::class, 'map'])->name('map');
+    Route::get('/comparer',  [ParticipantController::class, 'comparer'])->name('comparer');
+    Route::post('/analyse',  [ParticipantController::class, 'storeAnalyse'])->name('storeAnalyse');
+});
+
+// ─── Utilisateurs authentifiés ────────────────────────────────────────────────
 Route::middleware('auth')->group(function () {
     Route::get('/analyses', [AnalyseController::class, 'index'])->name('analyses.index');
     Route::get('/analyses/invalides', [AnalyseController::class, 'invalides'])->name('analyses.invalides');
@@ -40,6 +56,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/mobile/mes-analyses', [AnalyseController::class, 'myAnalyses'])->name('analyses');
 
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+    Route::post('/campagne', [CampagneController::class, 'store'])->name('campagne.store');
 
     Route::get('/backoffice',                  [BackOfficeController::class, 'index'])->name('backoffice.index');
     Route::get('/backoffice/users/{id}',       [BackofficeController::class, 'showUser'])->name('backoffice.show');
