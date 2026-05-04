@@ -14,6 +14,8 @@ class Analyse extends Model
         'est_valide',
         'user_id',
         'qualite',
+        'participant_id',
+        'session_id',
     ];
 
     protected $casts = [
@@ -29,5 +31,15 @@ class Analyse extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function participant()
+    {
+        return $this->belongsTo(SessionParticipant::class, 'participant_id');
+    }
+
+    public function campagne()
+    {
+        return $this->belongsTo(Campagne::class, 'session_id');
     }
 }
