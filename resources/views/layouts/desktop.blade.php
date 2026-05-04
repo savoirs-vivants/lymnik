@@ -21,7 +21,8 @@
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3"></script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    @vite(['resources/css/app.css', 'resources/js/app.js', 'resources/js/map.js', 'resources/js/dashboard.js', 'resources/js/analyses-desktop.js', 'resources/js/statistiques.js', 'resources/js/header.js'])
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    @vite(['resources/css/app.css', 'resources/js/app.js', 'resources/js/map.js', 'resources/js/dashboard.js', 'resources/js/analyses-desktop.js', 'resources/js/statistiques.js', 'resources/js/header.js', 'resources/js/campagne.js'])
     @stack('styles')
 </head>
 
