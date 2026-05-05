@@ -30,6 +30,7 @@
     <button id="btn-invalides" class="hidden" onclick="openInvalidesOverlay()"></button>
     @endif
 
+    @auth
     <div class="relative group cursor-pointer shrink-0" tabindex="0">
         <button class="flex items-center gap-1.5 pl-1 sm:pl-2 pr-1 sm:pr-4 py-1 hover:bg-gray-50 rounded-full transition-all focus:outline-none border border-transparent group-focus-within:border-gray-200 pointer-events-none">
             <div class="w-8 h-8 sm:w-8 sm:h-8 rounded-full bg-[#0F143A] text-white font-black text-[10px] sm:text-xs uppercase flex items-center justify-center shadow-sm">
@@ -63,6 +64,25 @@
             </form>
         </div>
     </div>
+    @elseif(session()->has('participant'))
+    <div class="flex items-center gap-2 shrink-0">
+        <span class="hidden sm:block text-xs font-semibold text-slate-500">{{ session('participant.pseudo') }}</span>
+        @if(session('participant.id_groupe') > 0)
+        <span class="px-2 py-1 rounded-lg bg-[#222a60]/10 text-[#222a60] text-[11px] font-bold">
+            Gr.&nbsp;{{ chr(64 + session('participant.id_groupe')) }}
+        </span>
+        @endif
+        <form action="{{ route('participant.logout') }}" method="POST">
+            @csrf
+            <button type="submit" title="Quitter la session"
+                class="w-8 h-8 rounded-full bg-slate-100 hover:bg-red-50 hover:text-red-500 flex items-center justify-center text-slate-400 transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                </svg>
+            </button>
+        </form>
+    </div>
+    @endauth
 
 </header>
 
