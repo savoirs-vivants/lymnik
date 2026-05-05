@@ -72,3 +72,37 @@ export function qualiteBadgeHtml(q) {
         </span>
     `;
 }
+
+export function getMesureQualite(key, val) {
+    if (val === null || val === undefined || val === '') return null;
+
+    const v = parseFloat(val);
+    const seuils = {
+        nitrites:   [0.03, 0.3, 0.5, 1.0],
+        nitrates:   [2, 10, 25, 50],
+        nitrate:    [2, 10, 25, 50],
+        phosphate:  [0.05, 0.2, 0.5, 1.0],
+        chlore:     [25, 50, 100, 250],
+        ammoniaque: [0.1, 0.5, 2.0, 5.0],
+        ammoniac:   [0.1, 0.5, 2.0, 5.0]
+    };
+
+    if (key === 'ph') {
+        if (v >= 6.5 && v <= 8.5) return 'tres_bon';
+        if (v >= 6.0 && v <= 9.0) return 'bon';
+        if (v >= 5.5 && v <= 9.5) return 'passable';
+        if (v >= 5.0 && v <= 10.0) return 'mediocre';
+        return 'mauvais';
+    }
+
+    if (seuils[key]) {
+        const [s1, s2, s3, s4] = seuils[key];
+        if (v <= s1) return 'tres_bon';
+        if (v <= s2) return 'bon';
+        if (v <= s3) return 'passable';
+        if (v <= s4) return 'mediocre';
+        return 'mauvais';
+    }
+
+    return null; 
+}

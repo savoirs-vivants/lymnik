@@ -50,7 +50,7 @@
             class="relative z-10 max-w-7xl mx-auto px-6 w-full py-20 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div>
                 <h1 class="font-grotesk text-4xl sm:text-5xl lg:text-[52px] font-bold text-white leading-[1.1] mb-6">
-                    Surveiller la qualité<br>
+                    Observer la qualité<br>
                     de nos cours d'eau,<br>
                     <span style="color: #6de8ce;">ensemble.</span>
                 </h1>

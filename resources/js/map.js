@@ -1,6 +1,6 @@
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { QUALITE_CONFIG } from "./core/config.js";
+import { QUALITE_CONFIG, getMesureQualite } from './core/config.js';
 import { createBaseMap, createCustomMarker } from "./core/map-utils.js";
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -345,16 +345,33 @@ document.addEventListener('DOMContentLoaded', () => {
             },
         };
 
-        let casesHtml = "";
-        const buildCases = (typeKey) => {
+        let casesHtml = '';
+        const buildCases = typeKey => {
             if (!mesuresData[typeKey]) return;
             for (const [key, val] of Object.entries(mesuresData[typeKey])) {
-                if (val !== null && val !== "") {
-                    const info = dict[typeKey][key] || { label: key, unit: "" };
-                    casesHtml += `<div class="bg-slate-50 border border-slate-100 rounded-xl p-2.5 text-center flex flex-col justify-center"><div class="text-[9px] text-slate-400 font-mono uppercase tracking-wide mb-1 leading-none">${info.label}</div><div class="text-lg font-bold text-[#222a60] leading-none">${val}<span class="text-[9px] font-normal text-slate-400 ml-0.5">${info.unit}</span></div></div>`;
+                if (val !== null && val !== '') {
+                    const info = dict[typeKey][key] || { label: key, unit: '' };
+
+                    const qualiteKey = getMesureQualite(key, val);
+                    const qCfg = qualiteKey ? QUALITE_CONFIG[qualiteKey] : null;
+
+                    const badgeHtml = qCfg
+                        ? `<div class="mt-2 inline-flex items-center justify-center gap-1 px-1.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider ${qCfg.bg} ${qCfg.text} mx-auto w-fit">
+                               <span class="w-1 h-1 rounded-full ${qCfg.dot}"></span>
+                               ${qCfg.label}
+                           </div>`
+                        : `<div class="mt-2 h-[14px]"></div>`;
+
+                    casesHtml += `
+                        <div class="bg-white border border-slate-200 shadow-sm rounded-xl p-2 pb-2.5 text-center flex flex-col justify-center">
+                            <div class="text-[9px] text-slate-400 font-mono uppercase tracking-wide mb-1 leading-none">${info.label}</div>
+                            <div class="text-lg font-bold text-[#222a60] leading-none">${val}<span class="text-[9px] font-normal text-slate-400 ml-0.5">${info.unit}</span></div>
+                            ${badgeHtml}
+                        </div>`;
                 }
             }
         };
+
         buildCases("bandelette");
         buildCases("photometre");
         if (!casesHtml)
