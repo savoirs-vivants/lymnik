@@ -66,7 +66,7 @@
 
                     {{-- SECTION 1 : Localisation --}}
                     <section aria-labelledby="section-1-title"
-                        class="bg-white rounded-2xl border border-slate-100 shadow-[0_2px_10px_rgba(34,42,96,0.04)] overflow-hidden mb-4">
+                        class="bg-white rounded-2xl border border-slate-100 shadow-[0_2px_10px_rgba(34,42,96,0.04)] mb-4 relative z-10">
                         <div class="flex items-center gap-2.5 px-5 pt-4 pb-3 border-b border-slate-100">
                             <span
                                 class="w-6 h-6 rounded-full bg-[#222a60] text-white font-mono text-[11px] font-bold
@@ -115,24 +115,40 @@
                                         {{ $lat ? 'Placé' : '—' }}
                                     </span>
                                 </div>
-                                <div
-                                    class="flex items-center gap-2.5 py-2.5 px-3 bg-slate-50 rounded-xl border border-slate-100">
-                                    <div class="w-2 h-2 rounded-full bg-[#16987c] shrink-0" aria-hidden="true"></div>
-                                    <div class="flex-1 min-w-0">
-                                        <p class="font-mono text-[10px] text-slate-400 uppercase tracking-wide mb-0.5">
-                                            Cours d'eau</p>
-                                        <p class="font-mono text-[11px] text-slate-700 font-medium truncate"
-                                            id="river-display">
-                                            @if ($coursDEauId && $nomCoursEau)
-                                                {{ $nomCoursEau }}
-                                            @else
-                                                Recherche…
-                                            @endif
-                                        </p>
+                                <div class="flex flex-col gap-1.5">
+                                    <div
+                                        class="flex items-center gap-2.5 py-2.5 px-3 bg-slate-50 rounded-xl border border-slate-100">
+                                        <div class="w-2 h-2 rounded-full bg-[#16987c] shrink-0" aria-hidden="true"></div>
+                                        <div class="flex-1 min-w-0">
+                                            <p class="font-mono text-[10px] text-slate-400 uppercase tracking-wide mb-0.5">
+                                                Cours d'eau</p>
+                                            <p class="font-mono text-[11px] text-slate-700 font-medium truncate"
+                                                id="river-display">
+                                                @if ($coursDEauId && $nomCoursEau)
+                                                    {{ $nomCoursEau }}
+                                                @else
+                                                    Recherche…
+                                                @endif
+                                            </p>
+                                        </div>
+                                        <span class="text-[11px] font-bold text-[#16987c] shrink-0" id="river-status">
+                                            {{ $coursDEauId ? 'Trouvé' : '' }}
+                                        </span>
                                     </div>
-                                    <span class="text-[11px] font-bold text-[#16987c] shrink-0" id="river-status">
-                                        {{ $coursDEauId ? 'Trouvé' : '' }}
-                                    </span>
+
+                                    {{-- Recherche manuelle — affiché si cours d'eau non trouvé automatiquement --}}
+                                    <div id="river-search-block" class="{{ $coursDEauId ? 'hidden' : '' }} relative">
+                                        <input id="river-search-input" type="text"
+                                            placeholder="Chercher un cours d'eau par nom…"
+                                            autocomplete="off"
+                                            class="w-full px-3 py-2 rounded-xl border border-slate-200 bg-white text-[12px] text-slate-800
+                                                   placeholder:text-slate-400 focus:border-[#222a60] focus:ring-2 focus:ring-[#222a60]/15
+                                                   focus:outline-none transition-all">
+                                        <div id="river-search-results"
+                                            class="hidden absolute left-0 right-0 top-full mt-1 bg-white border border-slate-200 rounded-xl
+                                                   shadow-xl z-30 overflow-hidden max-h-48 overflow-y-auto">
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -438,7 +454,8 @@
         window.initLng = parseFloat("{{ $lng ?? '7.7512' }}");
         window.initCoursDEauId = {{ $coursDEauId ? (int) $coursDEauId : 'null' }};
         window.initNomCoursEau = @json($nomCoursEau ?? null);
-        window.nearestRiverUrl = "{{ route('cours-d-eau.nearest') }}";
+        window.nearestRiverUrl  = "{{ route('cours-d-eau.nearest') }}";
+        window.searchRiverUrl   = "{{ route('cours-d-eau.search') }}";
     </script>
 
     <script src="{{ asset('js/nouvelle-analyse.js') }}"></script>
