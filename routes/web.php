@@ -27,17 +27,25 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middl
 
 Route::get('/mobile', [MobileController::class, 'index'])->name('mobile');
 
+// Route accessible sans auth (utilisée aussi par les participants via map.js)
+Route::get('/mobile/cours-d-eau/nearest', [CoursDEauController::class, 'nearest'])->name('cours-d-eau.nearest');
+
+// GET + POST /analyse accessibles aux utilisateurs auth ET aux participants
+Route::middleware(\App\Http\Middleware\AuthOrParticipant::class)->group(function () {
+    Route::get('/analyse/create', [AnalyseController::class, 'create'])->name('analyse.create');
+    Route::post('/analyse',       [AnalyseController::class, 'store'])->name('analyse.store');
+});
+
 // ─── Session participant (sans compte) ────────────────────────────────────────
-Route::get('/code',             [ParticipantController::class, 'showJoin'])->name('participant.join');
-Route::post('/code/valider',    [ParticipantController::class, 'validateCode'])->name('participant.validateCode');
+Route::get('/code',               [ParticipantController::class, 'showJoin'])->name('participant.join');
+Route::post('/code/valider',      [ParticipantController::class, 'validateCode'])->name('participant.validateCode');
 Route::post('/session/rejoindre', [ParticipantController::class, 'register'])->name('participant.register');
-Route::post('/session/quitter', [ParticipantController::class, 'logout'])->name('participant.logout');
+Route::post('/session/quitter',   [ParticipantController::class, 'logout'])->name('participant.logout');
 
 Route::middleware(\App\Http\Middleware\ParticipantSession::class)->prefix('session')->name('participant.')->group(function () {
-    Route::get('/analyses',  [ParticipantController::class, 'analyses'])->name('analyses');
-    Route::get('/map',       [ParticipantController::class, 'map'])->name('map');
-    Route::get('/comparer',  [ParticipantController::class, 'comparer'])->name('comparer');
-    Route::post('/analyse',  [ParticipantController::class, 'storeAnalyse'])->name('storeAnalyse');
+    Route::get('/analyses',     [ParticipantController::class, 'analyses'])->name('analyses');
+    Route::get('/map',          [ParticipantController::class, 'map'])->name('map');
+    Route::get('/statistiques', [ParticipantController::class, 'statistiques'])->name('statistiques');
 });
 
 // ─── Utilisateurs authentifiés ────────────────────────────────────────────────
@@ -45,14 +53,11 @@ Route::middleware('auth')->group(function () {
     Route::get('/analyses', [AnalyseController::class, 'index'])->name('analyses.index');
     Route::get('/analyses/invalides', [AnalyseController::class, 'invalides'])->name('analyses.invalides');
     Route::patch('/analyse/{analyse}/valider', [AnalyseController::class, 'valider'])->name('analyse.valider');
-    Route::get('/analyse/create', [AnalyseController::class, 'create'])->name('analyse.create');
-    Route::post('/analyse',       [AnalyseController::class, 'store'])->name('analyse.store');
 
     Route::get('/profil',          [ProfilController::class, 'profil'])->name('profil');
     Route::get('/profil/modifier', [ProfilController::class, 'edit'])->name('profil.edit');
     Route::put('/profil/modifier', [ProfilController::class, 'update'])->name('profil.update');
 
-    Route::get('/mobile/cours-d-eau/nearest', [CoursDEauController::class, 'nearest'])->name('cours-d-eau.nearest');
     Route::get('/mobile/mes-analyses', [AnalyseController::class, 'myAnalyses'])->name('analyses');
 
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');

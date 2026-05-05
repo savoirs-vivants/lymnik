@@ -237,16 +237,19 @@ class AnalyseController extends Controller
                 );
             }
 
-            $qualite = $this->calculerQualite($mesures);
+            $qualite     = $this->calculerQualite($mesures);
+            $participant = session('participant');
 
             Analyse::create([
-                'point_id'   => $point->id,
-                'type'       => $request->type,
-                'image'      => $imagePath,
-                'mesures'    => json_encode($mesures),
-                'est_valide' => $this->isValid($mesures),
-                'qualite'    => $qualite,
-                'user_id'    => Auth::id(),
+                'point_id'       => $point->id,
+                'type'           => $request->type,
+                'image'          => $imagePath,
+                'mesures'        => json_encode($mesures),
+                'est_valide'     => $this->isValid($mesures),
+                'qualite'        => $qualite,
+                'user_id'        => Auth::id(),
+                'participant_id' => $participant['id']        ?? null,
+                'session_id'     => $participant['id_session'] ?? null,
             ]);
         });
 
