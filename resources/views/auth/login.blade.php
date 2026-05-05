@@ -83,10 +83,9 @@
                         <input id="password" name="password" type="password" placeholder="••••••••"
                             autocomplete="current-password"
                             class="field w-full rounded-xl px-4 py-3 pr-11 text-sm @error('password') error @enderror">
-                        <button type="button" onclick="togglePassword()"
-                            class="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors duration-150"
-                            aria-label="Afficher le mot de passe">
-                            <svg id="eye-icon" class="w-4 h-4" fill="none" stroke="currentColor"
+                        <button type="button" onclick="togglePassword('password', 'eye-pwd')"
+                            class="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors duration-150">
+                            <svg id="eye-pwd" class="w-4.5 h-4.5" fill="none" stroke="currentColor"
                                 viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
