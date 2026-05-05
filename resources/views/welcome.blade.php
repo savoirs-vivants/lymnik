@@ -248,8 +248,8 @@
                     class="text-gray-400 hover:text-sv-blue text-xs transition-colors duration-200">
                     Mentions légales
                 </a>
-                <a href="/contact" class="text-gray-400 hover:text-sv-blue text-xs transition-colors duration-200">
-                    Contact
+                <a href="/politique-de-confidentialite" class="text-gray-400 hover:text-sv-blue text-xs transition-colors duration-200">
+                    Politique de confidentialité
                 </a>
             </div>
         </div>
