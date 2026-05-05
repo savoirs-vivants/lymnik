@@ -87,7 +87,7 @@ $qualiteConfig = [
             <p class="text-sm text-slate-400 mt-1 max-w-xs">Choisissez un cours d'eau dans la liste pour voir les analyses.</p>
         </div>
 
-        <div id="detail-panel" class="hidden max-w-4xl mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
+         <div id="detail-panel" class="hidden w-full max-w-7xl mx-auto p-4 sm:p-6 lg:p-10 space-y-6 sm:space-y-8">
 
             <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
@@ -136,5 +136,5 @@ $qualiteConfig = [
 window.__coursDEaux    = @json($coursDEaux);
 window.__qualiteConfig = @json($qualiteConfig);
 </script>
-<script type="module" src="{{ Vite::asset('resources/js/participant-analyses.js') }}"></script>
+<script src="{{ Vite::asset('resources/js/participant-analyses.js') }}"></script>
 @endpush

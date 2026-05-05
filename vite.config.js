@@ -19,8 +19,6 @@ export default defineConfig({
                 'resources/js/campagne.js',
                 'resources/js/join-session.js',
                 'resources/js/participant-analyses.js',
-                'resources/js/participant-map.js',
-                'resources/js/participant-comparer.js',
             ],
             refresh: true,
         }),

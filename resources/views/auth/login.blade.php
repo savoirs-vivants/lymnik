@@ -124,7 +124,7 @@
 
         <p class="text-center text-slate-400 text-xs">
             Vous avez un code classe ?
-            <a href="/"
+            <a href="/code"
                 class="text-blue-400 hover:text-blue-300 underline underline-offset-2 transition-colors duration-150">
                 Rejoindre avec un code
             </a>

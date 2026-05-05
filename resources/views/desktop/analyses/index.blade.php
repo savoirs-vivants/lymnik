@@ -142,7 +142,7 @@
                     l'historique complet de ses analyses.</p>
             </div>
 
-            <div id="detail-panel" class="hidden max-w-6xl mx-auto p-4 sm:p-6 lg:p-10 space-y-6 sm:space-y-8">
+            <div id="detail-panel" class="hidden w-full max-w-7xl mx-auto p-4 sm:p-6 lg:p-10 space-y-6 sm:space-y-8">
 
                 <div
                     class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-4 sm:p-6 rounded-2xl sm:rounded-[2rem] border border-slate-100 shadow-sm">
