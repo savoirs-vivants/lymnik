@@ -16,6 +16,7 @@ class Analyse extends Model
         'qualite',
         'participant_id',
         'session_id',
+        'nom',
     ];
 
     protected $casts = [

@@ -152,7 +152,19 @@
                             </h2>
                         </div>
 
-                        <div class="px-5 pb-5 pt-4 flex gap-4">
+                        <div class="px-5 pt-4 pb-3">
+                            <label for="nom-analyse" class="block text-[11px] font-mono font-bold uppercase tracking-widest text-slate-400 mb-1.5">
+                                Nom de l'analyse <span class="normal-case font-normal text-slate-300">(optionnel)</span>
+                            </label>
+                            <input id="nom-analyse" type="text" name="nom" maxlength="150"
+                                value="{{ old('nom') }}"
+                                placeholder="Ex : Prélèvement amont barrage, Sortie classe…"
+                                class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-[13px] text-slate-800
+                                       placeholder:text-slate-400 focus:border-[#222a60] focus:bg-white focus:ring-2 focus:ring-[#222a60]/15
+                                       focus:outline-none transition-all">
+                        </div>
+
+                        <div class="px-5 pb-5 pt-1 flex gap-4">
                             {{-- Zone photo --}}
                             <div class="shrink-0">
                                 <input type="file" name="image" id="file-upload" class="sr-only" accept="image/*"

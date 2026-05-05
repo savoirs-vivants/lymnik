@@ -319,7 +319,7 @@ document.addEventListener('DOMContentLoaded', () => {
             p.latitude.toFixed(4) + "° N · " + p.longitude.toFixed(4) + "° E";
         sheet.querySelector(".sheet-type-text").textContent = p.ville ?? "";
         sheet.querySelector(".sheet-river-name").textContent =
-            p.cours_d_eau ?? "Cours d'eau inconnu";
+            a?.nom || p.cours_d_eau || "Cours d'eau inconnu";
 
         let mesuresData = {};
         try {

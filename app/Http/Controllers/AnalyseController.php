@@ -248,8 +248,9 @@ class AnalyseController extends Controller
                 'est_valide'     => $this->isValid($mesures),
                 'qualite'        => $qualite,
                 'user_id'        => Auth::id(),
-                'participant_id' => $participant['id']        ?? null,
+                'participant_id' => $participant['id']         ?? null,
                 'session_id'     => $participant['id_session'] ?? null,
+                'nom'            => $request->filled('nom') ? trim($request->nom) : null,
             ]);
         });
 

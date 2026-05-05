@@ -31,6 +31,7 @@ class MapController extends Controller
                 'type'       => $p->analyses->first()->type,
                 'est_valide' => (bool) $p->analyses->first()->est_valide,
                 'qualite'    => $p->analyses->first()->qualite,
+                'nom'        => $p->analyses->first()->nom,
                 'user_name'  => trim(
                     ($p->analyses->first()->user?->firstname ?? '') . ' ' .
                         ($p->analyses->first()->user?->name ?? 'Participant')
