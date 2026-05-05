@@ -43,6 +43,12 @@
                         <input id="campagne-nb-groupes" type="number" min="0" max="26" value="0" required
                             class="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#222a60]/25 focus:border-[#222a60] transition-all">
                     </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-1.5">Date de fin <span class="font-normal text-slate-400">(le code sera inactif après cette date)</span></label>
+                        <input id="campagne-date-fin" type="date" required
+                            min="{{ now()->addDay()->format('Y-m-d') }}"
+                            class="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#222a60]/25 focus:border-[#222a60] transition-all">
+                    </div>
                     <p id="campagne-error" class="text-sm text-red-500 font-medium"></p>
                     <button type="submit"
                         class="w-full py-3 rounded-xl bg-[#222a60] text-white font-bold text-sm hover:bg-[#1a2050] transition-colors">

@@ -28,6 +28,10 @@ class ParticipantController extends Controller
             return response()->json(['error' => 'Code invalide. Vérifiez et réessayez.'], 404);
         }
 
+        if ($campagne->date_fin && $campagne->date_fin->isPast()) {
+            return response()->json(['error' => 'Cette campagne est terminée (date de fin dépassée).'], 403);
+        }
+
         return response()->json([
             'campagne_id' => $campagne->id,
             'nom'         => $campagne->nom,

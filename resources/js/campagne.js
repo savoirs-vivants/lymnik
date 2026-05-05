@@ -42,6 +42,7 @@ if (!modal) {
         const data = {
             nom:        document.getElementById('campagne-nom').value.trim(),
             nb_groupes: parseInt(document.getElementById('campagne-nb-groupes').value, 10),
+            date_fin:   document.getElementById('campagne-date-fin').value,
             _token:     document.querySelector('meta[name="csrf-token"]').content,
         };
 

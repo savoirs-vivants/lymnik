@@ -7,7 +7,9 @@ use Illuminate\Support\Str;
 
 class Campagne extends Model
 {
-    protected $fillable = ['nom', 'id_gestionnaire', 'nb_groupes'];
+    protected $fillable = ['nom', 'id_gestionnaire', 'nb_groupes', 'date_fin'];
+
+    protected $casts = ['date_fin' => 'date'];
 
     protected static function booted()
     {
