@@ -35,8 +35,9 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middl
 
 Route::get('/mobile', [MobileController::class, 'index'])->name('mobile');
 
-// Route accessible sans auth (utilisée aussi par les participants via map.js)
+// Routes cours d'eau accessibles sans auth
 Route::get('/mobile/cours-d-eau/nearest', [CoursDEauController::class, 'nearest'])->name('cours-d-eau.nearest');
+Route::get('/cours-d-eau/search',         [CoursDEauController::class, 'search'])->name('cours-d-eau.search');
 
 // GET + POST /analyse accessibles aux utilisateurs auth ET aux participants
 Route::middleware(\App\Http\Middleware\AuthOrParticipant::class)->group(function () {

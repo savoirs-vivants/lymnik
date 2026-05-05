@@ -176,19 +176,35 @@ document.addEventListener("DOMContentLoaded", () => {
 
     setTimeout(() => miniMap.invalidateSize(), 150);
 
-    const riverInput = document.querySelector('input[name="cours_d_eau_id"]');
-    const riverDisplay = document.getElementById("river-display");
-    const riverStatus = document.getElementById("river-status");
-    const analyseForm = document.getElementById("analyse-form");
+    const riverInput       = document.querySelector('input[name="cours_d_eau_id"]');
+    const riverDisplay     = document.getElementById("river-display");
+    const riverStatus      = document.getElementById("river-status");
+    const riverSearchBlock = document.getElementById("river-search-block");
+    const riverSearchInput = document.getElementById("river-search-input");
+    const riverSearchRes   = document.getElementById("river-search-results");
+    const analyseForm      = document.getElementById("analyse-form");
 
     let riverFetchDone = true;
-    let riverFetch = null;
+    let riverFetch     = null;
+
+    function showRiverSearch() {
+        if (riverSearchBlock) riverSearchBlock.classList.remove("hidden");
+    }
+
+    function hideRiverSearch() {
+        if (riverSearchBlock) riverSearchBlock.classList.add("hidden");
+    }
+
+    function setRiver(id, nom) {
+        if (riverInput)   riverInput.value = id;
+        if (riverDisplay) riverDisplay.textContent = nom;
+        if (riverStatus)  riverStatus.textContent = "Trouvé";
+        hideRiverSearch();
+    }
 
     if (window.initCoursDEauId) {
-        if (riverDisplay)
-            riverDisplay.textContent =
-                window.initNomCoursEau ?? "Cours d'eau associé";
-        if (riverStatus) riverStatus.textContent = "Trouvé";
+        if (riverDisplay) riverDisplay.textContent = window.initNomCoursEau ?? "Cours d'eau associé";
+        if (riverStatus)  riverStatus.textContent = "Trouvé";
     } else if (window.nearestRiverUrl) {
         riverFetchDone = false;
         riverFetch = fetch(`${window.nearestRiverUrl}?lat=${lat}&lng=${lng}`)
@@ -196,21 +212,76 @@ document.addEventListener("DOMContentLoaded", () => {
             .then((river) => {
                 riverFetchDone = true;
                 if (river?.id) {
-                    if (riverInput) riverInput.value = river.id;
-                    if (riverDisplay) riverDisplay.textContent = river.nom;
-                    if (riverStatus) riverStatus.textContent = "Trouvé";
+                    setRiver(river.id, river.nom);
                 } else {
-                    if (riverDisplay)
-                        riverDisplay.textContent = "Position libre";
-                    if (riverStatus) riverStatus.textContent = "—";
+                    if (riverDisplay) riverDisplay.textContent = "Non trouvé automatiquement";
+                    if (riverStatus)  riverStatus.textContent = "—";
+                    showRiverSearch();
                 }
             })
             .catch(() => {
                 riverFetchDone = true;
-                if (riverDisplay) riverDisplay.textContent = "Position libre";
-                if (riverStatus) riverStatus.textContent = "—";
+                if (riverDisplay) riverDisplay.textContent = "Non trouvé automatiquement";
+                if (riverStatus)  riverStatus.textContent = "—";
+                showRiverSearch();
             });
     }
+
+    // ─── Recherche manuelle cours d'eau ──────────────────────────────────────
+    let riverSearchTimeout = null;
+
+    riverSearchInput?.addEventListener("input", () => {
+        const q = riverSearchInput.value.trim();
+        clearTimeout(riverSearchTimeout);
+        if (riverSearchRes) riverSearchRes.classList.add("hidden");
+
+        if (q.length < 2) return;
+
+        riverSearchTimeout = setTimeout(async () => {
+            try {
+                const res  = await fetch(`${window.searchRiverUrl}?q=${encodeURIComponent(q)}`);
+                const data = await res.json();
+
+                if (!riverSearchRes) return;
+
+                if (!data.length) {
+                    riverSearchRes.innerHTML =
+                        '<div class="px-4 py-3 text-xs text-slate-400 italic">Aucun cours d\'eau trouvé</div>';
+                    riverSearchRes.classList.remove("hidden");
+                    return;
+                }
+
+                riverSearchRes.innerHTML = data.map(r => `
+                    <button type="button" data-id="${r.id}" data-nom="${r.nom}"
+                        class="river-result w-full text-left px-4 py-2.5 hover:bg-blue-50 flex items-center gap-3 border-b border-slate-50 last:border-0 transition-colors">
+                        <svg class="w-3.5 h-3.5 text-[#16987c] shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                        </svg>
+                        <div>
+                            <p class="text-[12px] font-bold text-slate-800">${r.nom}</p>
+                            ${r.type_cours ? `<p class="text-[10px] text-slate-400 font-mono">${r.type_cours}</p>` : ''}
+                        </div>
+                    </button>
+                `).join('');
+                riverSearchRes.classList.remove("hidden");
+            } catch { /* silencieux */ }
+        }, 300);
+    });
+
+    riverSearchRes?.addEventListener("mousedown", (e) => {
+        const btn = e.target.closest(".river-result");
+        if (!btn) return;
+        e.preventDefault();
+        setRiver(btn.dataset.id, btn.dataset.nom);
+        riverSearchInput.value = "";
+        riverSearchRes.classList.add("hidden");
+    });
+
+    document.addEventListener("click", (e) => {
+        if (!riverSearchBlock?.contains(e.target)) {
+            riverSearchRes?.classList.add("hidden");
+        }
+    });
 
     // City background search (API Adresse Gouv)
     const villeInput = document.getElementById("f-ville");

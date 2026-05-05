@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\CoursDEau;
 use App\Services\CoursDEauService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -25,5 +26,21 @@ class CoursDEauController extends Controller
             'id'  => $river->id,
             'nom' => $river->nom,
         ]);
+    }
+
+    public function search(Request $request): JsonResponse
+    {
+        $q = trim($request->query('q', ''));
+
+        if (strlen($q) < 2) {
+            return response()->json([]);
+        }
+
+        $results = CoursDEau::where('nom', 'LIKE', '%' . $q . '%')
+            ->orderBy('nom')
+            ->limit(8)
+            ->get(['id', 'nom', 'type_cours']);
+
+        return response()->json($results);
     }
 }
