@@ -49,8 +49,9 @@
         <nav class="flex-1 px-2 py-3 space-y-0.5">
             @php
                 $nav = [
-                    ['label' => 'Analyses', 'route' => 'participant.analyses', 'icon' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>'],
-                    ['label' => 'Carte',    'route' => 'participant.map',      'icon' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-1.447-.894L15 4m0 13V4m0 0L9 7"/>'],
+                    ['label' => 'Analyses',     'route' => 'participant.analyses',    'icon' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>'],
+                    ['label' => 'Carte',        'route' => 'participant.map',         'icon' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-1.447-.894L15 4m0 13V4m0 0L9 7"/>'],
+                    ['label' => 'Statistiques', 'route' => 'participant.statistiques','icon' => '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"/>'],
                 ];
             @endphp
             @foreach ($nav as $item)
@@ -104,7 +105,7 @@
             </div>
         </header>
 
-        <main class="flex-1 {{ request()->routeIs('participant.map') || request()->routeIs('participant.analyses') ? 'p-0 overflow-hidden flex flex-col' : 'p-4 sm:p-6 overflow-y-auto' }}">
+        <main class="flex-1 {{ request()->routeIs('participant.map') || request()->routeIs('participant.analyses') || request()->routeIs('participant.statistiques') ? 'p-0 overflow-hidden flex flex-col' : 'p-4 sm:p-6 lg:p-8 overflow-y-auto' }}">
             @yield('content')
         </main>
 
