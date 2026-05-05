@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\Point;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 
 class ProfilController extends Controller
@@ -46,6 +47,29 @@ class ProfilController extends Controller
             'email'     => $request->email,
         ]);
 
-        return redirect()->route('dashboard')->with('success', 'Profil mis à jour avec succès.');
+        return redirect()->route('profil.edit')->with('success', 'Profil mis à jour avec succès.');
+    }
+
+    public function updatePassword(Request $request)
+    {
+        $user = $request->user();
+
+        $request->validate([
+            'current_password' => ['required', 'string'],
+            'password'         => ['required', 'string', 'min:8', 'confirmed'],
+        ]);
+
+        if (! Hash::check($request->current_password, $user->password)) {
+            return back()
+                ->withErrors(['current_password' => 'Le mot de passe actuel est incorrect.'])
+                ->withInput()
+                ->with('tab', 'password');
+        }
+
+        $user->update(['password' => Hash::make($request->password)]);
+
+        return redirect()->route('profil.edit')
+            ->with('success_password', 'Mot de passe modifié avec succès.')
+            ->with('tab', 'password');
     }
 }

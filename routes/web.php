@@ -63,9 +63,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/analyses/invalides', [AnalyseController::class, 'invalides'])->name('analyses.invalides');
     Route::patch('/analyse/{analyse}/valider', [AnalyseController::class, 'valider'])->name('analyse.valider');
 
-    Route::get('/profil',          [ProfilController::class, 'profil'])->name('profil');
-    Route::get('/profil/modifier', [ProfilController::class, 'edit'])->name('profil.edit');
-    Route::put('/profil/modifier', [ProfilController::class, 'update'])->name('profil.update');
+    Route::get('/profil',                   [ProfilController::class, 'profil'])->name('profil');
+    Route::get('/profil/modifier',          [ProfilController::class, 'edit'])->name('profil.edit');
+    Route::put('/profil/modifier',          [ProfilController::class, 'update'])->name('profil.update');
+    Route::put('/profil/modifier/password', [ProfilController::class, 'updatePassword'])->name('profil.update-password');
 
     Route::get('/mobile/mes-analyses', [AnalyseController::class, 'myAnalyses'])->name('analyses');
 
