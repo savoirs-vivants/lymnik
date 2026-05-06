@@ -1,34 +1,35 @@
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { QUALITE_CONFIG, getMesureQualite } from './core/config.js';
+import { QUALITE_CONFIG, getMesureQualite } from "./core/config.js";
 import { createBaseMap, createCustomMarker } from "./core/map-utils.js";
 
-document.addEventListener('DOMContentLoaded', () => {
-    const mapElement = document.getElementById('map');
+document.addEventListener("DOMContentLoaded", () => {
+    const mapElement = document.getElementById("map");
     if (!mapElement) return;
 
     const urlParams = new URLSearchParams(window.location.search);
-    const urlLat = urlParams.get('lat');
-    const urlLng = urlParams.get('lng');
+    const urlLat = urlParams.get("lat");
+    const urlLng = urlParams.get("lng");
 
-    const savedCenter = JSON.parse(localStorage.getItem('lymnik_map_center'));
-    const savedZoom   = localStorage.getItem('lymnik_map_zoom');
+    const savedCenter = JSON.parse(localStorage.getItem("lymnik_map_center"));
+    const savedZoom = localStorage.getItem("lymnik_map_zoom");
 
     let initialCenter = savedCenter || [48.8153, 7.7884];
-    let initialZoom   = savedZoom || 13;
+    let initialZoom = savedZoom || 13;
 
     if (urlLat && urlLng) {
         initialCenter = [parseFloat(urlLat), parseFloat(urlLng)];
         initialZoom = 16;
     }
 
-    const map = createBaseMap('map', initialCenter[0], initialCenter[1], initialZoom, true);
+    const map = createBaseMap(
+        "map",
+        initialCenter[0],
+        initialCenter[1],
+        initialZoom,
+        true,
+    );
     window.map = map;
-
-    map.on('moveend', () => {
-        localStorage.setItem('lymnik_map_center', JSON.stringify(map.getCenter()));
-        localStorage.setItem('lymnik_map_zoom', map.getZoom());
-    });
 
     map.on("moveend", () => {
         localStorage.setItem(
@@ -345,12 +346,12 @@ document.addEventListener('DOMContentLoaded', () => {
             },
         };
 
-        let casesHtml = '';
-        const buildCases = typeKey => {
+        let casesHtml = "";
+        const buildCases = (typeKey) => {
             if (!mesuresData[typeKey]) return;
             for (const [key, val] of Object.entries(mesuresData[typeKey])) {
-                if (val !== null && val !== '') {
-                    const info = dict[typeKey][key] || { label: key, unit: '' };
+                if (val !== null && val !== "") {
+                    const info = dict[typeKey][key] || { label: key, unit: "" };
 
                     const qualiteKey = getMesureQualite(key, val);
                     const qCfg = qualiteKey ? QUALITE_CONFIG[qualiteKey] : null;
@@ -399,7 +400,15 @@ document.addEventListener('DOMContentLoaded', () => {
             "° E";
         sheet.querySelector(".sheet-type-text").textContent =
             "Station Automatique";
-        sheet.querySelector(".sheet-river-name").textContent = "Capteur Lymnik";
+
+        sheet.querySelector(".sheet-river-name").innerHTML = `
+            <a href="/capteurs/${c.id}" class="hover:text-blue-600 transition-colors flex items-center gap-1.5 w-fit">
+                Capteur Lymnik
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+                </svg>
+            </a>
+        `;
 
         const metrics = [
             { label: "Turbidité", unit: "NTU", val: c.turbidite },
