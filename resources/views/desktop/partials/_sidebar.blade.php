@@ -52,16 +52,18 @@
                 [
                     'label' => 'Analyses',
                     'route' => 'analyses.index',
-                    'active_pattern' => 'analyses*',
+                    'active_pattern' => ['*analyses*', '*campagnes*'],
                     'icon' =>
                         '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>',
                     'sub' => [
                         [
                             'label' => 'Participants',
                             'route' => 'analyses.index',
-                            'params' => ['mode' => 'participants'],
                         ],
-                        ['label' => 'Campagnes', 'route' => 'analyses.index', 'params' => ['mode' => 'campagnes']],
+                        [
+                            'label' => 'Campagnes',
+                            'route' => 'campagnes.resultats',
+                        ],
                     ],
                 ],
                 [
@@ -89,15 +91,19 @@
         @endphp
 
         @foreach ($nav as $item)
-            @php $active = request()->is($item['active_pattern']); @endphp
+            @php
+                // Gère le cas où active_pattern est un tableau ou une simple chaîne
+                $patterns = is_array($item['active_pattern']) ? $item['active_pattern'] : [$item['active_pattern']];
+                $active = request()->is(...$patterns) || request()->routeIs(...$patterns);
+            @endphp
 
             @if (isset($item['sub']))
                 <div x-data="{ open: {{ $active ? 'true' : 'false' }} }" class="group/nav flex flex-col">
 
                     <button type="button" @click="open = !open" title="{{ $item['label'] }}"
                         class="w-full relative flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors
-                           {{ $active ? 'bg-white/15 text-white' : 'text-white/55 hover:bg-white/8 hover:text-white/90' }}
-                           md:justify-center md:px-0 lg:justify-between lg:px-3 focus:outline-none">
+                    {{ $active ? 'bg-white/15 text-white' : 'text-white/55 hover:bg-white/8 hover:text-white/90' }}
+                    md:justify-center md:px-0 lg:justify-between lg:px-3 focus:outline-none">
 
                         <div class="flex items-center gap-3">
                             <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"
@@ -125,15 +131,11 @@
                         <div class="pl-11 pr-3 py-1.5 space-y-1">
                             @foreach ($item['sub'] as $subItem)
                                 @php
-                                    $isSubActive =
-                                        $active &&
-                                        (request('mode') === $subItem['params']['mode'] ||
-                                            (request('mode') === null &&
-                                                $subItem['params']['mode'] === 'participants'));
+                                    $isSubActive = request()->routeIs($subItem['route']);
                                 @endphp
-                                <a href="{{ route($subItem['route'], $subItem['params']) }}"
+                                <a href="{{ route($subItem['route'], $subItem['params'] ?? []) }}"
                                     class="block px-3 py-2 rounded-lg text-[13px] font-medium transition-colors
-                                      {{ $isSubActive ? 'bg-white/10 text-white font-bold' : 'text-white/50 hover:bg-white/5 hover:text-white' }}">
+                                {{ $isSubActive ? 'bg-white/10 text-white font-bold' : 'text-white/50 hover:bg-white/5 hover:text-white' }}">
                                     {{ $subItem['label'] }}
                                 </a>
                             @endforeach
@@ -143,8 +145,8 @@
             @else
                 <a href="{{ route($item['route']) }}" title="{{ $item['label'] }}"
                     class="relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors group
-                      {{ $active ? 'bg-white/15 text-white' : 'text-white/55 hover:bg-white/8 hover:text-white/90' }}
-                      md:justify-center md:px-0 lg:justify-start lg:px-3">
+                {{ $active ? 'bg-white/15 text-white' : 'text-white/55 hover:bg-white/8 hover:text-white/90' }}
+                md:justify-center md:px-0 lg:justify-start lg:px-3">
 
                     <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"
                         viewBox="0 0 24 24" class="flex-shrink-0">

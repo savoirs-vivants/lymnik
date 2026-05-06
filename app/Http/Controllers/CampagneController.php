@@ -96,4 +96,88 @@ class CampagneController extends Controller
 
         return response()->json(['ok' => true]);
     }
+
+    public function resultats()
+    {
+        $query = Campagne::with(['participants.analyses.point.coursDEau'])
+            ->orderByDesc('created_at');
+
+        if (!Auth::user()->is_admin) {
+            $query->where('id_gestionnaire', Auth::id());
+        }
+        $campagnes = $query->get()
+            ->map(function ($campagne) {
+                $groupes = $campagne->participants->groupBy('id_groupe')->map(function ($participants, $idGroupe) {
+                    $analyses = $participants->flatMap->analyses;
+                    if ($analyses->isEmpty()) return null;
+
+                    $points = $analyses->groupBy('point_id')->map(function ($analysesPoint) use ($participants) {
+                        $pt = $analysesPoint->first()->point;
+
+                        return [
+                            'id'        => $pt->id,
+                            'latitude'  => (float) $pt->latitude,
+                            'longitude' => (float) $pt->longitude,
+                            'ville'     => $pt->ville ?? 'Point GPS',
+                            'analyses'  => $analysesPoint->sortByDesc('created_at')->map(function ($a) use ($participants) {
+                                $participant = $participants->firstWhere('id', $a->participant_id);
+                                $mesures = is_string($a->mesures) ? json_decode($a->mesures, true) : ($a->mesures ?? []);
+
+                                $saisiPar = trim(($participant->prenom ?? '') . ' ' . ($participant->nom ?? ''));
+                                if (empty($saisiPar)) $saisiPar = $participant->pseudo ?? 'Inconnu';
+
+                                return [
+                                    'id'         => $a->id,
+                                    'type'       => $a->type,
+                                    'qualite'    => $a->qualite,
+                                    'date'       => $a->created_at?->translatedFormat('d M Y'),
+                                    'time'       => $a->created_at?->format('H:i'),
+                                    'created_at' => $a->created_at?->toISOString(),
+                                    'image'      => $a->image ? asset('storage/' . $a->image) : null,
+                                    'note'       => $mesures['note'] ?? null,
+                                    'bandelette' => $mesures['bandelette'] ?? null,
+                                    'photometre' => $mesures['photometre'] ?? null,
+                                    'saisi_par'  => $saisiPar,
+                                ];
+                            })->values(),
+                        ];
+                    })->values();
+
+                    $qualiteCounts = $analyses->countBy('qualite')->toArray();
+
+                    return [
+                        'id_groupe'       => $idGroupe,
+                        'label'           => $idGroupe > 0 ? 'Groupe ' . chr(64 + $idGroupe) : 'Individuel',
+                        'total_analyses'  => $analyses->count(),
+                        'total_points'    => $points->count(),
+                        'qualite_counts'  => $qualiteCounts,
+                        'qualite_globale' => $this->calculerQualiteGlobale($qualiteCounts),
+                        'points'          => $points,
+                    ];
+                })->filter()->values();
+
+                return [
+                    'id'      => $campagne->id,
+                    'nom'     => $campagne->nom,
+                    'code'    => $campagne->code,
+                    'groupes' => $groupes,
+                ];
+            })->filter(fn($c) => $c['groupes']->isNotEmpty())->values();
+
+        return view('desktop.campagnes.resultats', compact('campagnes'));
+    }
+
+    private function calculerQualiteGlobale(array $counts): string
+    {
+        $valid = ['tres_bon', 'bon', 'passable', 'mediocre', 'mauvais'];
+        $best = 'tres_bon';
+        $max = 0;
+        foreach ($valid as $q) {
+            if (($counts[$q] ?? 0) > $max) {
+                $max = $counts[$q];
+                $best = $q;
+            }
+        }
+        return $best;
+    }
 }
