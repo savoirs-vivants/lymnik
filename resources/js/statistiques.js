@@ -89,13 +89,18 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     function updateDashboard() {
-        const selectedMesures = Array.from(document.querySelectorAll(".filter-mesure:checked")).map((el) => el.value);
-        const selectedRivers = Array.from(document.querySelectorAll(".filter-river:checked")).map((el) => String(el.value));
+        const selectedMesures = Array.from(
+            document.querySelectorAll(".filter-mesure:checked"),
+        ).map((el) => el.value);
+        const selectedRivers = Array.from(
+            document.querySelectorAll(".filter-river:checked"),
+        ).map((el) => String(el.value));
         const dateStart = document.getElementById("date-start").value;
         const dateEnd = document.getElementById("date-end").value;
 
         const filtered = rawData.filter((item) => {
-            if (!selectedRivers.includes(String(item.cours_d_eau_id))) return false;
+            if (!selectedRivers.includes(String(item.cours_d_eau_id)))
+                return false;
             if (dateStart && item.date < dateStart) return false;
             if (dateEnd && item.date > dateEnd) return false;
             return true;
@@ -105,32 +110,61 @@ document.addEventListener("DOMContentLoaded", function () {
         refreshBarChart(filtered, selectedRivers);
         refreshQualiteChart(filtered, selectedRivers);
         document.getElementById("kpi-analyses").textContent = filtered.length;
-        document.getElementById("kpi-rivers").textContent = new Set(filtered.map(d => d.cours_d_eau_id)).size;
+        document.getElementById("kpi-rivers").textContent = new Set(
+            filtered.map((d) => d.cours_d_eau_id),
+        ).size;
 
-        // Période
-        const dates = filtered.map(d => d.date).sort();
+        const dates = filtered.map((d) => d.date).sort();
         if (dates.length) {
             const from = fmtDate(dates[0]);
             const to = fmtDate(dates[dates.length - 1]);
-            document.getElementById("kpi-periode").textContent = dates[0] !== dates[dates.length - 1] ? `${from} → ${to}` : from;
+            document.getElementById("kpi-periode").textContent =
+                dates[0] !== dates[dates.length - 1] ? `${from} → ${to}` : from;
         } else {
             document.getElementById("kpi-periode").textContent = "—";
         }
     }
 
-    // Gestion des boutons d'actions rapides (Tout, Aucun, 7J, 30J, etc)
-    document.getElementById("mesures-all").addEventListener("click", () => { document.querySelectorAll(".filter-mesure").forEach(c => c.checked = true); updateDashboard(); });
-    document.getElementById("mesures-none").addEventListener("click", () => { document.querySelectorAll(".filter-mesure").forEach(c => c.checked = false); updateDashboard(); });
-    document.getElementById("rivers-all").addEventListener("click", () => { document.querySelectorAll(".filter-river").forEach(c => c.checked = true); updateDashboard(); });
-    document.getElementById("rivers-none").addEventListener("click", () => { document.querySelectorAll(".filter-river").forEach(c => c.checked = false); updateDashboard(); });
+    document.getElementById("mesures-all").addEventListener("click", () => {
+        document
+            .querySelectorAll(".filter-mesure")
+            .forEach((c) => (c.checked = true));
+        updateDashboard();
+    });
+    document.getElementById("mesures-none").addEventListener("click", () => {
+        document
+            .querySelectorAll(".filter-mesure")
+            .forEach((c) => (c.checked = false));
+        updateDashboard();
+    });
+    document.getElementById("rivers-all").addEventListener("click", () => {
+        document
+            .querySelectorAll(".filter-river")
+            .forEach((c) => (c.checked = true));
+        updateDashboard();
+    });
+    document.getElementById("rivers-none").addEventListener("click", () => {
+        document
+            .querySelectorAll(".filter-river")
+            .forEach((c) => (c.checked = false));
+        updateDashboard();
+    });
 
     document.querySelectorAll(".filter-time-btn").forEach((btn) => {
         btn.addEventListener("click", () => {
-            document.querySelectorAll(".filter-time-btn").forEach(b => {
+            document.querySelectorAll(".filter-time-btn").forEach((b) => {
                 b.classList.remove("bg-[#222a60]", "text-white");
-                b.classList.add("bg-slate-100", "text-slate-600", "hover:bg-slate-200");
+                b.classList.add(
+                    "bg-slate-100",
+                    "text-slate-600",
+                    "hover:bg-slate-200",
+                );
             });
-            btn.classList.remove("bg-slate-100", "text-slate-600", "hover:bg-slate-200");
+            btn.classList.remove(
+                "bg-slate-100",
+                "text-slate-600",
+                "hover:bg-slate-200",
+            );
             btn.classList.add("bg-[#222a60]", "text-white");
 
             const range = btn.dataset.range;
@@ -138,16 +172,23 @@ document.addEventListener("DOMContentLoaded", function () {
                 document.getElementById("date-start").value = "";
                 document.getElementById("date-end").value = "";
             } else {
-                const d = new Date(); d.setDate(d.getDate() - parseInt(range));
-                document.getElementById("date-start").value = d.toISOString().split("T")[0];
+                const d = new Date();
+                d.setDate(d.getDate() - parseInt(range));
+                document.getElementById("date-start").value = d
+                    .toISOString()
+                    .split("T")[0];
                 document.getElementById("date-end").value = "";
             }
             updateDashboard();
         });
     });
 
-    document.querySelectorAll(".filter-mesure, .filter-river, #date-start, #date-end, #bar-mesure").forEach(el => el.addEventListener("change", updateDashboard));
-    updateDashboard(); // Init
+    document
+        .querySelectorAll(
+            ".filter-mesure, .filter-river, #date-start, #date-end, #bar-mesure",
+        )
+        .forEach((el) => el.addEventListener("change", updateDashboard));
+    updateDashboard();
 
     function refreshTimeChart(data, mesures) {
         if (!data.length || !mesures.length) {
@@ -245,11 +286,21 @@ document.addEventListener("DOMContentLoaded", function () {
         charts.qualite.update();
     }
 
-    // Event listeners
-    document
-        .querySelectorAll(
-            ".filter-mesure, .filter-river, #date-start, #date-end, #bar-mesure",
-        )
-        .forEach((el) => el.addEventListener("change", updateDashboard));
-    updateDashboard();
+    window.exportData = function (format) {
+        const dateStart = document.getElementById("date-start").value;
+        const dateEnd = document.getElementById("date-end").value;
+        const selectedRivers = Array.from(
+            document.querySelectorAll(".filter-river:checked"),
+        ).map((el) => el.value);
+
+        const params = new URLSearchParams();
+        params.append("format", format);
+
+        if (dateStart) params.append("date_start", dateStart);
+        if (dateEnd) params.append("date_end", dateEnd);
+
+        selectedRivers.forEach((id) => params.append("rivers[]", id));
+
+        window.location.href = "/statistiques/export?" + params.toString();
+    };
 });
