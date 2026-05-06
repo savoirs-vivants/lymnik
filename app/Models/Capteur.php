@@ -16,6 +16,8 @@ class Capteur extends Model
         'temp_eau',
         'hauteur',
         'debit',
+        'devEUI',
+        'UID',
     ];
 
     public function coursDEau()
