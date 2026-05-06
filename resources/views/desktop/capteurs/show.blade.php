@@ -1,8 +1,13 @@
 @extends('layouts.desktop')
 
+@php
+    $ids = array_filter([$capteur->devEUI, $capteur->UID]);
+    $titreCapteur = !empty($ids) ? implode(' / ', $ids) : ($capteur->coursDEau->nom ?? 'Cours d\'eau non associé');
+@endphp
+
 @section('title', 'Capteur #' . $capteur->id)
 @section('page-title', 'Capteur #' . $capteur->id)
-@section('page-subtitle', $capteur->coursDEau->nom ?? 'Cours d\'eau non associé')
+@section('page-subtitle', $titreCapteur)
 
 @section('content')
 
@@ -37,8 +42,8 @@
 <div class="bg-white rounded-2xl border border-slate-100 shadow-[0_2px_12px_rgba(34,42,96,0.06)] p-4 sm:p-5 mb-6">
     <div class="flex flex-wrap items-center gap-4 sm:gap-6">
         <div>
-            <p class="text-[9px] font-mono font-bold uppercase tracking-widest text-slate-400 mb-1">Cours d'eau</p>
-            <p class="text-sm font-semibold text-slate-800">{{ $capteur->coursDEau->nom ?? '—' }}</p>
+            <p class="text-[9px] font-mono font-bold uppercase tracking-widest text-slate-400 mb-1">Identifiant</p>
+            <p class="text-sm font-semibold text-slate-800">{{ $titreCapteur }}</p>
         </div>
         <div>
             <p class="text-[9px] font-mono font-bold uppercase tracking-widest text-slate-400 mb-1">Coordonnées</p>
@@ -119,8 +124,6 @@
     @endif
 </div>
 
-@push('scripts')
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const data = {
@@ -252,6 +255,4 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 </script>
-@endpush
-
 @endsection

@@ -43,8 +43,12 @@
                     <span class="font-mono text-[10px] font-bold text-slate-400 bg-slate-50 px-2 py-1 rounded-lg border border-slate-100 shrink-0">#{{ $capteur->id }}</span>
                 </div>
 
-                <h2 class="text-base font-bold text-[#222a60] leading-tight mb-1">
-                    {{ $capteur->coursDEau->nom ?? 'Cours d\'eau non associé' }}
+                @php
+                    $ids = array_filter([$capteur->devEUI, $capteur->UID]);
+                    $titreCapteur = !empty($ids) ? implode(' / ', $ids) : ($capteur->coursDEau->nom ?? 'Cours d\'eau non associé');
+                @endphp
+                <h2 class="text-base font-bold text-[#222a60] leading-tight mb-1 truncate" title="{{ $titreCapteur }}">
+                    {{ $titreCapteur }}
                 </h2>
                 <p class="font-mono text-[10px] text-slate-400">
                     {{ number_format($capteur->lat, 5) }}, {{ number_format($capteur->long, 5) }}

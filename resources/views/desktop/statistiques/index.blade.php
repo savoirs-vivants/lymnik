@@ -4,10 +4,6 @@
 @section('page-title', 'Statistiques')
 @section('page-subtitle', 'Analyse comparative de la qualité de l\'eau')
 
-@push('scripts')
-    @vite('resources/js/statistiques.js')
-@endpush
-
 @section('content')
 
     <div class="lg:hidden flex items-center justify-between px-4 py-3 bg-white border-b border-slate-100 shrink-0">

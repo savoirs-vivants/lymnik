@@ -267,7 +267,7 @@
                         <tr
                             class="text-left text-[10px] font-mono font-bold uppercase tracking-widest text-slate-400 border-b border-slate-100">
                             <th class="pb-2 pr-3 sm:pr-4 whitespace-nowrap">Date</th>
-                            <th class="pb-2 pr-3 sm:pr-4 whitespace-nowrap">Cours d'eau</th>
+                            <th class="pb-2 pr-3 sm:pr-4 whitespace-nowrap">Identifiant</th>
                             <th class="pb-2 pr-3 sm:pr-4 whitespace-nowrap">Turbidité (NTU)</th>
                             <th class="pb-2 pr-3 sm:pr-4 whitespace-nowrap">Conductivité (µS/cm)</th>
                             <th class="pb-2 pr-3 sm:pr-4 whitespace-nowrap">Temp. eau (°C)</th>
@@ -281,7 +281,12 @@
                                 <td class="py-2.5 pr-3 sm:pr-4 text-slate-500 whitespace-nowrap">
                                     {{ $m->created_at->format('d/m/Y H:i') }}</td>
                                 <td class="py-2.5 pr-3 sm:pr-4 text-slate-600 whitespace-nowrap">
-                                    {{ $m->capteur->coursDEau->nom ?? '—' }}</td>
+                                    @php
+                                        $c = $m->capteur;
+                                        $ids = $c ? array_filter([$c->devEUI, $c->UID]) : [];
+                                        echo !empty($ids) ? implode(' / ', $ids) : ($c->coursDEau->nom ?? '—');
+                                    @endphp
+                                </td>
                                 <td class="py-2.5 pr-3 sm:pr-4 font-mono text-slate-700 whitespace-nowrap">
                                     {{ $m->turbidite ?? '—' }}</td>
                                 <td class="py-2.5 pr-3 sm:pr-4 font-mono text-slate-700 whitespace-nowrap">
