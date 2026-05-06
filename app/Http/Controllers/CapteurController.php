@@ -43,4 +43,54 @@ class CapteurController extends Controller
             'graphConductivite'
         ));
     }
+
+    public function store(\Illuminate\Http\Request $request)
+    {
+        $request->validate([
+            'latitude'       => 'required|numeric',
+            'longitude'      => 'required|numeric',
+            'cours_d_eau_id' => 'nullable|exists:cours_d_eaus,id',
+            'type_capteur'   => 'required|in:lora,bluetooth,les_deux',
+            'devEUI'         => 'nullable|string|max:255',
+            'UID'            => 'nullable|string|max:255',
+        ]);
+
+        $query = Capteur::query();
+
+        if ($request->type_capteur === 'lora') {
+            if (!$request->devEUI) {
+                return back()->withErrors(['devEUI' => 'Le devEUI est requis pour le mode LoRa.'])->withInput();
+            }
+            $query->where('devEUI', $request->devEUI);
+        } elseif ($request->type_capteur === 'bluetooth') {
+            if (!$request->UID) {
+                return back()->withErrors(['UID' => 'L\'UID est requis pour le mode Bluetooth.'])->withInput();
+            }
+            $query->where('UID', $request->UID);
+        } else {
+            if (!$request->devEUI || !$request->UID) {
+                return back()->withErrors(['capteur' => 'Le devEUI et l\'UID sont tous les deux requis.'])->withInput();
+            }
+            $query->where('devEUI', $request->devEUI)->where('UID', $request->UID);
+        }
+
+        $capteur = $query->first();
+
+        if (!$capteur) {
+            return back()
+                ->withErrors(['capteur' => 'Capteur introuvable. Assurez-vous d\'avoir entré le bon identifiant ou qu\'il a déjà émis ses premières données.'])
+                ->withInput();
+        }
+
+        $capteur->update([
+            'lat'            => $request->latitude,
+            'long'           => $request->longitude,
+            'cours_d_eau_id' => $request->cours_d_eau_id,
+        ]);
+
+        return redirect()->route('map', [
+            'lat' => $request->latitude,
+            'lng' => $request->longitude
+        ])->with('success', 'Le capteur a été localisé et associé au cours d\'eau avec succès !');
+    }
 }

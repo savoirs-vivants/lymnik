@@ -2,6 +2,7 @@ import { QUALITE_CONFIG } from "./core/config";
 import { DEFAULT_TOOLTIP, CHART_FONTS } from "./core/chart-utils";
 
 document.addEventListener("DOMContentLoaded", function () {
+    if (!window.dashboardData) return;
     const qualiteRaw = window.dashboardData.qualite || {};
     const typeRaw = window.dashboardData.types || {};
 

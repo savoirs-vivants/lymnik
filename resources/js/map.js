@@ -290,7 +290,10 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     capteurs.forEach((c) => {
-        const marker = L.marker([parseFloat(c.lat), parseFloat(c.long)], {
+        const lat = parseFloat(c.lat);
+        const lng = parseFloat(c.long);
+        if (isNaN(lat) || isNaN(lng)) return;
+        const marker = L.marker([lat, lng], {
             icon: createCustomMarker("#6d28d9", true),
         }).addTo(map);
         marker.on("click", (e) => {
@@ -304,13 +307,12 @@ document.addEventListener("DOMContentLoaded", () => {
     map.on("click", async (e) => {
         if (sheetOpen) {
             closeSheet();
-            return;
         }
         if (!window.userAuthenticated) {
             showAuthToast();
             return;
         }
-        await showCreateCard(e.latlng);
+        showCreateCard(e.latlng);
     });
 
     // 6. Remplissage des Bottom Sheets
@@ -464,7 +466,7 @@ document.addEventListener("DOMContentLoaded", () => {
             transform: "translateY(8px)",
             transition: "opacity 0.25s ease, transform 0.25s ease",
         });
-        document.getElementById("app-shell").appendChild(toast);
+        (document.getElementById("app-shell") ?? document.body).appendChild(toast);
         requestAnimationFrame(() => {
             toast.style.opacity = "1";
             toast.style.transform = "translateY(0)";
