@@ -119,6 +119,26 @@ window.closeParticipantsModal = function () {
     modal.classList.remove('flex');
 };
 
+window.endCampagne = async function (id, nom) {
+    if (!confirm(`Voulez-vous vraiment mettre fin à la campagne "${nom}" dès maintenant ?\n\nLe code de cette campagne sera immédiatement désactivé.`)) return;
+
+    try {
+        const res = await fetch(`/campagnes/${id}/terminer`, {
+            method: 'PUT',
+            headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': csrf },
+        });
+        const json = await res.json();
+
+        if (!res.ok) {
+            alert(json.message || 'Erreur lors de la clôture de la campagne.');
+            return;
+        }
+        location.reload();
+    } catch {
+        alert('Erreur réseau. Réessayez.');
+    }
+};
+
 // ─── Suppression ──────────────────────────────────────────────────────────────
 window.deleteCampagne = async function (id, nom) {
     if (!confirm(`Supprimer la campagne "${nom}" et tous ses participants ?\n\nCette action est irréversible.`)) return;
@@ -145,4 +165,6 @@ window.deleteCampagne = async function (id, nom) {
     } catch {
         alert('Erreur réseau. Réessayez.');
     }
+
+
 };

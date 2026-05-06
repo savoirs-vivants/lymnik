@@ -24,7 +24,7 @@ class CampagneController extends Controller
         $request->validate([
             'nom'        => 'required|string|max:255',
             'nb_groupes' => 'required|integer|min:0|max:26',
-            'date_fin'   => 'required|date|after:today',
+            'date_fin'   => 'nullable|date|after:today', 
         ]);
 
         $campagne = Campagne::create([
@@ -38,7 +38,7 @@ class CampagneController extends Controller
             'code'       => $campagne->code,
             'nom'        => $campagne->nom,
             'nb_groupes' => $campagne->nb_groupes,
-            'date_fin'   => $campagne->date_fin?->format('d/m/Y'),
+            'date_fin'   => $campagne->date_fin?->format('d/m/Y') ?? 'Aucune',
         ]);
     }
 
@@ -49,7 +49,7 @@ class CampagneController extends Controller
         $request->validate([
             'nom'        => 'required|string|max:255',
             'nb_groupes' => 'required|integer|min:0|max:26',
-            'date_fin'   => 'required|date',
+            'date_fin'   => 'nullable|date',
         ]);
 
         $campagne->update([
@@ -62,8 +62,19 @@ class CampagneController extends Controller
             'id'         => $campagne->id,
             'nom'        => $campagne->nom,
             'nb_groupes' => $campagne->nb_groupes,
-            'date_fin'   => $campagne->date_fin?->format('d/m/Y'),
+            'date_fin'   => $campagne->date_fin?->format('d/m/Y') ?? 'Aucune',
         ]]);
+    }
+
+    public function terminer(Campagne $campagne)
+    {
+        abort_unless($campagne->id_gestionnaire === Auth::id(), 403);
+
+        $campagne->update([
+            'date_fin' => now()
+        ]);
+
+        return response()->json(['ok' => true]);
     }
 
     public function participants(Campagne $campagne)

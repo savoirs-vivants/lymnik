@@ -11,7 +11,7 @@
         <button id="btn-lancer-campagne"
             class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#222a60] text-white text-sm font-semibold hover:bg-[#1a2050] transition-colors shadow-sm">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
             </svg>
             Lancer une campagne
         </button>
@@ -23,9 +23,10 @@
         <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden z-10">
             <div class="flex items-center justify-between px-6 py-5 border-b border-slate-100">
                 <h3 class="text-lg font-black text-[#222a60] font-grotesk">Lancer une campagne</h3>
-                <button id="modal-campagne-close" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 transition-colors">
+                <button id="modal-campagne-close"
+                    class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 transition-colors">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
                     </svg>
                 </button>
             </div>
@@ -39,14 +40,15 @@
                             class="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#222a60]/25 focus:border-[#222a60] transition-all">
                     </div>
                     <div>
-                        <label class="block text-sm font-semibold text-slate-700 mb-1.5">Nombre de groupes <span class="font-normal text-slate-400">(0 = mode individuel)</span></label>
+                        <label class="block text-sm font-semibold text-slate-700 mb-1.5">Nombre de groupes <span
+                                class="font-normal text-slate-400">(0 = mode individuel)</span></label>
                         <input id="campagne-nb-groupes" type="number" min="0" max="26" value="0" required
                             class="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#222a60]/25 focus:border-[#222a60] transition-all">
                     </div>
                     <div>
-                        <label class="block text-sm font-semibold text-slate-700 mb-1.5">Date de fin <span class="font-normal text-slate-400">(le code sera inactif après cette date)</span></label>
-                        <input id="campagne-date-fin" type="date" required
-                            min="{{ now()->addDay()->format('Y-m-d') }}"
+                        <label class="block text-sm font-semibold text-slate-700 mb-1.5">Date de fin <span
+                                class="font-normal text-slate-400">(optionnel)</span></label>
+                        <input id="campagne-date-fin" type="date" min="{{ now()->addDay()->format('Y-m-d') }}"
                             class="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#222a60]/25 focus:border-[#222a60] transition-all">
                     </div>
                     <p id="campagne-error" class="text-sm text-red-500 font-medium"></p>
@@ -60,14 +62,16 @@
             {{-- Étape 2 : code généré --}}
             <div id="campagne-step2" class="hidden p-6 text-center space-y-5">
                 <div class="w-16 h-16 rounded-2xl bg-emerald-50 flex items-center justify-center mx-auto">
-                    <svg class="w-8 h-8 text-emerald-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                    <svg class="w-8 h-8 text-emerald-600" fill="none" stroke="currentColor" stroke-width="2"
+                        viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
                     </svg>
                 </div>
                 <div>
                     <p class="text-sm text-slate-500 mb-1">Campagne créée ! Partagez ce code :</p>
                     <div class="flex items-center justify-center gap-3 mt-2">
-                        <span id="campagne-code-display" class="font-mono text-3xl font-black text-[#222a60] tracking-widest"></span>
+                        <span id="campagne-code-display"
+                            class="font-mono text-3xl font-black text-[#222a60] tracking-widest"></span>
                         <button id="campagne-copy-btn"
                             class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-xs font-semibold text-slate-600 transition-colors">
                             Copier
@@ -151,8 +155,10 @@
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
 
-        <div class="bg-white rounded-2xl border border-slate-100 shadow-[0_2px_12px_rgba(34,42,96,0.06)] p-4 sm:p-6 flex flex-col items-center">
-            <h2 class="text-sm font-bold text-slate-700 w-full mb-4 text-center sm:text-left">Répartition : Qualité de l'eau</h2>
+        <div
+            class="bg-white rounded-2xl border border-slate-100 shadow-[0_2px_12px_rgba(34,42,96,0.06)] p-4 sm:p-6 flex flex-col items-center">
+            <h2 class="text-sm font-bold text-slate-700 w-full mb-4 text-center sm:text-left">Répartition : Qualité de
+                l'eau</h2>
             @if ($qualiteData->isEmpty())
                 <p class="text-sm text-slate-400 italic my-auto">Aucune donnée de qualité disponible.</p>
             @else
@@ -162,8 +168,10 @@
             @endif
         </div>
 
-        <div class="bg-white rounded-2xl border border-slate-100 shadow-[0_2px_12px_rgba(34,42,96,0.06)] p-4 sm:p-6 flex flex-col items-center">
-            <h2 class="text-sm font-bold text-slate-700 w-full mb-4 text-center sm:text-left">Utilisation des méthodes d'analyse</h2>
+        <div
+            class="bg-white rounded-2xl border border-slate-100 shadow-[0_2px_12px_rgba(34,42,96,0.06)] p-4 sm:p-6 flex flex-col items-center">
+            <h2 class="text-sm font-bold text-slate-700 w-full mb-4 text-center sm:text-left">Utilisation des méthodes
+                d'analyse</h2>
             @if ($typeData->isEmpty())
                 <p class="text-sm text-slate-400 italic my-auto">Aucune analyse enregistrée.</p>
             @else
@@ -176,7 +184,8 @@
     </div>
 
     <div class="grid grid-cols-1 {{ $isAdmin ? 'lg:grid-cols-2' : '' }} gap-4 sm:gap-6 mb-6 sm:mb-8">
-        <div class="{{ $isAdmin ? 'lg:col-span-2' : '' }} bg-white rounded-2xl border border-slate-100 shadow-[0_2px_12px_rgba(34,42,96,0.06)] p-4 sm:p-6">
+        <div
+            class="{{ $isAdmin ? 'lg:col-span-2' : '' }} bg-white rounded-2xl border border-slate-100 shadow-[0_2px_12px_rgba(34,42,96,0.06)] p-4 sm:p-6">
             <h2 class="text-sm font-bold text-slate-700 mb-4">
                 {{ $isAdmin ? 'Dernières analyses' : 'Mes dernières analyses' }}
             </h2>
@@ -186,7 +195,8 @@
                 <div class="overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0">
                     <table class="w-full text-sm min-w-[500px]">
                         <thead>
-                            <tr class="text-left text-[10px] font-mono font-bold uppercase tracking-widest text-slate-400 border-b border-slate-100">
+                            <tr
+                                class="text-left text-[10px] font-mono font-bold uppercase tracking-widest text-slate-400 border-b border-slate-100">
                                 <th class="pb-2 pr-3 sm:pr-4 whitespace-nowrap">Date</th>
                                 @if ($isAdmin)
                                     <th class="pb-2 pr-3 sm:pr-4 whitespace-nowrap">Utilisateur</th>
@@ -201,12 +211,18 @@
                                 <tr class="hover:bg-slate-50/50">
                                     <td class="py-2.5 pr-3 sm:pr-4 text-slate-500 whitespace-nowrap">
                                         {{ $a->created_at->format('d/m/Y') }}</td>
-                                    @if ($isAdmin)
-                                        <td class="py-2.5 pr-3 sm:pr-4 font-medium text-slate-700 whitespace-nowrap">{{ $a->user?->firstname }}
+                                    @if ($a->user != null)
+                                        <td class="py-2.5 pr-3 sm:pr-4 font-medium text-slate-700 whitespace-nowrap">
+                                            {{ $a->user?->firstname }}
                                             {{ $a->user?->name }}</td>
+                                    @else
+                                        <td class="py-2.5 pr-3 sm:pr-4 font-medium text-slate-700 whitespace-nowrap">
+                                            {{ $a->participant?->pseudo }}</td>
                                     @endif
-                                    <td class="py-2.5 pr-3 sm:pr-4 text-slate-600 whitespace-nowrap">{{ $a->point?->coursDEau?->nom ?? '—' }}</td>
-                                    <td class="py-2.5 pr-3 sm:pr-4 text-slate-600 whitespace-nowrap">{{ $a->type }}</td>
+                                    <td class="py-2.5 pr-3 sm:pr-4 text-slate-600 whitespace-nowrap">
+                                        {{ $a->point?->coursDEau?->nom ?? '—' }}</td>
+                                    <td class="py-2.5 pr-3 sm:pr-4 text-slate-600 whitespace-nowrap">{{ $a->type }}
+                                    </td>
                                     <td class="py-2.5 pr-3 sm:pr-4 whitespace-nowrap">
                                         @if ($a->qualite)
                                             @php
@@ -225,7 +241,8 @@
                                                     default => 'bg-slate-50 text-slate-600 border border-slate-100',
                                                 };
                                             @endphp
-                                            <span class="text-[11px] font-bold px-2.5 py-1 rounded-md {{ $badgeClass }}">
+                                            <span
+                                                class="text-[11px] font-bold px-2.5 py-1 rounded-md {{ $badgeClass }}">
                                                 {{ ucfirst(str_replace('_', ' ', $a->qualite)) }}
                                             </span>
                                         @else
@@ -247,7 +264,8 @@
             <div class="overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0">
                 <table class="w-full text-sm min-w-[700px]">
                     <thead>
-                        <tr class="text-left text-[10px] font-mono font-bold uppercase tracking-widest text-slate-400 border-b border-slate-100">
+                        <tr
+                            class="text-left text-[10px] font-mono font-bold uppercase tracking-widest text-slate-400 border-b border-slate-100">
                             <th class="pb-2 pr-3 sm:pr-4 whitespace-nowrap">Date</th>
                             <th class="pb-2 pr-3 sm:pr-4 whitespace-nowrap">Cours d'eau</th>
                             <th class="pb-2 pr-3 sm:pr-4 whitespace-nowrap">Turbidité (NTU)</th>
@@ -262,11 +280,16 @@
                             <tr class="hover:bg-slate-50/50">
                                 <td class="py-2.5 pr-3 sm:pr-4 text-slate-500 whitespace-nowrap">
                                     {{ $m->created_at->format('d/m/Y H:i') }}</td>
-                                <td class="py-2.5 pr-3 sm:pr-4 text-slate-600 whitespace-nowrap">{{ $m->capteur->coursDEau->nom ?? '—' }}</td>
-                                <td class="py-2.5 pr-3 sm:pr-4 font-mono text-slate-700 whitespace-nowrap">{{ $m->turbidite ?? '—' }}</td>
-                                <td class="py-2.5 pr-3 sm:pr-4 font-mono text-slate-700 whitespace-nowrap">{{ $m->conductivite ?? '—' }}</td>
-                                <td class="py-2.5 pr-3 sm:pr-4 font-mono text-slate-700 whitespace-nowrap">{{ $m->temp_eau ?? '—' }}</td>
-                                <td class="py-2.5 pr-3 sm:pr-4 font-mono text-slate-700 whitespace-nowrap">{{ $m->hauteur ?? '—' }}</td>
+                                <td class="py-2.5 pr-3 sm:pr-4 text-slate-600 whitespace-nowrap">
+                                    {{ $m->capteur->coursDEau->nom ?? '—' }}</td>
+                                <td class="py-2.5 pr-3 sm:pr-4 font-mono text-slate-700 whitespace-nowrap">
+                                    {{ $m->turbidite ?? '—' }}</td>
+                                <td class="py-2.5 pr-3 sm:pr-4 font-mono text-slate-700 whitespace-nowrap">
+                                    {{ $m->conductivite ?? '—' }}</td>
+                                <td class="py-2.5 pr-3 sm:pr-4 font-mono text-slate-700 whitespace-nowrap">
+                                    {{ $m->temp_eau ?? '—' }}</td>
+                                <td class="py-2.5 pr-3 sm:pr-4 font-mono text-slate-700 whitespace-nowrap">
+                                    {{ $m->hauteur ?? '—' }}</td>
                                 <td class="py-2.5 font-mono text-slate-700 whitespace-nowrap">{{ $m->debit ?? '—' }}</td>
                             </tr>
                         @endforeach

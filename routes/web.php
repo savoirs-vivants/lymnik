@@ -77,6 +77,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/campagne',                      [CampagneController::class, 'store'])->name('campagne.store');
     Route::put('/campagnes/{campagne}',           [CampagneController::class, 'update'])->name('campagne.update');
     Route::get('/campagnes/{campagne}/participants', [CampagneController::class, 'participants'])->name('campagne.participants');
+    Route::put('/campagnes/{campagne}/terminer', [CampagneController::class, 'terminer'])->name('campagnes.terminer');
     Route::delete('/campagnes/{campagne}',        [CampagneController::class, 'destroy'])->name('campagne.destroy');
 
     Route::get('/backoffice',                  [BackOfficeController::class, 'index'])->name('backoffice.index');
