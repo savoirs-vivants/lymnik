@@ -24,6 +24,7 @@ class StatistiqueController extends Controller
                 'analyses.qualite',
                 'analyses.type',
                 'analyses.point_id',
+                'analyses.nom as analyse_nom',
                 'cours_d_eaus.id as cours_d_eau_id',
                 'cours_d_eaus.nom as cours_d_eau_nom',
                 'points.ville',
@@ -47,6 +48,7 @@ class StatistiqueController extends Controller
                 'cours_d_eau_nom' => $a->cours_d_eau_nom,
                 'ville'           => $a->ville ?: null,
                 'point_id'        => $a->point_id,
+                'analyse_nom'     => $a->analyse_nom ?: null,
                 'campagne_id'     => $a->campagne_id,
                 'campagne_nom'    => $a->campagne_nom,
                 'id_groupe'       => (int) $a->id_groupe,
@@ -70,8 +72,11 @@ class StatistiqueController extends Controller
                 'nom'   => $items->first()['cours_d_eau_nom'],
                 'villes' => $items->groupBy('ville')->map(function ($vItems, $ville) {
                     return [
-                        'nom'    => $ville ?: 'Non définie',
-                        'points' => $vItems->pluck('point_id')->unique()->sort()->values()->toArray(),
+                        'nom'     => $ville ?: 'Non définie',
+                        'analyses' => $vItems->map(fn($a) => [
+                            'id'  => $a['id'],
+                            'nom' => $a['analyse_nom'] ?: 'Analyse #' . $a['id'],
+                        ])->sortByDesc('id')->values()->toArray(),
                     ];
                 })->values()->toArray(),
             ];

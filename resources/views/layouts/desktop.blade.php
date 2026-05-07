@@ -36,7 +36,7 @@
 
             @include('desktop.partials._header')
 
-            <main class="flex-1 {{ request()->routeIs('map') || request()->routeIs('analyses.index') || request()->routeIs('statistiques.index') ? 'p-0 overflow-hidden flex flex-col' : 'p-4 sm:p-6 lg:p-8 overflow-y-auto' }}">
+            <main class="flex-1 {{ request()->routeIs('map') || request()->routeIs('analyses.index') ? 'p-0 overflow-hidden flex flex-col' : 'p-4 sm:p-6 lg:p-8 overflow-y-auto' }}">
                 @yield('content')
             </main>
 
