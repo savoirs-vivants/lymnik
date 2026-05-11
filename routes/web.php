@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\BackOfficeController;
 use App\Http\Controllers\AnalyseController;
+use App\Http\Controllers\PasswordResetController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CampagneController;
@@ -30,6 +31,11 @@ Route::get('/login',    [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login',   [AuthController::class, 'login']);
 Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
 Route::post('/register', [AuthController::class, 'register']);
+
+Route::get('/password/reset',           [PasswordResetController::class, 'showForgotForm'])->name('password.request');
+Route::post('/password/email',          [PasswordResetController::class, 'sendResetLink'])->name('password.email');
+Route::get('/password/reset/{token}',   [PasswordResetController::class, 'showResetForm'])->name('password.reset');
+Route::post('/password/reset',          [PasswordResetController::class, 'resetPassword'])->name('password.update');
 
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middleware('auth');
 

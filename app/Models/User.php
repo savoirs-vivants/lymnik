@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Auth\Notifications\ResetPassword as ResetPasswordNotification;
 
 #[Fillable(['name', 'email', 'password'])]
 #[Hidden(['password', 'remember_token'])]
@@ -36,5 +37,18 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    public function sendPasswordResetNotification($token): void
+    {
+        $url = route('password.reset', ['token' => $token, 'email' => $this->email]);
+
+        \Illuminate\Support\Facades\Mail::send(
+            'emails.reset-password',
+            ['url' => $url],
+            fn ($message) => $message
+                ->to($this->email)
+                ->subject('Réinitialisation de votre mot de passe — Lymnik')
+        );
     }
 }

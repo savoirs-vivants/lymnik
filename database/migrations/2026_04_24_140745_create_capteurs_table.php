@@ -14,8 +14,8 @@ return new class extends Migration
         Schema::create('capteurs', function (Blueprint $table) {
             $table->id();
 
-            $table->decimal('lat', 10, 8);
-            $table->decimal('long', 11, 8);
+            $table->decimal('lat', 10, 8)->nullable();
+            $table->decimal('long', 11, 8)->nullable();
 
             $table->float('turbidite')->nullable();
             $table->float('conductivite')->nullable();
