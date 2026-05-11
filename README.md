@@ -1,218 +1,256 @@
-# Lymnik — Guide Architecture
+# Lymnik
 
-Application Laravel 13 de surveillance de la qualité de l'eau.
-Permet aux utilisateurs de saisir des analyses terrain, de visualiser les données sur une carte et de lancer des campagnes pédagogiques avec des groupes de participants.
+**Plateforme de suivi de la qualité de l'eau** — terrain, IoT et pédagogie.
+
+Lymnik permet à des utilisateurs de terrain de saisir des analyses physico-chimiques de cours d'eau, de visualiser les résultats sur une carte interactive, de superviser des capteurs IoT en temps réel, et d'organiser des campagnes pédagogiques avec des groupes d'élèves.
+
+---
+
+## Fonctionnalités principales
+
+### Analyse terrain
+Les utilisateurs saisissent des mesures directement sur le terrain depuis leur mobile. Deux types de dispositifs sont supportés : la bandelette réactive JBL et le photomètre. Les analyses sont géolocalisées, rattachées automatiquement au cours d'eau le plus proche, et évaluées selon un système de qualité en 5 niveaux (très bon → mauvais). Toute analyse dépassant les seuils maximaux est marquée invalide et placée en attente de validation admin.
+
+### Carte interactive
+Une carte Leaflet affiche tous les points d'analyse existants avec leur niveau de qualité. L'utilisateur peut cliquer sur n'importe quel endroit pour démarrer une nouvelle analyse depuis cet emplacement, ou cliquer sur un marqueur existant pour consulter l'historique du point.
+
+### Capteurs IoT
+Des capteurs terrain (LoRa/Bluetooth) remontent en continu des mesures de turbidité, conductivité, température de l'eau, hauteur, débit et qualité de l'air. Les données brutes sont converties automatiquement via des accesseurs de modèle (volt → NTU, volt → µS/cm avec compensation thermique). L'interface de supervision affiche la dernière mesure connue et l'historique graphique de chaque capteur.
+
+### Campagnes pédagogiques
+Un enseignant crée une campagne et reçoit un code d'accès à partager avec ses élèves. Chaque élève rejoint sans créer de compte — uniquement via le code et un pseudo. Les élèves sont répartis en groupes, saisissent des analyses sur la carte, et l'enseignant consulte les résultats en temps réel avec des graphiques comparatifs par groupe.
+
+### Statistiques et export
+Une page de statistiques avancées permet de filtrer les analyses par cours d'eau, ville, point, campagne et groupe, de comparer les mesures entre groupes sur un graphique en barres, et d'exporter le graphique en PNG.
+
+### Backoffice admin
+L'administrateur peut valider les analyses suspectes, gérer les comptes utilisateurs (création, modification, suppression), consulter les statistiques de contribution de chaque utilisateur, et superviser l'ensemble des analyses.
 
 ---
 
 ## Stack technique
 
-| Couche | Technologie |
-|--------|-------------|
-| Backend | Laravel 13 (PHP 8.3) |
-| Frontend CSS | Tailwind CSS v3 (JIT) via Vite |
-| Frontend JS | Vanilla ES modules (Vite bundler) |
-| Cartes | Leaflet.js |
-| Graphiques | Chart.js |
-| Base de données | MySQL (via XAMPP) |
-| Authentification | Laravel Auth (session) |
+| Couche | Technologie | Version |
+|---|---|---|
+| Langage backend | PHP | ^8.3 |
+| Framework backend | Laravel | ^13.0 |
+| Base de données | MySQL | 5.7+ |
+| Serveur local | XAMPP (Apache + MySQL) | — |
+| CSS | Tailwind CSS | ^4.2 |
+| Bundler | Vite | ^8.0 |
+| Cartes | Leaflet.js | 1.9.4 (CDN) |
+| Graphiques | Chart.js | dernière (CDN) |
+| Polices | Space Grotesk / Space Mono | Google Fonts |
 
----
-
-## Répertoires clés
-
-```
-app/
-├── Enums/
-│   ├── Qualite.php          # Enum backed string : tres_bon, bon, passable, mediocre, mauvais
-│   └── AnalyseType.php      # Enum backed string : bandelette, photometre, les_deux
-├── Http/Controllers/
-│   ├── AnalyseController    # CRUD analyses + calcul qualité (via QualiteService)
-│   ├── CapteurController    # Supervision capteurs IoT
-│   ├── CampagneController   # Gestion des campagnes pédagogiques
-│   ├── DashboardController  # Vue admin vs utilisateur standard
-│   ├── MapController        # Données pour la carte interactive
-│   ├── ParticipantController# Sessions participants (sans compte)
-│   └── StatistiqueController# Graphiques et export CSV/Excel
-├── Http/Middleware/
-│   ├── AuthOrParticipant    # Laisse passer auth() OU session participant
-│   └── ParticipantSession   # Routes /session/* réservées aux participants
-├── Models/
-│   ├── Analyse              # mesures (JSON), qualite, est_valide, type
-│   ├── Capteur              # Station IoT avec accesseurs turbidité/conductivité
-│   ├── Campagne             # Session pédagogique avec code d'accès
-│   ├── CoursDEau            # Rivière avec géométrie GeoJSON (colonne trace)
-│   ├── Mesure               # Mesure IoT horodatée
-│   ├── Point                # Lieu géographique d'une analyse
-│   ├── SessionParticipant   # Participant dans une campagne (pseudo + groupe)
-│   └── User                 # role: 'admin' | 'user'
-├── Providers/
-│   └── AppServiceProvider   # Gate 'admin' + View composer header (badge invalides)
-└── Services/
-    ├── CoursDEauService     # findNearest(lat, lng) via BBox + géométrie
-    └── QualiteService       # calculerQualite() + isValid() — source de vérité PHP
-```
-
----
-
-## Flux de données principal
-
-```
-POST /analyse
-  → AuthOrParticipant middleware
-  → StoreAnalyseRequest (validation)
-  → AnalyseController::store()
-      → CoursDEauService::findNearest()   (si pas de cours d'eau fourni)
-      → QualiteService::calculerQualite() (détermine la qualité globale)
-      → QualiteService::isValid()         (détermine si dépasse les seuils)
-      → Point::create() ou update()
-      → Analyse::create()
-  → redirect avec lat/lng
-```
-
----
-
-## Système de qualité de l'eau
-
-**Source de vérité PHP :** `App\Services\QualiteService`
-**Source de vérité JS :** `resources/js/core/config.js` (`getMesureQualite`, `QUALITE_CONFIG`)
-
-> ⚠️ Les seuils de qualité existent en PHP ET en JavaScript. Si vous modifiez les seuils,
-> mettez à jour **les deux fichiers** : `QualiteService::SEUILS` et `config.js` seuils.
-
-**5 niveaux** (du meilleur au pire) :
-```
-tres_bon → bon → passable → mediocre → mauvais
-```
-
-La qualité globale d'une analyse = le **pire** des résultats individuels.
-
-**Seuils pH** (logic spéciale) :
-```
-[6.5–8.5] = très bon | [6.0–9.0] = bon | [5.5–9.5] = passable | [5.0–10.0] = médiocre | autre = mauvais
-```
+Le frontend est entièrement en **Vanilla JS ES modules** — aucun framework JS (pas de Vue, React, etc.).
 
 ---
 
 ## Rôles et permissions
 
-| Rôle | Accès |
-|------|-------|
-| `admin` | Tout (backoffice, toutes analyses, capteurs, stats globales) |
-| `user` | Ses analyses uniquement, ses campagnes, pas de backoffice |
-| `participant` | Via code de campagne, session temporaire, saisie analyse |
+| Rôle | Qui | Accès |
+|---|---|---|
+| `admin` | Administrateur de la plateforme | Tout : backoffice, validation analyses, capteurs, statistiques globales, toutes les campagnes |
+| `user` | Utilisateur inscrit | Ses propres analyses, ses campagnes, la carte, les statistiques filtrées sur ses données |
+| `participant` | Élève sans compte | Accès via code de campagne uniquement : saisie d'analyses, carte de session, résultats de sa campagne |
 
-**Gate définie :** `Gate::define('admin', ...)` dans `AppServiceProvider`.
-**Middleware :** `AuthOrParticipant` pour les routes `/analyse/*`.
-
----
-
-## Deux types d'authentification
-
-1. **Utilisateur connecté** (`Auth::user()`) — route standard Laravel
-2. **Participant** (`session('participant')`) — session temporaire via code campagne
-   - Stocké en session : `id`, `pseudo`, `id_groupe`, `id_session`, `campagne_nom`
-   - Accès via `/code` → `/session/map`, `/session/analyses`, etc.
+Les permissions admin sont gérées via le système de **Gates Laravel** (`Gate::define('admin', ...)`). Les participants s'authentifient via une session temporaire (`session('participant')`) distincte du système Auth standard.
 
 ---
 
-## Architecture JavaScript
+## Prérequis
 
-```
-resources/js/
-├── core/
-│   ├── config.js        # QUALITE_CONFIG, MESURES_META, typeLabel(), qualiteBadgeHtml(), getMesureQualite()
-│   ├── map-utils.js     # createBaseMap(), createCustomMarker() — wrappers Leaflet
-│   ├── chart-utils.js   # CHART_FONTS, DEFAULT_TOOLTIP — config Chart.js partagée
-│   └── ui.js            # qualiteBadgeHtml(), renderMesuresGrid() — HTML partagé entre pages
-├── map.js               # Carte desktop + participant (markers, bottom sheet, geoloc)
-├── analyses-desktop.js  # Page analyses/index : table, overlay, graphique par point
-├── participant-analyses.js # Page /session/analyses : même logique, version mobile
-├── dashboard.js         # Graphiques qualité + type sur /dashboard
-├── statistiques.js      # Filtres avancés + 3 graphiques + export PNG
-├── campagne-dashboard.js# Stats temps réel d'une campagne en cours
-├── campagnes-gestion.js # Gestion admin des campagnes (édition, suppression)
-├── header.js            # Overlay carrousel analyses invalides (admin seulement)
-├── nouvelle-analyse.js  # Formulaire saisie analyse (géoloc, cours d'eau, photos)
-└── ...
+Avant d'installer Lymnik, assurez-vous d'avoir les éléments suivants sur votre machine :
+
+| Outil | Version minimale | Vérification |
+|---|---|---|
+| PHP | 8.3 | `php -v` |
+| Composer | 2.x | `composer --version` |
+| Node.js | 18+ | `node -v` |
+| npm | 9+ | `npm -v` |
+| MySQL | 5.7+ | via XAMPP ou serveur dédié |
+| Git | — | `git --version` |
+
+> **Environnement recommandé :** XAMPP sous Windows ou Linux, avec Apache + MySQL activés.  
+> Une configuration alternative avec Laravel Herd, Laragon ou Docker est possible.
+
+---
+
+## Installation
+
+### 1. Cloner le dépôt
+
+```bash
+git clone https://github.com/votre-org/lymnik.git
+cd lymnik
 ```
 
-**Convention `window.__*` :** les données PHP → JS passent via des variables globales
-déclarées dans un `<script>` en bas de page :
-```blade
-window.__RAW_DATA = @json($analyses);  // statistiques
-window.mapPoints  = @json($pointsJson); // map
+### 2. Installer les dépendances PHP
+
+```bash
+composer install
+```
+
+### 3. Installer les dépendances Node
+
+```bash
+npm install
+```
+
+### 4. Configurer l'environnement
+
+Copiez le fichier d'exemple et ouvrez-le pour le modifier :
+
+```bash
+cp .env.example .env
+```
+
+Éditez `.env` avec vos valeurs :
+
+```env
+APP_NAME=Lymnik
+APP_ENV=local
+APP_KEY=                        # généré à l'étape suivante
+APP_DEBUG=true
+APP_URL=http://localhost/Lymnik/public
+
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=lymnik
+DB_USERNAME=root
+DB_PASSWORD=                    # laisser vide sur XAMPP par défaut
+
+MAIL_MAILER=log                 # "log" pour le dev, "smtp" pour la prod
+MAIL_FROM_ADDRESS="noreply@lymnik.fr"
+MAIL_FROM_NAME="Lymnik"
+```
+
+> **Note XAMPP :** le dossier du projet doit se trouver dans `C:\xampp\htdocs\Lymnik\`.  
+> L'`APP_URL` doit pointer vers `http://localhost/Lymnik/public`.
+
+### 5. Générer la clé d'application
+
+```bash
+php artisan key:generate
+```
+
+### 6. Créer la base de données
+
+Ouvrez phpMyAdmin (`http://localhost/phpmyadmin`) et créez une base de données nommée `lymnik` (encodage `utf8mb4_unicode_ci`).
+
+### 7. Lancer les migrations
+
+```bash
+php artisan migrate
+```
+
+### 8. Créer le lien de stockage public
+
+Nécessaire pour l'affichage des photos d'analyses :
+
+```bash
+php artisan storage:link
+```
+
+### 9. Compiler les assets frontend
+
+**Mode développement** (avec hot-reload) :
+```bash
+npm run dev
+```
+
+**Mode production** (build optimisé) :
+```bash
+npm run build
 ```
 
 ---
 
-## Modèles — points d'attention
+## Lancer l'application
 
-### Capteur
-- `turbidite` et `conductivite` ont des **accesseurs** qui convertissent la valeur brute volt → NTU / µS/cm
-- `latestMesure()` : relation `hasOne()->latestOfMany()`
-- `quali_air` : qualité de l'air ambiante (nullable float)
+### Avec XAMPP
 
-### Analyse
-- `mesures` est castée en `array` (JSON en base)
-- Structure : `{ bandelette: {...}, photometre: {...}, note: "..." }`
-- `est_valide` : `false` si dépasse les seuils de validité, nécessite validation admin
-- `nom` : nom libre optionnel donné lors de la saisie
+1. Démarrez **Apache** et **MySQL** depuis le panneau XAMPP.
+2. Accédez à `http://localhost/Lymnik/public`.
 
-### CoursDEau
-- `trace` : géométrie GeoJSON (MultiLineString ou LineString), souvent double-encodée
-- `bbox_*` : bounding box précalculée pour accélérer `CoursDEauService::findNearest()`
+> Si vous utilisez Laravel Valet ou Herd, l'URL sera simplement `http://lymnik.test`.
 
----
+### Avec le serveur intégré Laravel
 
-## Composants Blade
-
-```
-resources/views/components/
-└── quality-badge.blade.php   # <x-quality-badge :qualite="$q" size="md" />
-                               # size: sm | md | lg
+```bash
+php artisan serve
 ```
 
----
+Puis ouvrez `http://127.0.0.1:8000`.
 
-## Capteurs IoT
-
-Les capteurs envoient des données via une API externe (LoRa/Bluetooth).
-Les mesures sont stockées dans la table `mesures` (1 ligne = 1 relevé horodaté).
-La table `capteurs` stocke la **dernière valeur connue** (dupliquée pour affichage rapide).
-
-**devEUI** : identifiant LoRa
-**UID** : identifiant Bluetooth
+> Dans ce cas, `npm run dev` doit tourner en parallèle dans un second terminal pour servir les assets.
 
 ---
 
-## Campagnes pédagogiques
+## Configuration de l'envoi d'e-mails
 
-Flux typique :
-```
-Enseignant crée une campagne → code 6 lettres généré
-Élèves saisissent le code → session participant créée (pseudo + groupe)
-Élèves saisissent des analyses sur la carte
-Enseignant voit les résultats en temps réel (/campagnes/resultats)
+Le système de réinitialisation de mot de passe nécessite une configuration mail. En développement, les e-mails sont écrits dans `storage/logs/laravel.log` (`MAIL_MAILER=log`). Pour la production, configurez un serveur SMTP dans `.env` :
+
+```env
+MAIL_MAILER=smtp
+MAIL_HOST=smtp.votre-fournisseur.com
+MAIL_PORT=587
+MAIL_USERNAME=votre@email.com
+MAIL_PASSWORD=votre_mot_de_passe
+MAIL_ENCRYPTION=tls
+MAIL_FROM_ADDRESS="noreply@lymnik.fr"
+MAIL_FROM_NAME="Lymnik"
 ```
 
-Les groupes sont numérotés `0` (sans groupe), `1` (Groupe A), `2` (Groupe B), etc.
+Services compatibles : Mailtrap (dev/test), Mailgun, Postmark, Gmail SMTP, Amazon SES.
 
 ---
 
-## Ajouter une nouvelle mesure au formulaire
+## Créer le premier compte administrateur
 
-1. Ajouter le champ dans `resources/views/analyse.blade.php`
-2. Ajouter le key dans `StoreAnalyseRequest` (règles de validation)
-3. Ajouter les seuils dans `QualiteService::SEUILS` ET dans `config.js` seuils
-4. Ajouter le metadata dans `config.js` MESURES_META (label, unit, color)
-5. Ajouter dans le tableau de correspondance du `StatistiqueController`
+Après migration, créez un utilisateur via la page `/register`, puis passez son rôle à `admin` directement en base :
+
+```sql
+UPDATE users SET role = 'admin' WHERE email = 'votre@email.com';
+```
+
+Ou via Tinker :
+
+```bash
+php artisan tinker
+```
+```php
+\App\Models\User::where('email', 'votre@email.com')->update(['role' => 'admin']);
+```
 
 ---
 
-## Étendre les rôles
+## Structure du projet
 
-Le rôle est un simple string sur `users.role`. Pour ajouter un rôle :
-1. Définir un nouveau `Gate::define(...)` dans `AppServiceProvider`
-2. Utiliser `@can('nouveau-role')` en blade ou `Gate::allows(...)` en controller
-3. Pas d'Enum pour le rôle actuellement — garder cohérence avec 'admin' / 'user'
+```
+app/
+├── Enums/                  # Types PHP 8.1 : Qualite, AnalyseType
+├── Http/
+│   ├── Controllers/        # Un controller par domaine métier
+│   ├── Middleware/         # AuthOrParticipant, ParticipantSession
+│   └── Requests/           # Form Requests avec règles de validation
+├── Models/                 # Eloquent : User, Analyse, Point, CoursDEau, Capteur...
+├── Services/               # QualiteService, CoursDEauService
+└── Support/                # QualiteConfig (centrales des couleurs/labels)
+
+resources/
+├── js/
+│   ├── core/               # Modules partagés : config.js, map-utils.js, chart-utils.js
+│   └── *.js                # Un fichier par page (map, analyses-desktop, statistiques...)
+└── views/
+    ├── auth/               # login, register, forgot-password, reset-password
+    ├── desktop/            # Layout desktop (dashboard, analyses, capteurs, stats...)
+    ├── mobile/             # Interface terrain (carte mobile, mes analyses)
+    ├── participant/        # Interface session campagne (sans compte)
+    ├── components/         # Composants Blade réutilisables (quality-badge)
+    └── emails/             # Templates e-mails transactionnels
+
+database/
+└── migrations/             # Toutes les migrations dans l'ordre chronologique
+```
