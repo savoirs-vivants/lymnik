@@ -7,28 +7,8 @@
 @section('content')
 
     @php
-        $qualiteConfig = [
-            'tres_bon' => [
-                'label' => 'Très bon',
-                'bg' => 'bg-emerald-100',
-                'text' => 'text-emerald-700',
-                'dot' => 'bg-emerald-500',
-            ],
-            'bon' => ['label' => 'Bon', 'bg' => 'bg-teal-100', 'text' => 'text-teal-700', 'dot' => 'bg-teal-500'],
-            'passable' => [
-                'label' => 'Passable',
-                'bg' => 'bg-yellow-100',
-                'text' => 'text-yellow-700',
-                'dot' => 'bg-yellow-400',
-            ],
-            'mediocre' => [
-                'label' => 'Médiocre',
-                'bg' => 'bg-orange-100',
-                'text' => 'text-orange-700',
-                'dot' => 'bg-orange-400',
-            ],
-            'mauvais' => ['label' => 'Mauvais', 'bg' => 'bg-red-100', 'text' => 'text-red-700', 'dot' => 'bg-red-500'],
-        ];
+        use App\Support\QualiteConfig;
+        $qualiteConfig = QualiteConfig::all();
     @endphp
 
     <div
@@ -57,7 +37,6 @@
 
                         <div class="hidden bg-slate-50/30 border-t border-slate-100 groupes-container">
                             @foreach ($campagne['groupes'] as $groupe)
-                                @php $cfg = $qualiteConfig[$groupe['qualite_globale']] ?? $qualiteConfig['tres_bon']; @endphp
                                 <button
                                     onclick="selectGroupe({{ $campagne['id'] }}, {{ $groupe['id_groupe'] }}, '{{ addslashes($campagne['nom']) }}')"
                                     data-campagne-id="{{ $campagne['id'] }}" data-groupe-id="{{ $groupe['id_groupe'] }}"
@@ -69,11 +48,7 @@
                                         <p class="text-[10px] text-slate-500 mt-0.5 font-mono">
                                             {{ $groupe['total_analyses'] }} analyses</p>
                                     </div>
-                                    <span
-                                        class="shrink-0 inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-[9px] font-bold uppercase tracking-wider {{ $cfg['bg'] }} {{ $cfg['text'] }}">
-                                        <span
-                                            class="w-1.5 h-1.5 rounded-full {{ $cfg['dot'] }}"></span>{{ $cfg['label'] }}
-                                    </span>
+                                    <x-quality-badge :qualite="$groupe['qualite_globale']" class="shrink-0" />
                                 </button>
                             @endforeach
                         </div>

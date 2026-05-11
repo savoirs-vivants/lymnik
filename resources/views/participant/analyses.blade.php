@@ -9,13 +9,8 @@
 )
 
 @php
-$qualiteConfig = [
-    'tres_bon' => ['label' => 'Très bon',  'bg' => 'bg-emerald-100', 'text' => 'text-emerald-700', 'dot' => 'bg-emerald-500', 'border' => 'border-emerald-200', 'chart' => '#10b981'],
-    'bon'      => ['label' => 'Bon',       'bg' => 'bg-teal-100',    'text' => 'text-teal-700',    'dot' => 'bg-teal-500',    'border' => 'border-teal-200',    'chart' => '#14b8a6'],
-    'passable' => ['label' => 'Passable',  'bg' => 'bg-yellow-100',  'text' => 'text-yellow-700',  'dot' => 'bg-yellow-400',  'border' => 'border-yellow-200',  'chart' => '#eab308'],
-    'mediocre' => ['label' => 'Médiocre',  'bg' => 'bg-orange-100',  'text' => 'text-orange-700',  'dot' => 'bg-orange-400',  'border' => 'border-orange-200',  'chart' => '#f97316'],
-    'mauvais'  => ['label' => 'Mauvais',   'bg' => 'bg-red-100',     'text' => 'text-red-700',     'dot' => 'bg-red-500',     'border' => 'border-red-200',     'chart' => '#ef4444'],
-];
+use App\Support\QualiteConfig;
+$qualiteConfig = QualiteConfig::all();
 @endphp
 
 @section('content')
@@ -50,7 +45,6 @@ $qualiteConfig = [
 
         <div id="cours-eau-list" class="flex-1 overflow-y-auto divide-y divide-slate-50">
             @forelse ($coursDEaux as $cd)
-                @php $cfg = $qualiteConfig[$cd['qualite_globale']] ?? $qualiteConfig['tres_bon']; @endphp
                 <button data-id="{{ $cd['id'] }}" data-nom="{{ strtolower($cd['nom']) }}"
                     onclick="selectCoursDEau({{ $cd['id'] }})"
                     class="cours-eau-item w-full text-left px-4 py-3.5 hover:bg-blue-50/50 transition-all group focus:outline-none border-l-4 border-transparent">
@@ -59,10 +53,7 @@ $qualiteConfig = [
                             <p class="text-sm font-bold text-slate-700 truncate group-hover:text-[#222a60]">{{ $cd['nom'] }}</p>
                             <p class="text-[11px] text-slate-400 mt-0.5 font-mono">{{ $cd['total_analyses'] }} analyse{{ $cd['total_analyses'] > 1 ? 's' : '' }}</p>
                         </div>
-                        <span class="shrink-0 inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider {{ $cfg['bg'] }} {{ $cfg['text'] }}">
-                            <span class="w-1.5 h-1.5 rounded-full {{ $cfg['dot'] }}"></span>
-                            {{ $cfg['label'] }}
-                        </span>
+                        <x-quality-badge :qualite="$cd['qualite_globale']" class="shrink-0" />
                     </div>
                 </button>
             @empty
