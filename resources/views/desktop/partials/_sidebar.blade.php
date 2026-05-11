@@ -80,13 +80,13 @@
                     'icon' =>
                         '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"/>',
                 ],
-                [
+                ...(auth()->user()?->role === 'admin' ? [[
                     'label' => 'Backoffice',
                     'route' => 'backoffice.index',
                     'active_pattern' => 'backoffice*',
                     'icon' =>
                         '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>',
-                ],
+                ]] : []),
             ];
         @endphp
 

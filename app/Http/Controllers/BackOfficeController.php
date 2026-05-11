@@ -7,18 +7,26 @@ use App\Models\Analyse;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Hash;
 
 class BackOfficeController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware(fn ($request, $next) =>
+            Gate::allows('admin') ? $next($request) : abort(403)
+        );
+    }
+
     public function index()
     {
         $users = User::latest()->get();
         return view('desktop.backoffice.index', compact('users'));
     }
 
-    public function showUser($id)
+    public function showUser(int $id)
     {
         $user = User::findOrFail($id);
 

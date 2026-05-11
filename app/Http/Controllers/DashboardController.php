@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\Analyse;
 use App\Models\Capteur;
-use App\Models\CoursDEau;
 use App\Models\Mesure;
 use App\Models\Point;
 use App\Models\User;
@@ -26,7 +25,7 @@ class DashboardController extends Controller
         } else {
             $totalUsers    = null;
             $totalAnalyses = Analyse::where('user_id', $user->id)->count();
-            $totalPoints   = Point::whereHas('analyses', fn($q) => $q->where('user_id', $user->id))->count();
+            $totalPoints   = null;
             $totalCapteurs = null;
             $analyseBase   = Analyse::where('user_id', $user->id);
         }

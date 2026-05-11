@@ -121,6 +121,7 @@
             <p class="text-3xl font-black text-emerald-700">{{ $totalAnalyses }}</p>
         </div>
 
+        @if ($isAdmin)
         <div class="bg-blue-50/50 rounded-2xl border border-blue-100 shadow-sm p-4 sm:p-5 relative overflow-hidden">
             <div class="flex items-center gap-3 mb-2">
                 <div class="p-2 bg-blue-100 text-blue-600 rounded-lg">
@@ -135,6 +136,7 @@
             </div>
             <p class="text-3xl font-black text-blue-700">{{ $totalPoints }}</p>
         </div>
+        @endif
 
         @if ($isAdmin)
             <div class="bg-amber-50/50 rounded-2xl border border-amber-100 shadow-sm p-4 sm:p-5 relative overflow-hidden">
