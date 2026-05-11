@@ -13,12 +13,6 @@ use Illuminate\Support\Facades\Hash;
 
 class BackOfficeController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware(fn ($request, $next) =>
-            Gate::allows('admin') ? $next($request) : abort(403)
-        );
-    }
 
     public function index()
     {

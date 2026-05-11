@@ -80,11 +80,13 @@ Route::middleware('auth')->group(function () {
     Route::put('/campagnes/{campagne}/terminer', [CampagneController::class, 'terminer'])->name('campagnes.terminer');
     Route::delete('/campagnes/{campagne}',        [CampagneController::class, 'destroy'])->name('campagne.destroy');
 
+    Route::middleware(['auth', 'can:admin'])->group(function () {
     Route::get('/backoffice',                  [BackOfficeController::class, 'index'])->name('backoffice.index');
     Route::post('/backoffice/users',           [BackOfficeController::class, 'store'])->name('backoffice.store');
     Route::get('/backoffice/users/{id}',       [BackofficeController::class, 'showUser'])->name('backoffice.show');
     Route::put('/backoffice/{user}',           [BackOfficeController::class, 'update'])->name('backoffice.update');
     Route::delete('/backoffice/users/{user}',  [BackOfficeController::class, 'destroy'])->name('backoffice.destroy');
+    });
 
     Route::get('/map', [MapController::class, 'index'])->name('map');
 
