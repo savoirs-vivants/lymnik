@@ -1,7 +1,9 @@
 // Participant analyses page
 
-const coursDEaux    = window.__coursDEaux    || [];
-const qualiteConfig = window.__qualiteConfig || {};
+import { QUALITE_CONFIG, qualiteBadgeHtml } from "./core/config";
+
+const coursDEaux    = window.__coursDEaux || [];
+const qualiteConfig = QUALITE_CONFIG;
 
 const QUALITE_SCORE = { tres_bon: 0, bon: 1, passable: 2, mediocre: 3, mauvais: 4 };
 const QUALITE_NUM   = { tres_bon: 5, bon: 4, passable: 3, mediocre: 2, mauvais: 1 };
@@ -56,7 +58,7 @@ function buildChart(cd) {
     if (!allAnalyses.length) return;
 
     const data = allAnalyses.map(a => ({ x: new Date(a.created_at), y: QUALITE_NUM[a.qualite] || 3 }));
-    const colors = allAnalyses.map(a => qualiteConfig[a.qualite]?.chart || '#94a3b8');
+    const colors = allAnalyses.map(a => qualiteConfig[a.qualite]?.hex || '#94a3b8');
 
     const ctx = document.getElementById('qualite-chart').getContext('2d');
     currentChart = new Chart(ctx, {

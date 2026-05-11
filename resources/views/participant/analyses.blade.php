@@ -8,10 +8,6 @@
         : $participant['pseudo'] . ' — ' . $participant['campagne_nom']
 )
 
-@php
-use App\Support\QualiteConfig;
-$qualiteConfig = QualiteConfig::all();
-@endphp
 
 @section('content')
 
@@ -124,8 +120,7 @@ $qualiteConfig = QualiteConfig::all();
 
 @push('scripts')
 <script>
-window.__coursDEaux    = @json($coursDEaux);
-window.__qualiteConfig = @json($qualiteConfig);
+window.__coursDEaux = @json($coursDEaux);
 </script>
 <script src="{{ Vite::asset('resources/js/participant-analyses.js') }}"></script>
 @endpush
