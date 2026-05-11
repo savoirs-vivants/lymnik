@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\AnalyseType;
 use App\Models\Analyse;
 use App\Models\CoursDEau;
 use App\Models\Point;
@@ -227,13 +228,15 @@ class AnalyseController extends Controller
 
             $mesures = ['note' => $request->note];
 
-            if (in_array($request->type, ['bandelette', 'les_deux'])) {
+            $type = AnalyseType::from($request->type);
+
+            if ($type->hasBandelette()) {
                 $mesures['bandelette'] = array_map(
                     fn($v) => ($v !== '' && $v !== null) ? (float) $v : null,
                     $request->input('mesures.bandelette', [])
                 );
             }
-            if (in_array($request->type, ['photometre', 'les_deux'])) {
+            if ($type->hasPhotometre()) {
                 $mesures['photometre'] = array_map(
                     fn($v) => ($v !== '' && $v !== null) ? (float) $v : null,
                     $request->input('mesures.photometre', [])

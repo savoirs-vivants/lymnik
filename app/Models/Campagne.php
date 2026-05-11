@@ -9,7 +9,10 @@ class Campagne extends Model
 {
     protected $fillable = ['nom', 'id_gestionnaire', 'nb_groupes', 'date_fin'];
 
-    protected $casts = ['date_fin' => 'date'];
+    protected $casts = [
+        'date_fin'   => 'date',
+        'nb_groupes' => 'integer',
+    ];
 
     protected static function booted()
     {

@@ -13,6 +13,11 @@ class Point extends Model
         'ville',
     ];
 
+    protected $casts = [
+        'latitude'  => 'float',
+        'longitude' => 'float',
+    ];
+
     public function coursDEau()
     {
         return $this->belongsTo(CoursDEau::class);
