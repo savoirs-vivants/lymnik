@@ -1,0 +1,1 @@
+var e={title:{family:`'Space Grotesk', sans-serif`,size:13},body:{family:`'Space Mono', monospace`,size:11},bold:{family:`'Space Mono', monospace`,size:11,weight:`bold`}},t={backgroundColor:`#0f172a`,titleFont:e.title,bodyFont:e.body,padding:12,cornerRadius:10,borderColor:`rgba(255,255,255,0.08)`,borderWidth:1};export{t as n,e as t};

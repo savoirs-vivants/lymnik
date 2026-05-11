@@ -1,0 +1,39 @@
+import{n as e,t}from"./map-utils-To8QkO9j.js";import{a as n,i as r}from"./config-D3fmeX9Q.js";var i=window.__campagnes||[],a=null,o=null,s=null;document.querySelectorAll(`.toggle-accordion`).forEach(e=>{e.addEventListener(`click`,()=>{let t=e.nextElementSibling,n=e.querySelector(`.chevron`);t.classList.toggle(`hidden`),t.classList.contains(`hidden`)?n.classList.remove(`rotate-180`):n.classList.add(`rotate-180`)})}),window.selectGroupe=function(e,t,n){let o=i.find(t=>t.id===e);if(!o)return;let s=o.groupes.find(e=>e.id_groupe===t);s&&(a=s,document.querySelectorAll(`.groupe-item`).forEach(n=>{let r=parseInt(n.dataset.campagneId)===e&&parseInt(n.dataset.groupeId)===t;n.classList.toggle(`bg-blue-50/80`,r),n.classList.toggle(`border-[#1565c0]`,r),n.classList.toggle(`border-transparent`,!r)}),document.getElementById(`empty-state`).classList.add(`hidden`),document.getElementById(`detail-panel`).classList.remove(`hidden`),document.getElementById(`sidebar-list`).classList.add(`max-lg:hidden`),document.getElementById(`analyses-detail`).classList.remove(`max-lg:hidden`),document.getElementById(`detail-nom`).textContent=`${n} - ${s.label}`,document.getElementById(`detail-qualite-badge`).innerHTML=r(s.qualite_globale),document.getElementById(`detail-meta`).innerHTML=`<span class="font-bold text-slate-700">${s.total_analyses}</span> analyses sur <span class="font-bold text-slate-700">${s.total_points}</span> points`,c(s),l(s))},window.backToList=function(){document.getElementById(`sidebar-list`).classList.remove(`max-lg:hidden`),document.getElementById(`analyses-detail`).classList.add(`max-lg:hidden`)};function c(e){let t=[`tres_bon`,`bon`,`passable`,`mediocre`,`mauvais`];document.getElementById(`detail-kpis`).innerHTML=t.map(t=>{let n=window.__qualiteConfig[t],r=e.qualite_counts[t]||0;return`
+        <div class="bg-white rounded-2xl border border-slate-100 p-4 ${r>0?``:`opacity-50 grayscale`}">
+            <div class="flex items-center gap-2 mb-2"><span class="w-2.5 h-2.5 rounded-full ${n.dot}"></span><p class="text-[10px] font-mono text-slate-500">${n.label}</p></div>
+            <p class="text-2xl sm:text-3xl font-black ${n.text}">${r}</p>
+        </div>`}).join(``)}function l(e){let t=document.getElementById(`points-tbody`);t.innerHTML=e.points.map(e=>{if(!e.analyses.length)return``;let t=e.analyses[0];return`
+        <tr class="hover:bg-slate-50 border-b border-slate-100">
+            <td class="py-3 sm:py-4 pl-4 pr-4">
+                <div class="text-sm font-bold text-[#222a60]">${e.ville}</div>
+                <div class="font-mono text-xs text-slate-500 mt-1">GPS: ${e.latitude.toFixed(3)}, ${e.longitude.toFixed(3)}</div>
+            </td>
+            <td class="py-3 sm:py-4 pr-4"><span class="text-[11px] font-bold text-slate-600 bg-slate-100 px-2 py-1 rounded-md whitespace-nowrap">${n(t.type)}</span></td>
+            <td class="py-3 sm:py-4 pr-4">${r(t.qualite)}</td>
+            <td class="py-3 sm:py-4 pr-4 text-center"><button onclick='openOverlay(${e.id})' class="bg-blue-50 text-[#1565c0] px-3 py-1.5 rounded-lg text-xs font-bold w-full sm:w-auto">Historique</button></td>
+        </tr>`}).join(``)}window.openOverlay=function(n){if(!a)return;let r=a.points.find(e=>e.id===n);r&&(document.getElementById(`overlay-title`).textContent=r.ville,document.getElementById(`overlay-subtitle`).textContent=`Historique du groupe (${r.analyses.length} analyses)`,document.getElementById(`point-overlay`).classList.remove(`hidden`),setTimeout(()=>{o?(o.setView([r.latitude,r.longitude],15),s.setLatLng([r.latitude,r.longitude]),o.invalidateSize()):(o=t(`overlay-map`,r.latitude,r.longitude,15,!1),s=L.marker([r.latitude,r.longitude],{icon:e(`#ef4444`,!1,14)}).addTo(o))},50),document.getElementById(`overlay-content`).innerHTML=r.analyses.map((e,t)=>{let n=e.bandelette||{},r=e.photometre||{},i=window.__qualiteConfig[e.qualite]||window.__qualiteConfig.tres_bon,a=[[`Nitrates`,n.nitrates,`mg/L`],[`Nitrites`,n.nitrites,`mg/L`],[`Dureté totale`,n.durete_totale,`mg/L`],[`Dureté carb.`,n.durete_carb,`mg/L`],[`pH`,n.ph,``],[`Chlore`,n.chlore,`mg/L`]].filter(([,t])=>e.type===`bandelette`||e.type===`les_deux`),o=[[`Phosphate`,r.phosphate,`mg/L`],[`Nitrate`,r.nitrate,`mg/L`],[`Ammoniaque`,r.ammoniaque,`mg/L`]].filter(([,t])=>e.type===`photometre`||e.type===`les_deux`),s=e=>e.map(([e,t,n])=>`
+            <div class="bg-slate-50 border border-slate-100 rounded-xl px-4 py-3">
+                <p class="text-[10px] font-mono font-bold uppercase tracking-widest text-slate-400 mb-1">${e}</p>
+                <p class="text-[15px] font-black ${t!==null&&t!==``?`text-[#222a60]`:`text-slate-300`}">${t||`—`} ${t!==null&&t!==``&&n?`<span class="text-[10px] font-bold text-slate-400 ml-1">${n}</span>`:``}</p>
+            </div>`).join(``);return`
+        <div class="bg-white rounded-[1.5rem] border border-slate-200 shadow-sm overflow-hidden relative">
+            <div class="absolute top-0 left-0 w-2 h-full ${i.bg}"></div>
+            <div class="flex items-center justify-between px-4 sm:px-6 py-4 sm:py-5 border-b border-slate-50 ml-2">
+                <div class="flex items-center gap-3 sm:gap-4">
+                    <span class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-xs font-black text-slate-500 shrink-0">${t+1}</span>
+                    <div class="min-w-0">
+                        <p class="text-[13px] sm:text-[15px] font-bold text-slate-800 truncate">${e.date||`—`} <span class="text-slate-400 font-normal text-xs sm:text-sm ml-1">${e.time||``}</span></p>
+                        <p class="text-[10px] sm:text-[11px] text-[#1565c0] font-mono font-bold mt-0.5 truncate">Saisi par ${e.saisi_par}</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3 pl-2">
+                    <span class="inline-flex items-center gap-1.5 px-2 py-1 sm:px-2.5 sm:py-1 rounded-md text-[9px] sm:text-[10px] font-bold uppercase tracking-wider whitespace-nowrap ${i.bg} ${i.text}"><span class="w-1.5 h-1.5 rounded-full ${i.dot}"></span><span class="hidden sm:inline">${i.label}</span></span>
+                </div>
+            </div>
+            <div class="p-4 sm:p-6 ml-2 space-y-4 sm:space-y-6">
+                ${a.length?`<div><p class="text-xs font-bold text-slate-700 mb-3 flex items-center gap-2"><span class="w-1.5 h-4 bg-blue-500 rounded-full"></span> Bandelette JBL</p><div class="grid grid-cols-2 gap-3">${s(a)}</div></div>`:``}
+                ${o.length?`<div><p class="text-xs font-bold text-slate-700 mb-3 flex items-center gap-2"><span class="w-1.5 h-4 bg-indigo-500 rounded-full"></span> Photomètre</p><div class="grid grid-cols-2 gap-3">${s(o)}</div></div>`:``}
+                ${e.note?`<div class="bg-amber-50/50 border border-amber-100 rounded-xl p-4"><p class="text-[10px] font-mono font-bold uppercase tracking-widest text-amber-600 mb-2">Observations terrain</p><p class="text-sm text-slate-700 leading-relaxed">${e.note}</p></div>`:``}
+                ${e.image?`<div><img src="${e.image}" class="rounded-xl w-full max-h-48 object-cover border border-slate-100"></div>`:``}
+            </div>
+        </div>`}).join(``))},window.closeOverlay=function(){document.getElementById(`point-overlay`).classList.add(`hidden`)};
