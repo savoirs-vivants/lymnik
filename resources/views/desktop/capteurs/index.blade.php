@@ -47,9 +47,15 @@
                     $ids = array_filter([$capteur->devEUI, $capteur->UID]);
                     $titreCapteur = !empty($ids) ? implode(' / ', $ids) : ($capteur->coursDEau->nom ?? 'Cours d\'eau non associé');
                 @endphp
-                <h2 class="text-base font-bold text-[#222a60] leading-tight mb-1 truncate" title="{{ $titreCapteur }}">
+                <h2 class="text-base font-bold text-[#222a60] leading-tight mb-0.5 truncate" title="{{ $titreCapteur }}">
                     {{ $titreCapteur }}
                 </h2>
+                @if($capteur->coursDEau)
+                <p class="text-[11px] text-blue-600 font-medium mb-0.5 truncate">
+                    <svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" class="inline -mt-0.5 mr-0.5"><path stroke-linecap="round" stroke-linejoin="round" d="M20 12c0 4.418-7.163 8-8 8s-8-3.582-8-8 7.163-8 8-8 8 3.582 8 8z"/></svg>
+                    {{ $capteur->coursDEau->nom }}
+                </p>
+                @endif
                 <p class="font-mono text-[10px] text-slate-400">
                     {{ number_format($capteur->lat, 5) }}, {{ number_format($capteur->long, 5) }}
                 </p>

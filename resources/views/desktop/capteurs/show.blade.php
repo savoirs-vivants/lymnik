@@ -45,6 +45,12 @@
             <p class="text-[9px] font-mono font-bold uppercase tracking-widest text-slate-400 mb-1">Identifiant</p>
             <p class="text-sm font-semibold text-slate-800">{{ $titreCapteur }}</p>
         </div>
+        @if($capteur->coursDEau)
+        <div>
+            <p class="text-[9px] font-mono font-bold uppercase tracking-widest text-slate-400 mb-1">Cours d'eau</p>
+            <p class="text-sm font-semibold text-blue-600">{{ $capteur->coursDEau->nom }}</p>
+        </div>
+        @endif
         <div>
             <p class="text-[9px] font-mono font-bold uppercase tracking-widest text-slate-400 mb-1">Coordonnées</p>
             <p class="font-mono text-xs sm:text-sm text-slate-600">{{ $capteur->lat }}, {{ $capteur->long }}</p>
