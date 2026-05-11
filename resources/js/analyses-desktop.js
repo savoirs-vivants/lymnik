@@ -26,7 +26,8 @@ window.selectCoursDEau = function (id) {
         el.classList.toggle("border-transparent", !isActive);
     });
 
-    document.getElementById("empty-state").classList.add("hidden");
+    const emptyState = document.getElementById("empty-state");
+    if (emptyState) emptyState.style.display = "none";
     document.getElementById("detail-panel").classList.remove("hidden");
     document.getElementById("detail-nom").textContent = cd.nom;
 
@@ -132,41 +133,87 @@ function renderChart(cd) {
     );
 }
 
+// =========================================================================
+// 1. LE NOUVEAU TABLEAU (Sans le onclick qui pose problème)
+// =========================================================================
 function renderTable(cd) {
     const tbody = document.getElementById("points-tbody");
+
     tbody.innerHTML = cd.points
         .map((pt) => {
-            if (!pt.analyses.length) return "";
-            const a = pt.analyses[0];
+            const analyses = pt.analyses || [];
+            if (!analyses.length) return "";
+
+            const a = analyses[0];
+            const ptLabel = pt.ville || pt.nom || "Point inconnu";
+            const coordLabel = `${parseFloat(pt.latitude).toFixed(5)}, ${parseFloat(pt.longitude).toFixed(5)}`;
+
             return `
-            <tr class="hover:bg-slate-50 border-b border-slate-100">
-                <td class="py-4 pl-4 pr-4">
-                    <div class="text-sm font-bold text-[#222a60]">${pointLabel(pt)}</div>
-                    <div class="font-mono text-xs text-slate-500 mt-2">${a.date || "—"}</div>
-                </td>
-                <td class="py-4 pr-4"><span class="text-[11px] font-bold text-slate-600 bg-slate-100 px-2 py-1 rounded-md">${typeLabel(a.type)}</span></td>
-                <td class="py-4 pr-4">${qualiteBadgeHtml(a.qualite)}</td>
-                <td class="py-4 pr-4 text-center"><button onclick='openOverlay(${pt.id})' class="bg-blue-50 text-[#1565c0] px-3 py-1.5 rounded-lg text-xs font-bold w-full">Historique</button></td>
-            </tr>`;
+        <tr class="hover:bg-slate-50 transition-colors group border-b border-slate-100">
+            <td class="py-4 pl-4 pr-4 align-top">
+                <div class="text-sm font-bold text-[#222a60] truncate max-w-[180px]">${ptLabel}</div>
+                <div class="font-mono text-[10px] text-slate-400 mt-0.5">${coordLabel}</div>
+                <div class="font-mono text-xs text-slate-500 mt-2">${a.date || "—"} <span class="text-[10px] text-slate-400">${a.time || ""}</span></div>
+            </td>
+            <td class="py-4 pr-4 align-top">
+                <span class="text-[11px] font-bold text-slate-600 bg-slate-100 border border-slate-200 px-2 py-1 rounded-md whitespace-nowrap">${typeLabel(a.type)}</span>
+            </td>
+            <td class="py-4 pr-4 align-top">${qualiteBadgeHtml(a.qualite)}</td>
+            <td class="py-4 pr-4 align-top text-center w-28">
+                <button type="button" class="btn-historique flex items-center justify-center gap-2 px-3 py-1.5 rounded-lg bg-blue-50 text-[#1565c0] hover:bg-[#1565c0] hover:text-white text-xs font-bold transition-colors w-full" data-point-id="${pt.id}">
+                    Historique ${analyses.length > 1 ? `(${analyses.length})` : ""}
+                </button>
+            </td>
+        </tr>`;
         })
         .join("");
 }
 
-window.openOverlay = function (pointId) {
-    const cd = coursDEaux.find((c) => c.id === activeId);
-    if (!cd) return;
-    const pt = cd.points.find((p) => p.id === pointId);
-    if (!pt) return;
 
-    document.getElementById("overlay-title").textContent = pointLabel(pt);
-    document.getElementById("overlay-subtitle").textContent = `Coordonnées : ${parseFloat(pt.latitude).toFixed(5)}, ${parseFloat(pt.longitude).toFixed(5)} · Historique (${pt.analyses.length})`;
+// =========================================================================
+// 2. L'ÉCOUTEUR D'ÉVÉNEMENT MAGIQUE (Event Delegation)
+// =========================================================================
+document.addEventListener("click", function(e) {
+    const btn = e.target.closest('.btn-historique');
+
+    if (btn) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const pointId = btn.getAttribute('data-point-id');
+        console.log("🚨 BOUTON CLIQUÉ VIA DELEGATION ! ID du point :", pointId);
+
+        ouvrirOverlayHistorique(pointId);
+    }
+});
+
+
+// =========================================================================
+// 3. LA NOUVELLE FONCTION D'AFFICHAGE (Totalement isolée)
+// =========================================================================
+function ouvrirOverlayHistorique(pointId) {
+    console.log("🟢 Lancement de ouvrirOverlayHistorique...");
+
+    const cd = coursDEaux.find((c) => c.id === activeId);
+    if (!cd) return console.error("Cours d'eau non trouvé");
+
+    const pt = cd.points.find((p) => String(p.id) === String(pointId));
+    if (!pt) return console.error("Point non trouvé");
+
+    const ptLabel = pt.ville || pt.nom || "Point inconnu";
+    document.getElementById("overlay-title").textContent = ptLabel;
+    document.getElementById("overlay-subtitle").textContent =
+        `Coordonnées : ${parseFloat(pt.latitude).toFixed(5)}, ${parseFloat(pt.longitude).toFixed(5)} · Historique (${pt.analyses.length})`;
 
     document.getElementById("point-overlay").classList.remove("hidden");
+    document.body.style.overflow = "hidden";
 
     setTimeout(() => {
         if (!overlayMap) {
             overlayMap = createBaseMap("overlay-map", parseFloat(pt.latitude), parseFloat(pt.longitude), 15, false);
-            overlayMarker = L.marker([pt.latitude, pt.longitude], { icon: createCustomMarker('#ef4444', false, 14) }).addTo(overlayMap);
+            overlayMarker = L.marker([pt.latitude, pt.longitude], {
+                icon: createCustomMarker("#ef4444", false, 14),
+            }).addTo(overlayMap);
         } else {
             overlayMap.setView([pt.latitude, pt.longitude], 15);
             overlayMarker.setLatLng([pt.latitude, pt.longitude]);
@@ -183,11 +230,11 @@ window.openOverlay = function (pointId) {
         const bandeFields = [
             ["Nitrates", b.nitrates, "mg/L"], ["Nitrites", b.nitrites, "mg/L"],
             ["Dureté totale", b.durete_totale, "mg/L"], ["Dureté carb.", b.durete_carb, "mg/L"],
-            ["pH", b.ph, ""], ["Chlore", b.chlore, "mg/L"],
+            ["pH", b.ph, ""], ["Chlore", b.chlore, "mg/L"]
         ].filter(([, v]) => a.type === "bandelette" || a.type === "les_deux");
 
         const photoFields = [
-            ["Phosphate", p.phosphate, "mg/L"], ["Nitrate", p.nitrate, "mg/L"], ["Ammoniaque", p.ammoniaque, "mg/L"],
+            ["Phosphate", p.phosphate, "mg/L"], ["Nitrate", p.nitrate, "mg/L"], ["Ammoniaque", p.ammoniaque, "mg/L"]
         ].filter(([, v]) => a.type === "photometre" || a.type === "les_deux");
 
         const renderFields = (fields) => fields.map(([label, val, unit]) => `
@@ -200,39 +247,36 @@ window.openOverlay = function (pointId) {
             </div>`).join("");
 
         return `
-        <div class="bg-white rounded-[1.5rem] border border-slate-200 shadow-sm overflow-hidden relative">
-            <div class="absolute top-0 left-0 w-2 h-full ${cfgQ.bg}"></div>
-            <div class="flex items-center justify-between px-6 py-5 border-b border-slate-50 ml-2">
-                <div class="flex items-center gap-4">
-                    <span class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-xs font-black text-slate-500">${i + 1}</span>
-                    <div>
-                        <p class="text-[15px] font-bold text-slate-800">${a.date || "—"} <span class="text-slate-400 font-normal text-sm ml-1">${a.time || ""}</span></p>
-                        <p class="text-[11px] text-slate-400 font-mono mt-0.5">Saisi par ${a.user || "Inconnu"}</p>
-                    </div>
-                </div>
-                <div class="flex items-center gap-3">
-                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider ${cfgQ.bg} ${cfgQ.text}">
-                        <span class="w-1.5 h-1.5 rounded-full ${cfgQ.dot}"></span>${cfgQ.label}
-                    </span>
+    <div class="bg-white rounded-[1.5rem] border border-slate-200 shadow-sm overflow-hidden relative mb-4">
+        <div class="absolute top-0 left-0 w-2 h-full ${cfgQ.bg}"></div>
+        <div class="flex items-center justify-between px-4 sm:px-6 py-4 sm:py-5 border-b border-slate-50 ml-2">
+            <div class="flex items-center gap-3 sm:gap-4">
+                <span class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-xs font-black text-slate-500 shrink-0">${i + 1}</span>
+                <div class="min-w-0">
+                    <p class="text-[13px] sm:text-[15px] font-bold text-slate-800 truncate">${a.date || "—"} <span class="text-slate-400 font-normal text-xs sm:text-sm ml-1">${a.time || ""}</span></p>
+                    ${a.saisi_par ? `<p class="text-[10px] sm:text-[11px] text-[#1565c0] font-mono font-bold mt-0.5 truncate">Saisi par ${a.saisi_par}</p>` : ""}
                 </div>
             </div>
-
-            <div class="p-6 ml-2 space-y-6">
-                ${bandeFields.length ? `<div><p class="text-xs font-bold text-slate-700 mb-3 flex items-center gap-2"><span class="w-1.5 h-4 bg-blue-500 rounded-full"></span> Bandelette JBL</p><div class="grid grid-cols-2 sm:grid-cols-3 gap-3">${renderFields(bandeFields)}</div></div>` : ""}
-                ${photoFields.length ? `<div><p class="text-xs font-bold text-slate-700 mb-3 flex items-center gap-2"><span class="w-1.5 h-4 bg-indigo-500 rounded-full"></span> Photomètre</p><div class="grid grid-cols-2 sm:grid-cols-3 gap-3">${renderFields(photoFields)}</div></div>` : ""}
-                ${a.note ? `<div class="bg-amber-50/50 border border-amber-100 rounded-xl p-4"><p class="text-[10px] font-mono font-bold uppercase tracking-widest text-amber-600 mb-2">Observations terrain</p><p class="text-sm text-slate-700 leading-relaxed">${a.note}</p></div>` : ""}
-                ${a.image ? `<div><p class="text-[10px] font-mono font-bold uppercase tracking-widest text-slate-400 mb-2">Photo</p><img src="${a.image}" alt="Photo de l'analyse" class="rounded-xl max-h-48 object-cover border border-slate-100"></div>` : ""}
+            <div class="flex items-center gap-3 pl-2">
+                <span class="inline-flex items-center gap-1.5 px-2 py-1 sm:px-2.5 sm:py-1 rounded-md text-[9px] sm:text-[10px] font-bold uppercase tracking-wider whitespace-nowrap ${cfgQ.bg} ${cfgQ.text}">
+                    <span class="w-1.5 h-1.5 rounded-full ${cfgQ.dot}"></span>
+                    <span class="hidden sm:inline">${cfgQ.label}</span>
+                </span>
             </div>
-        </div>`;
+        </div>
+        <div class="p-4 sm:p-6 ml-2 space-y-4 sm:space-y-6">
+            ${bandeFields.length ? `<div><p class="text-xs font-bold text-slate-700 mb-3 flex items-center gap-2"><span class="w-1.5 h-4 bg-blue-500 rounded-full"></span> Bandelette JBL</p><div class="grid grid-cols-2 sm:grid-cols-3 gap-3">${renderFields(bandeFields)}</div></div>` : ""}
+            ${photoFields.length ? `<div><p class="text-xs font-bold text-slate-700 mb-3 flex items-center gap-2"><span class="w-1.5 h-4 bg-indigo-500 rounded-full"></span> Photomètre</p><div class="grid grid-cols-2 sm:grid-cols-3 gap-3">${renderFields(photoFields)}</div></div>` : ""}
+            ${a.note ? `<div class="bg-amber-50/50 border border-amber-100 rounded-xl p-4"><p class="text-[10px] font-mono font-bold uppercase tracking-widest text-amber-600 mb-2">Observations terrain</p><p class="text-sm text-slate-700 leading-relaxed">${a.note}</p></div>` : ""}
+            ${a.image ? `<div><p class="text-[10px] font-mono font-bold uppercase tracking-widest text-slate-400 mb-2">Photo</p><img src="${a.image}" alt="Photo de l'analyse" class="rounded-xl w-full max-h-48 object-cover border border-slate-100"></div>` : ""}
+        </div>
+    </div>`;
     }).join("");
-
-    document.getElementById("point-overlay").classList.remove("hidden");
-    document.body.style.overflow = "hidden";
-};
+}
 
 window.closeOverlay = function () {
     document.getElementById("point-overlay").classList.add("hidden");
-    document.body.style.overflow = "";
+    document.body.style.overflow = "auto";
 };
 
 // =========================================================================

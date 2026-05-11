@@ -83,18 +83,20 @@
 
         <div id="analyses-detail" class="hidden lg:flex flex-col flex-1 overflow-y-auto bg-slate-50/50 relative">
 
-            <div id="empty-state" class="absolute inset-0 flex flex-col items-center justify-center text-center px-8 z-10">
-                <div
-                    class="w-20 h-20 rounded-3xl bg-white border border-slate-200 shadow-sm flex items-center justify-center text-slate-300 mb-5">
-                    <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5"
-                        viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round"
-                            d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                    </svg>
+            <div id="empty-state" class="absolute inset-0 z-10 pointer-events-none">
+                <div class="flex flex-col items-center justify-center h-full text-center px-8">
+                    <div
+                        class="w-20 h-20 rounded-3xl bg-white border border-slate-200 shadow-sm flex items-center justify-center text-slate-300 mb-5">
+                        <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5"
+                            viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                        </svg>
+                    </div>
+                    <p class="text-lg font-bold text-slate-600">Sélectionnez un cours d'eau</p>
+                    <p class="text-sm text-slate-400 mt-2 max-w-sm">Choisissez un cours d'eau dans la liste à gauche pour voir
+                        l'historique complet de ses analyses.</p>
                 </div>
-                <p class="text-lg font-bold text-slate-600">Sélectionnez un cours d'eau</p>
-                <p class="text-sm text-slate-400 mt-2 max-w-sm">Choisissez un cours d'eau dans la liste à gauche pour voir
-                    l'historique complet de ses analyses.</p>
             </div>
 
             <div id="detail-panel" class="hidden w-full max-w-7xl mx-auto p-4 sm:p-6 lg:p-10 space-y-6 sm:space-y-8">

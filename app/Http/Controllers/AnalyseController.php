@@ -131,7 +131,7 @@ class AnalyseController extends Controller
                     'points'          => $cd->points->map(function ($pt) {
                         $analyses = $pt->analyses
                             ->sortByDesc('created_at')
-                            ->sortBy(fn($a) => (auth()->user()?->role !== 'admin' && $a->user_id === auth()->id()) ? 0 : 1)
+                            ->sortBy(fn($a) => (Auth::user()?->role !== 'admin' && $a->user_id === Auth::id()) ? 0 : 1)
                             ->values();
                         return [
                             'id'        => $pt->id,
