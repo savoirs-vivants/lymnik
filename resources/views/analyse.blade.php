@@ -316,7 +316,7 @@
                                                 <label for="band-{{ $f['key'] }}"
                                                     class="flex-1 text-[13px] font-medium text-slate-700 cursor-pointer">{{ $f['label'] }}</label>
                                                 <span
-                                                    class="font-mono text-[10px] text-slate-400 text-right shrink-0 hidden sm:block">{{ $f['unit'] }}</span>
+                                                    class="font-mono text-[10px] text-slate-400 text-right shrink-0 ">{{ $f['unit'] }}</span>
                                                 <input id="band-{{ $f['key'] }}" type="number" step="any"
                                                     min="0" name="mesures[bandelette][{{ $f['key'] }}]"
                                                     aria-label="{{ $f['label'] }} en {{ $f['unit'] }}"
@@ -354,7 +354,7 @@
                                                 <label for="photo-{{ $f['key'] }}"
                                                     class="flex-1 text-[13px] font-medium text-slate-700 cursor-pointer">{{ $f['label'] }}</label>
                                                 <span
-                                                    class="font-mono text-[10px] text-slate-400 text-right shrink-0 hidden sm:block">{{ $f['unit'] }}</span>
+                                                    class="font-mono text-[10px] text-slate-400 text-right shrink-0">{{ $f['unit'] }}</span>
                                                 <input id="photo-{{ $f['key'] }}" type="number" step="any"
                                                     min="0" name="mesures[photometre][{{ $f['key'] }}]"
                                                     aria-label="{{ $f['label'] }} en {{ $f['unit'] }}"
