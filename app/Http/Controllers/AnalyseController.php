@@ -7,6 +7,7 @@ use App\Models\Analyse;
 use App\Models\CoursDEau;
 use App\Models\Point;
 use App\Services\CoursDEauService;
+use App\Services\QualiteService;
 use App\Http\Requests\StoreAnalyseRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -14,6 +15,8 @@ use Illuminate\Support\Facades\DB;
 
 class AnalyseController extends Controller
 {
+    public function __construct(private QualiteService $qualiteService) {}
+
     public function invalides()
     {
         $analyses = Analyse::with(['point.coursDEau', 'user'])
@@ -243,7 +246,7 @@ class AnalyseController extends Controller
                 );
             }
 
-            $qualite     = $this->calculerQualite($mesures);
+            $qualite     = $this->qualiteService->calculer($mesures);
             $participant = session('participant');
 
             Analyse::create([
@@ -251,7 +254,7 @@ class AnalyseController extends Controller
                 'type'           => $request->type,
                 'image'          => $imagePath,
                 'mesures'        => json_encode($mesures),
-                'est_valide'     => $this->isValid($mesures),
+                'est_valide'     => $this->qualiteService->isValid($mesures),
                 'qualite'        => $qualite,
                 'user_id'        => Auth::id(),
                 'participant_id' => $participant['id']         ?? null,
@@ -276,79 +279,6 @@ class AnalyseController extends Controller
             'lat' => $lat,
             'lng' => $lng
         ])->with('success', 'Analyse enregistrée !');
-    }
-
-    private function calculerQualite(array $mesures): string
-    {
-        $ordre = ['tres_bon' => 0, 'bon' => 1, 'passable' => 2, 'mediocre' => 3, 'mauvais' => 4];
-        $qualite = 'tres_bon';
-
-        $seuils = [
-            'nitrites'   => [0.03, 0.3,  0.5,  1.0],
-            'nitrates'   => [2,    10,   25,   50],
-            'nitrate'    => [2,    10,   25,   50],
-            'phosphate'  => [0.05, 0.2,  0.5,  1.0],
-            'chlore'     => [25,   50,   100,  250],
-            'ammoniaque' => [0.1,  0.5,  2.0,  5.0],
-        ];
-
-        $toutesMesures = array_merge($mesures['bandelette'] ?? [], $mesures['photometre'] ?? []);
-
-        foreach ($toutesMesures as $key => $val) {
-            if ($val === null) continue;
-            $v = (float) $val;
-            $q = null;
-
-            if ($key === 'ph') {
-                if ($v >= 6.5 && $v <= 8.5)      $q = 'tres_bon';
-                elseif ($v >= 6.0 && $v <= 9.0)  $q = 'bon';
-                elseif ($v >= 5.5 && $v <= 9.5)  $q = 'passable';
-                elseif ($v >= 5.0 && $v <= 10.0) $q = 'mediocre';
-                else                               $q = 'mauvais';
-            } elseif (isset($seuils[$key])) {
-                [$s1, $s2, $s3, $s4] = $seuils[$key];
-                if ($v <= $s1) $q = 'tres_bon';
-                elseif ($v <= $s2) $q = 'bon';
-                elseif ($v <= $s3) $q = 'passable';
-                elseif ($v <= $s4) $q = 'mediocre';
-                else                $q = 'mauvais';
-            }
-
-            if ($q !== null && $ordre[$q] > $ordre[$qualite]) {
-                $qualite = $q;
-            }
-        }
-
-        return $qualite;
-    }
-
-    private const SEUILS_VALIDITE = [
-        'bandelette' => [
-            'nitrates'      => 50,
-            'nitrites'      => 1,
-            'durete_totale' => 375,
-            'durete_carb'   => 357,
-            'ph'            => 20,
-            'chlore'        => 500,
-        ],
-        'photometre' => [
-            'ammoniaque'  => 5,
-            'nitrate'   => 50,
-            'phosphate' => 1,
-        ],
-    ];
-
-    private function isValid(array $mesures): bool
-    {
-        foreach (self::SEUILS_VALIDITE as $type => $seuils) {
-            foreach ($seuils as $key => $max) {
-                $val = $mesures[$type][$key] ?? null;
-                if ($val !== null && (float) $val > $max) {
-                    return false;
-                }
-            }
-        }
-        return true;
     }
 
     public function myAnalyses()
