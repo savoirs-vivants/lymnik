@@ -17,6 +17,7 @@ class Mesure extends Model
         'temp_eau',
         'hauteur',
         'debit',
+        'quali_air',
     ];
 
     public function capteur()

@@ -18,6 +18,7 @@ class Capteur extends Model
         'debit',
         'devEUI',
         'UID',
+        'quali_air',
     ];
 
     public function coursDEau()
