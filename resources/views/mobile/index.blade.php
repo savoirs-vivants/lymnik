@@ -421,8 +421,8 @@ document.getElementById('bt-action-stop').addEventListener('click', () => sendCo
 
 btnConnect.addEventListener('click', async () => {
     try {
-        ecrireSysteme("Recherche du module RN4871...");
-        const device = await navigator.bluetooth.requestDevice({ filters: [{ namePrefix: 'RN4871' }], optionalServices: [RN4871_SERVICE_UUID] });
+        ecrireSysteme("Recherche d'une station Bluetooth...");
+        const device = await navigator.bluetooth.requestDevice({ filters: [{ namePrefix: 'Station' }], optionalServices: [RN4871_SERVICE_UUID] });
         ecrireSysteme(`Connecté à : ${device.name}`);
         btnConnect.innerText = "Connecté ✅";
         btnConnect.classList.replace('bg-sv-blue', 'bg-[#16987c]');
