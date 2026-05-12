@@ -14,8 +14,8 @@
 @php
     $kpis = [
         ['key' => 'temp_eau',     'label' => 'Température',  'unit' => '°C',    'color' => 'text-orange-500', 'bg' => 'bg-orange-50',  'border' => 'border-orange-100'],
-        ['key' => 'debit',        'label' => 'Débit',        'unit' => 'm³/s',  'color' => 'text-blue-500',   'bg' => 'bg-blue-50',    'border' => 'border-blue-100'],
-        ['key' => 'hauteur',      'label' => 'Hauteur',      'unit' => 'm',     'color' => 'text-cyan-500',   'bg' => 'bg-cyan-50',    'border' => 'border-cyan-100'],
+        ['key' => 'debit',        'label' => 'Débit',        'unit' => 'L/min', 'color' => 'text-blue-500',   'bg' => 'bg-blue-50',    'border' => 'border-blue-100'],
+        ['key' => 'hauteur',      'label' => 'Hauteur',      'unit' => 'cm',    'color' => 'text-cyan-500',   'bg' => 'bg-cyan-50',    'border' => 'border-cyan-100'],
         ['key' => 'turbidite',    'label' => 'Turbidité',    'unit' => 'NTU',   'color' => 'text-amber-500',  'bg' => 'bg-amber-50',   'border' => 'border-amber-100'],
         ['key' => 'conductivite', 'label' => 'Conductivité', 'unit' => 'µS/cm', 'color' => 'text-violet-500', 'bg' => 'bg-violet-50',  'border' => 'border-violet-100'],
     ];
@@ -118,8 +118,8 @@
                     <tr class="hover:bg-slate-50/50 transition-colors">
                         <td class="py-3 pr-4 text-slate-500 whitespace-nowrap font-mono text-xs">{{ $m->created_at->format('d/m/Y H:i') }}</td>
                         <td class="py-3 pr-4 font-mono font-semibold text-orange-500">{{ $m->temp_eau ?? '—' }} <span class="text-[10px] text-slate-400 font-normal">°C</span></td>
-                        <td class="py-3 pr-4 font-mono font-semibold text-blue-500">{{ $m->debit ?? '—' }} <span class="text-[10px] text-slate-400 font-normal">m³/s</span></td>
-                        <td class="py-3 pr-4 font-mono text-cyan-600">{{ $m->hauteur ?? '—' }} <span class="text-[10px] text-slate-400 font-normal">m</span></td>
+                        <td class="py-3 pr-4 font-mono font-semibold text-blue-500">{{ $m->debit ?? '—' }} <span class="text-[10px] text-slate-400 font-normal">L/min</span></td>
+                        <td class="py-3 pr-4 font-mono text-cyan-600">{{ $m->hauteur ?? '—' }} <span class="text-[10px] text-slate-400 font-normal">cm</span></td>
                         <td class="py-3 pr-4 font-mono text-amber-600">{{ $m->turbidite ?? '—' }} <span class="text-[10px] text-slate-400 font-normal">NTU</span></td>
                         <td class="py-3 font-mono text-violet-600">{{ $m->conductivite ?? '—' }} <span class="text-[10px] text-slate-400 font-normal">µS/cm</span></td>
                     </tr>
@@ -162,7 +162,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     yAxisID: 'y',
                 },
                 {
-                    label: 'Débit (m³/s)',
+                    label: 'Débit (L/min)',
                     data: data.debit,
                     borderColor: '#3b82f6',
                     backgroundColor: 'rgba(59,130,246,0.08)',
@@ -173,7 +173,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     yAxisID: 'y',
                 },
                 {
-                    label: 'Hauteur (m)',
+                    label: 'Hauteur (cm)',
                     data: data.hauteur,
                     borderColor: '#06b6d4',
                     backgroundColor: 'rgba(6,182,212,0.08)',

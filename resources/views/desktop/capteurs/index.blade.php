@@ -9,8 +9,8 @@
 @php
     $params = [
         ['key' => 'temp_eau',     'label' => 'Température',  'unit' => '°C',    'color' => 'text-orange-500'],
-        ['key' => 'debit',        'label' => 'Débit',        'unit' => 'm³/s',  'color' => 'text-blue-500'],
-        ['key' => 'hauteur',      'label' => 'Hauteur',      'unit' => 'm',     'color' => 'text-cyan-500'],
+        ['key' => 'debit',        'label' => 'Débit',        'unit' => 'L/min', 'color' => 'text-blue-500'],
+        ['key' => 'hauteur',      'label' => 'Hauteur',      'unit' => 'cm',    'color' => 'text-cyan-500'],
         ['key' => 'turbidite',    'label' => 'Turbidité',    'unit' => 'NTU',   'color' => 'text-amber-500'],
         ['key' => 'conductivite', 'label' => 'Conductivité', 'unit' => 'µS/cm', 'color' => 'text-violet-500'],
     ];

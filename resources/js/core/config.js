@@ -1,3 +1,6 @@
+// Labels et couleurs Tailwind pour chaque niveau de qualité.
+// Ces valeurs sont également définies côté PHP dans App\Support\QualiteConfig.
+// Les deux doivent rester synchronisés si on ajoute un niveau ou change une couleur.
 export const QUALITE_CONFIG = {
     tres_bon: {
         label: "Très bon",
@@ -34,6 +37,7 @@ export const QUALITE_CONFIG = {
         dot: "bg-red-500",
         hex: "#ef4444",
     },
+    // Cas spécial : analyse rejetée côté admin, affichée en gris dans les graphiques
     non_valide: {
         label: "Invalide",
         bg: "bg-slate-100",
@@ -73,6 +77,9 @@ export function qualiteBadgeHtml(q) {
     `;
 }
 
+// Miroir JS des seuils PHP de QualiteService::SEUILS_QUALITE.
+// Utilisé pour colorier les markers et barres de progression en temps réel côté client,
+// sans round-trip serveur. Si tu modifies les seuils ici, modifie aussi le fichier PHP.
 export function getMesureQualite(key, val) {
     if (val === null || val === undefined || val === '') return null;
 
@@ -87,6 +94,7 @@ export function getMesureQualite(key, val) {
         ammoniac:   [0.1, 0.5, 2.0, 5.0]
     };
 
+    // Le pH est bilatéral (ni trop acide ni trop basique) — logique séparée des autres paramètres
     if (key === 'ph') {
         if (v >= 6.5 && v <= 8.5) return 'tres_bon';
         if (v >= 6.0 && v <= 9.0) return 'bon';
@@ -104,5 +112,5 @@ export function getMesureQualite(key, val) {
         return 'mauvais';
     }
 
-    return null; 
+    return null;
 }
