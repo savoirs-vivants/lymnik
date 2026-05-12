@@ -22,7 +22,7 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    @vite(['resources/css/app.css', 'resources/js/app.js', 'resources/js/map.js', 'resources/js/dashboard.js', 'resources/js/analyses-desktop.js', 'resources/js/statistiques.js', 'resources/js/header.js', 'resources/js/campagne.js', 'resources/js/campagnes-gestion.js', 'resources/js/campagne-dashboard.js'])
+    @vite(['resources/css/app.css', 'resources/js/app.js', 'resources/js/map.js', 'resources/js/dashboard.js', 'resources/js/analyses-desktop.js', 'resources/js/statistiques.js', 'resources/js/header.js', 'resources/js/campagne.js', 'resources/js/campagnes-gestion.js', 'resources/js/campagne-dashboard.js', 'resources/js/capteur-chart.js'])
     @stack('styles')
 </head>
 

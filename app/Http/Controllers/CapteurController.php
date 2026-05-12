@@ -18,13 +18,12 @@ class CapteurController extends Controller
     {
         $capteur = Capteur::with('coursDEau')->findOrFail($id);
 
-        // On limite à 50 mesures : au-delà, le graphique devient illisible et le JSON
-        // transmis au navigateur pèse trop. On prend les plus récentes (latest) puis
-        // on réinverse l'ordre pour l'axe temporel du graphique (croissant gauche→droite).
         $mesures = Mesure::where('capteur_id', $id)
             ->latest()
             ->take(50)
             ->get();
+
+        $tableMesures = $mesures->take(10);
 
         $chartData = $mesures->sortBy('created_at')->values();
 
@@ -38,6 +37,7 @@ class CapteurController extends Controller
         return view('desktop.capteurs.show', compact(
             'capteur',
             'mesures',
+            'tableMesures',
             'graphLabels',
             'graphTemp',
             'graphDebit',

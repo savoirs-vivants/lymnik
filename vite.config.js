@@ -21,6 +21,7 @@ export default defineConfig({
                 'resources/js/participant-analyses.js',
                 'resources/js/campagnes-gestion.js',
                 'resources/js/campagne-dashboard.js',
+                'resources/js/capteur-chart.js',
             ],
             refresh: true,
         }),

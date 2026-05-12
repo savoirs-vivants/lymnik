@@ -22,7 +22,15 @@
     $derniere = $mesures->first();
 @endphp
 
-{{-- KPI dernières valeurs --}}
+<div id="chart-data" class="hidden" style="display:none;"
+     data-labels="{{ json_encode($graphLabels ?? []) }}"
+     data-temp="{{ json_encode($graphTemp ?? []) }}"
+     data-debit="{{ json_encode($graphDebit ?? []) }}"
+     data-hauteur="{{ json_encode($graphHauteur ?? []) }}"
+     data-turbidite="{{ json_encode($graphTurbidite ?? []) }}"
+     data-conductivite="{{ json_encode($graphConductivite ?? []) }}">
+</div>
+
 <div class="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
     @foreach ($kpis as $k)
     @php $val = $derniere?->{$k['key']}; @endphp
@@ -38,7 +46,6 @@
     @endforeach
 </div>
 
-{{-- Infos capteur + statut --}}
 <div class="bg-white rounded-2xl border border-slate-100 shadow-[0_2px_12px_rgba(34,42,96,0.06)] p-4 sm:p-5 mb-6">
     <div class="flex flex-wrap items-center gap-4 sm:gap-6">
         <div>
@@ -56,7 +63,7 @@
             <p class="font-mono text-xs sm:text-sm text-slate-600">{{ $capteur->lat }}, {{ $capteur->long }}</p>
         </div>
         <div>
-            <p class="text-[9px] font-mono font-bold uppercase tracking-widest text-slate-400 mb-1">Mesures (50 dern.)</p>
+            <p class="text-[9px] font-mono font-bold uppercase tracking-widest text-slate-400 mb-1">Mesures (15 dern.)</p>
             <p class="text-sm font-semibold text-slate-800">{{ $mesures->count() }}</p>
         </div>
         @if ($derniere)
@@ -77,11 +84,10 @@
     </div>
 </div>
 
-{{-- Graphique --}}
 <div class="bg-white rounded-2xl border border-slate-100 shadow-[0_2px_12px_rgba(34,42,96,0.06)] p-6 mb-6">
     <div class="flex items-center justify-between mb-5">
         <h2 class="text-sm font-semibold text-slate-700">Évolution des paramètres</h2>
-        <span class="text-[10px] font-mono font-bold uppercase tracking-widest text-slate-400">50 dernières mesures</span>
+        <span class="text-[10px] font-mono font-bold uppercase tracking-widest text-slate-400">15 dernières mesures</span>
     </div>
     <div class="relative w-full h-72 lg:h-96">
         @if ($mesures->isEmpty())
@@ -94,7 +100,6 @@
     </div>
 </div>
 
-{{-- Tableau historique --}}
 <div class="bg-white rounded-2xl border border-slate-100 shadow-[0_2px_12px_rgba(34,42,96,0.06)] p-6">
     <h2 class="text-sm font-semibold text-slate-700 mb-4">Historique des mesures</h2>
 
@@ -114,7 +119,7 @@
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-50">
-                    @foreach ($mesures as $m)
+                    @foreach ($tableMesures as $m)
                     <tr class="hover:bg-slate-50/50 transition-colors">
                         <td class="py-3 pr-4 text-slate-500 whitespace-nowrap font-mono text-xs">{{ $m->created_at->format('d/m/Y H:i') }}</td>
                         <td class="py-3 pr-4 font-mono font-semibold text-orange-500">{{ $m->temp_eau ?? '—' }} <span class="text-[10px] text-slate-400 font-normal">°C</span></td>
@@ -129,136 +134,4 @@
         </div>
     @endif
 </div>
-
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-    const data = {
-        labels:       @json($graphLabels ?? []),
-        temp:         @json($graphTemp ?? []),
-        debit:        @json($graphDebit ?? []),
-        hauteur:      @json($graphHauteur ?? []),
-        turbidite:    @json($graphTurbidite ?? []),
-        conductivite: @json($graphConductivite ?? [])
-    };
-
-    if (!data.labels.length) return;
-
-    const ctx = document.getElementById('capteurChart').getContext('2d');
-
-    new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: data.labels,
-            datasets: [
-                {
-                    label: 'Température (°C)',
-                    data: data.temp,
-                    borderColor: '#f97316',
-                    backgroundColor: 'rgba(249,115,22,0.08)',
-                    borderWidth: 2,
-                    pointRadius: 2,
-                    tension: 0.4,
-                    fill: false,
-                    yAxisID: 'y',
-                },
-                {
-                    label: 'Débit (L/min)',
-                    data: data.debit,
-                    borderColor: '#3b82f6',
-                    backgroundColor: 'rgba(59,130,246,0.08)',
-                    borderWidth: 2,
-                    pointRadius: 2,
-                    tension: 0.4,
-                    fill: false,
-                    yAxisID: 'y',
-                },
-                {
-                    label: 'Hauteur (cm)',
-                    data: data.hauteur,
-                    borderColor: '#06b6d4',
-                    backgroundColor: 'rgba(6,182,212,0.08)',
-                    borderWidth: 2,
-                    pointRadius: 2,
-                    tension: 0.4,
-                    fill: false,
-                    yAxisID: 'y',
-                },
-                {
-                    label: 'Turbidité (NTU)',
-                    data: data.turbidite,
-                    borderColor: '#f59e0b',
-                    backgroundColor: 'rgba(245,158,11,0.08)',
-                    borderWidth: 2,
-                    pointRadius: 2,
-                    tension: 0.4,
-                    fill: false,
-                    yAxisID: 'y',
-                },
-                {
-                    label: 'Conductivité (µS/cm)',
-                    data: data.conductivite,
-                    borderColor: '#8b5cf6',
-                    backgroundColor: 'rgba(139,92,246,0.08)',
-                    borderWidth: 2,
-                    pointRadius: 2,
-                    tension: 0.4,
-                    fill: false,
-                    yAxisID: 'yRight',
-                },
-            ]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            interaction: { mode: 'index', intersect: false },
-            plugins: {
-                legend: {
-                    position: 'top',
-                    labels: {
-                        usePointStyle: true,
-                        pointStyleWidth: 8,
-                        padding: 16,
-                        font: { family: "'Space Grotesk', sans-serif", size: 12 }
-                    }
-                },
-                tooltip: {
-                    backgroundColor: '#0f172a',
-                    titleFont: { family: "'Space Grotesk', sans-serif", size: 12 },
-                    bodyFont: { family: "'Space Mono', monospace", size: 11 },
-                    padding: 12,
-                    cornerRadius: 10,
-                    borderColor: 'rgba(255,255,255,0.08)',
-                    borderWidth: 1,
-                }
-            },
-            scales: {
-                x: {
-                    grid: { display: false },
-                    ticks: {
-                        font: { family: "'Space Mono', monospace", size: 10 },
-                        color: '#94a3b8',
-                        maxRotation: 0,
-                        autoSkip: true,
-                        maxTicksLimit: 10,
-                    }
-                },
-                y: {
-                    type: 'linear',
-                    position: 'left',
-                    grid: { color: 'rgba(0,0,0,0.04)', borderDash: [4, 4] },
-                    ticks: { font: { family: "'Space Mono', monospace", size: 10 }, color: '#94a3b8' },
-                    title: { display: true, text: 'Valeurs', font: { size: 10, family: "'Space Mono', monospace" }, color: '#94a3b8' }
-                },
-                yRight: {
-                    type: 'linear',
-                    position: 'right',
-                    grid: { drawOnChartArea: false },
-                    ticks: { font: { family: "'Space Mono', monospace", size: 10 }, color: '#8b5cf6' },
-                    title: { display: true, text: 'µS/cm', font: { size: 10, family: "'Space Mono', monospace" }, color: '#8b5cf6' }
-                }
-            }
-        }
-    });
-});
-</script>
 @endsection
