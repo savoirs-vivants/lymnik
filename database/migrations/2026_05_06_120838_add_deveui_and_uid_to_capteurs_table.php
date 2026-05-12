@@ -12,8 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('capteurs', function (Blueprint $table) {
-            $table->string('devEUI')->nullable();
-            $table->string('UID')->nullable();
+            $table->string('devEUI')->nullable()->unique();
+            $table->string('UID')->nullable()->unique();
         });
     }
 
