@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Capteur;
 use App\Models\Mesure;
+use Carbon\Carbon;
+use Illuminate\Http\Request;
 
 class CapteurController extends Controller
 {
@@ -95,5 +97,91 @@ class CapteurController extends Controller
             'lat' => $request->latitude,
             'lng' => $request->longitude
         ])->with('success', 'Le capteur a été localisé et associé au cours d\'eau avec succès !');
+    }
+
+    public function syncBluetooth(Request $request)
+    {
+        $request->validate([
+            'uid'    => ['required', 'string'],
+            'lignes' => ['required', 'array', 'min:1'],
+        ]);
+
+        // firstOrCreate : si le capteur n'existe pas encore, on le crée avec l'UID.
+        // lat/long/cours_d_eau_id restent null — ils seront renseignés depuis la carte.
+        try {
+
+        $capteur = Capteur::firstOrCreate(
+            ['UID' => $request->uid],
+        );
+
+        // On charge les timestamps déjà présents en BDD pour ce capteur
+        // afin de ne pas réinsérer des mesures existantes (distinct côté serveur).
+        $existingTs = Mesure::where('capteur_id', $capteur->id)
+            ->whereNotNull('date_mesure_bluetooth')
+            ->pluck('date_mesure_bluetooth')
+            ->mapWithKeys(fn($d) => [Carbon::parse($d)->timestamp => true])
+            ->all();
+
+        $toInsert        = [];
+        $latestTs        = 0;
+        $latestLigne     = null;
+        $now             = now()->toDateTimeString();
+
+        foreach ($request->lignes as $ligne) {
+            $ts = (int) ($ligne['timestamp'] ?? 0);
+            if ($ts <= 0) continue;
+            if (isset($existingTs[$ts])) continue;
+
+            $date = Carbon::createFromTimestamp($ts)->toDateTimeString();
+
+            $toInsert[] = [
+                'capteur_id'            => $capteur->id,
+                'turbidite'             => isset($ligne['turbidite'])    ? (float) $ligne['turbidite']    : null,
+                'conductivite'          => isset($ligne['conductivite']) ? (float) $ligne['conductivite'] : null,
+                'temp_eau'              => isset($ligne['temp_eau'])     ? (float) $ligne['temp_eau']     : null,
+                'hauteur'               => isset($ligne['hauteur'])      ? (float) $ligne['hauteur']      : null,
+                'debit'                 => isset($ligne['debit'])        ? (float) $ligne['debit']        : null,
+                'quali_air'             => null,
+                'date_mesure_bluetooth' => $date,
+                'created_at'            => $now,
+                'updated_at'            => $now,
+            ];
+
+            if ($ts > $latestTs) {
+                $latestTs    = $ts;
+                $latestLigne = $ligne;
+            }
+        }
+
+        // Insert par chunks de 500 pour éviter les timeouts sur de grands volumes
+        foreach (array_chunk($toInsert, 500) as $chunk) {
+            Mesure::insert($chunk);
+        }
+
+        // Mise à jour du capteur avec les valeurs de la mesure la plus récente
+        if ($latestLigne) {
+            $capteur->update([
+                'turbidite'             => isset($latestLigne['turbidite'])    ? (float) $latestLigne['turbidite']    : $capteur->getRawOriginal('turbidite'),
+                'conductivite'          => isset($latestLigne['conductivite']) ? (float) $latestLigne['conductivite'] : $capteur->getRawOriginal('conductivite'),
+                'temp_eau'              => isset($latestLigne['temp_eau'])     ? (float) $latestLigne['temp_eau']     : $capteur->getRawOriginal('temp_eau'),
+                'hauteur'               => isset($latestLigne['hauteur'])      ? (float) $latestLigne['hauteur']      : $capteur->getRawOriginal('hauteur'),
+                'debit'                 => isset($latestLigne['debit'])        ? (float) $latestLigne['debit']        : $capteur->getRawOriginal('debit'),
+                'date_mesure_bluetooth' => Carbon::createFromTimestamp($latestTs)->toDateTimeString(),
+            ]);
+        }
+
+        return response()->json([
+            'ok'      => true,
+            'inseres' => count($toInsert),
+            'ignores' => count($request->lignes) - count($toInsert),
+        ]);
+
+        } catch (\Throwable $e) {
+            return response()->json([
+                'error' => $e->getMessage(),
+                'file'  => $e->getFile(),
+                'line'  => $e->getLine(),
+            ], 500);
+        }
     }
 }

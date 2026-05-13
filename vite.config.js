@@ -22,6 +22,7 @@ export default defineConfig({
                 'resources/js/campagnes-gestion.js',
                 'resources/js/campagne-dashboard.js',
                 'resources/js/capteur-chart.js',
+                'resources/js/bluetooth.js',
             ],
             refresh: true,
         }),

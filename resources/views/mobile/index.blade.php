@@ -273,25 +273,29 @@
                 </div>
                 <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">3. Valeurs en temps réel</h3>
                 <div class="grid grid-cols-2 gap-3 mb-4">
-                    <div class="bg-white p-3 rounded-xl shadow-[0_2px_10px_rgba(0,0,0,0.04)] border border-slate-100 border-l-4 border-l-sv-blue">
-                        <div class="text-[10px] font-bold text-slate-400 uppercase">ID Capteur</div>
-                        <div class="text-lg font-bold text-sv-blue" id="valId">--</div>
+                    <div class="bg-white p-3 rounded-xl shadow-[0_2px_10px_rgba(0,0,0,0.04)] border border-slate-100 border-l-4 border-l-sv-blue col-span-2">
+                        <div class="text-[10px] font-bold text-slate-400 uppercase">UID Capteur</div>
+                        <div class="text-sm font-bold text-sv-blue font-mono truncate" id="valUid">--</div>
                     </div>
                     <div class="bg-white p-3 rounded-xl shadow-[0_2px_10px_rgba(0,0,0,0.04)] border border-slate-100 border-l-4 border-l-amber-500">
+                        <div class="text-[10px] font-bold text-slate-400 uppercase">Turbidité</div>
+                        <div class="text-lg font-bold text-amber-500" id="valTurb">-- <span class="text-xs font-normal">raw</span></div>
+                    </div>
+                    <div class="bg-white p-3 rounded-xl shadow-[0_2px_10px_rgba(0,0,0,0.04)] border border-slate-100 border-l-4 border-l-violet-500">
+                        <div class="text-[10px] font-bold text-slate-400 uppercase">Conductivité</div>
+                        <div class="text-lg font-bold text-violet-500" id="valCond">-- <span class="text-xs font-normal">raw</span></div>
+                    </div>
+                    <div class="bg-white p-3 rounded-xl shadow-[0_2px_10px_rgba(0,0,0,0.04)] border border-slate-100 border-l-4 border-l-orange-500">
                         <div class="text-[10px] font-bold text-slate-400 uppercase">Température</div>
-                        <div class="text-lg font-bold text-amber-500" id="valTemp">-- °C</div>
+                        <div class="text-lg font-bold text-orange-500" id="valTemp">-- °C</div>
                     </div>
-                    <div class="bg-white p-3 rounded-xl shadow-[0_2px_10px_rgba(0,0,0,0.04)] border border-slate-100 border-l-4 border-l-[#16987c]">
-                        <div class="text-[10px] font-bold text-slate-400 uppercase">Tension 1</div>
-                        <div class="text-lg font-bold text-[#16987c]" id="valV1">-- V</div>
+                    <div class="bg-white p-3 rounded-xl shadow-[0_2px_10px_rgba(0,0,0,0.04)] border border-slate-100 border-l-4 border-l-cyan-500">
+                        <div class="text-[10px] font-bold text-slate-400 uppercase">Hauteur</div>
+                        <div class="text-lg font-bold text-cyan-500" id="valHaut">-- cm</div>
                     </div>
-                    <div class="bg-white p-3 rounded-xl shadow-[0_2px_10px_rgba(0,0,0,0.04)] border border-slate-100 border-l-4 border-l-[#16987c]">
-                        <div class="text-[10px] font-bold text-slate-400 uppercase">Tension 2</div>
-                        <div class="text-lg font-bold text-[#16987c]" id="valV2">-- V</div>
-                    </div>
-                    <div class="col-span-2 bg-white p-3 rounded-xl shadow-[0_2px_10px_rgba(0,0,0,0.04)] border border-slate-100 border-l-4 border-l-slate-600">
-                        <div class="text-[10px] font-bold text-slate-400 uppercase">Flags (Binaire)</div>
-                        <div class="text-lg font-bold text-slate-700 tracking-[0.2em] font-mono" id="valFlags">--------</div>
+                    <div class="col-span-2 bg-white p-3 rounded-xl shadow-[0_2px_10px_rgba(0,0,0,0.04)] border border-slate-100 border-l-4 border-l-blue-500">
+                        <div class="text-[10px] font-bold text-slate-400 uppercase">Débit</div>
+                        <div class="text-lg font-bold text-blue-500" id="valDebit">-- L/min</div>
                     </div>
                 </div>
                 <div class="flex justify-between items-end mb-2">
@@ -299,6 +303,16 @@
                     <button id="bt-action-download" class="text-xs font-bold text-sv-blue active:opacity-50">Télécharger log</button>
                 </div>
                 <textarea id="bt-console" class="w-full h-40 bg-[#1e1e1e] text-[#00ff00] font-mono text-xs p-3 rounded-xl outline-none resize-none shadow-inner" readonly>Prêt à scanner...</textarea>
+
+                <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mt-4 mb-2">4. Enregistrer en base</h3>
+                <button id="bt-action-sync"
+                    class="w-full bg-[#222a60] text-white font-bold py-3 rounded-xl active:scale-95 transition-transform flex justify-center items-center gap-2 text-sm shadow-md">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+                    </svg>
+                    Synchroniser avec la BDD
+                </button>
+                <div id="bt-sync-status" class="hidden mt-2 p-3 rounded-xl text-xs font-mono"></div>
             </div>
         </div>
 
@@ -353,117 +367,9 @@
     window.nearestRiverUrl    = "{{ route('cours-d-eau.nearest') }}";
     window.userAuthenticated  = {{ auth()->check() ? 'true' : 'false' }};
     window.loginUrl           = "{{ route('login', ['source' => 'mobile']) }}";
+    window.btSyncUrl          = "{{ route('capteurs.bluetooth.sync') }}";
 </script>
 
-<script>
-// ----- Bluetooth modal -----
-const btModal = document.getElementById('bt-modal');
-document.getElementById('btn-open-bt')?.addEventListener('click', () => btModal.classList.remove('translate-y-full'));
-document.getElementById('btn-open-bt-desk')?.addEventListener('click', () => btModal.classList.remove('translate-y-full'));
-document.getElementById('bt-close').addEventListener('click', () => btModal.classList.add('translate-y-full'));
-
-// ----- Sync recherche desktop → mobile (map.js écoute #search-input) -----
-const deskSearch    = document.getElementById('search-input-desk');
-const mobileSearch  = document.getElementById('search-input');
-const deskResults   = document.getElementById('search-results-desk');
-const mobileResults = document.getElementById('search-results');
-
-if (deskSearch && mobileSearch) {
-    deskSearch.addEventListener('input', () => {
-        mobileSearch.value = deskSearch.value;
-        mobileSearch.dispatchEvent(new Event('input', { bubbles: true }));
-    });
-    // Miroir des résultats
-    const observer = new MutationObserver(() => {
-        deskResults.innerHTML = mobileResults.innerHTML;
-        deskResults.classList.toggle('hidden', mobileResults.classList.contains('hidden'));
-    });
-    observer.observe(mobileResults, { childList: true, attributes: true, attributeFilter: ['class'] });
-}
-
-// ----- Bluetooth PCB -----
-const zoneLog = document.getElementById('bt-console');
-const btnConnect = document.getElementById('bt-action-connect');
-const btnDownload = document.getElementById('bt-action-download');
-const RN4871_SERVICE_UUID = '49535343-fe7d-4ae5-8fa9-9fafd205e455';
-const RN4871_TX_UUID = '49535343-1e4d-4bd9-ba61-23c647249616';
-const RN4871_RX_UUID = '49535343-8841-43f4-a8d4-ecbe34729bb3';
-let receiveBuffer = "";
-let writeCharacteristic = null;
-
-function ecrireSysteme(message) {
-    const temps = new Date().toLocaleTimeString();
-    zoneLog.value += `\n\n[${temps}] 🔵 ${message}\n`;
-    zoneLog.scrollTop = zoneLog.scrollHeight;
-}
-
-function decodeData(line) {
-    let parts = line.split(/[,;\s]+/);
-    if (parts.length >= 5) {
-        document.getElementById('valId').innerText = parts[0];
-        document.getElementById('valTemp').innerText = (parseInt(parts[1]) / 10).toFixed(1) + " °C";
-        document.getElementById('valV1').innerText = (parseInt(parts[2]) / 100).toFixed(2) + " V";
-        document.getElementById('valV2').innerText = (parseInt(parts[3]) / 100).toFixed(2) + " V";
-        document.getElementById('valFlags').innerText = parseInt(parts[4]).toString(2).padStart(8, '0');
-    }
-}
-
-async function sendCommandToPCB(cmd) {
-    if (!writeCharacteristic) { ecrireSysteme("❌ Connectez d'abord le PCB."); return; }
-    try {
-        await writeCharacteristic.writeValue(new TextEncoder('utf-8').encode(cmd));
-        ecrireSysteme(`👉 Commande : "${cmd}"`);
-    } catch (e) { ecrireSysteme(`❌ ${e.message}`); }
-}
-
-document.getElementById('bt-action-start').addEventListener('click', () => sendCommandToPCB("?"));
-document.getElementById('bt-action-stop').addEventListener('click', () => sendCommandToPCB("Q"));
-
-btnConnect.addEventListener('click', async () => {
-    try {
-        ecrireSysteme("Recherche d'une station Bluetooth...");
-        const device = await navigator.bluetooth.requestDevice({ filters: [{ namePrefix: 'Station' }], optionalServices: [RN4871_SERVICE_UUID] });
-        ecrireSysteme(`Connecté à : ${device.name}`);
-        btnConnect.innerText = "Connecté ✅";
-        btnConnect.classList.replace('bg-sv-blue', 'bg-[#16987c]');
-        device.addEventListener('gattserverdisconnected', () => {
-            ecrireSysteme("Déconnecté.");
-            btnConnect.innerText = "1. Connecter le PCB";
-            btnConnect.classList.replace('bg-[#16987c]', 'bg-sv-blue');
-            writeCharacteristic = null;
-        });
-        const server = await device.gatt.connect();
-        const service = await server.getPrimaryService(RN4871_SERVICE_UUID);
-        const readChar = await service.getCharacteristic(RN4871_TX_UUID);
-        writeCharacteristic = await service.getCharacteristic(RN4871_RX_UUID);
-        ecrireSysteme("Écoute et écriture activées.");
-        await readChar.startNotifications();
-        readChar.addEventListener('characteristicvaluechanged', (event) => {
-            const text = new TextDecoder('utf-8').decode(event.target.value);
-            zoneLog.value += text;
-            zoneLog.scrollTop = zoneLog.scrollHeight;
-            receiveBuffer += text;
-            let lines = receiveBuffer.split('\n');
-            receiveBuffer = lines.pop();
-            for (let line of lines) { line = line.trim(); if (line) decodeData(line); }
-        });
-    } catch (e) {
-        if (e.name !== 'NotFoundError') ecrireSysteme(`ERREUR : ${e.message}`);
-        else ecrireSysteme("Recherche annulée.");
-    }
-});
-
-btnDownload.addEventListener('click', () => {
-    const blob = new Blob([zoneLog.value], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `Log_RN4871_${new Date().toISOString().slice(0,10)}.txt`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-});
-</script>
+{{-- Logique Bluetooth dans resources/js/bluetooth.js --}}
 
 @endsection
