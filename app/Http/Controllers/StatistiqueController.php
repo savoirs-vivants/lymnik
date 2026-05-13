@@ -10,7 +10,7 @@ use PhpOffice\PhpSpreadsheet\Writer\Csv;
 
 class StatistiqueController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $analysesRaw = DB::table('analyses')
             ->join('points', 'analyses.point_id', '=', 'points.id')

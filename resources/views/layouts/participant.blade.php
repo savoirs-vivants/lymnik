@@ -14,7 +14,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3"></script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @vite(['resources/css/app.css', 'resources/js/app.js', 'resources/js/participant-analyses.js', 'resources/js/map.js', 'resources/js/statistiques.js'])
     @stack('styles')
 </head>
 <body class="bg-slate-50 font-grotesk text-slate-900 antialiased">
@@ -105,7 +105,7 @@
             </div>
         </header>
 
-        <main class="flex-1 {{ request()->routeIs('participant.map') || request()->routeIs('participant.analyses') || request()->routeIs('participant.statistiques') ? 'p-0 overflow-hidden flex flex-col' : 'p-4 sm:p-6 lg:p-8 overflow-y-auto' }}">
+        <main class="flex-1 {{ request()->routeIs('participant.map') || request()->routeIs('participant.analyses') ? 'p-0 overflow-hidden flex flex-col' : 'p-4 sm:p-6 lg:p-8 overflow-y-auto' }}">
             @yield('content')
         </main>
 

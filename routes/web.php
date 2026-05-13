@@ -64,6 +64,9 @@ Route::middleware(\App\Http\Middleware\ParticipantSession::class)->prefix('sessi
     Route::get('/statistiques', [ParticipantController::class, 'statistiques'])->name('statistiques');
 });
 
+Route::get('/statistiques', [StatistiqueController::class, 'index'])->name('statistiques.index');
+Route::get('/statistiques/export', [StatistiqueController::class, 'export'])->name('statistiques.export');
+
 // ─── Utilisateurs authentifiés ────────────────────────────────────────────────
 Route::middleware('auth')->group(function () {
     Route::get('/analyses', [AnalyseController::class, 'index'])->name('analyses.index');
@@ -88,11 +91,11 @@ Route::middleware('auth')->group(function () {
     Route::delete('/campagnes/{campagne}',        [CampagneController::class, 'destroy'])->name('campagne.destroy');
 
     Route::middleware(['auth', 'can:admin'])->group(function () {
-    Route::get('/backoffice',                  [BackOfficeController::class, 'index'])->name('backoffice.index');
-    Route::post('/backoffice/users',           [BackOfficeController::class, 'store'])->name('backoffice.store');
-    Route::get('/backoffice/users/{id}',       [BackofficeController::class, 'showUser'])->name('backoffice.show');
-    Route::put('/backoffice/{user}',           [BackOfficeController::class, 'update'])->name('backoffice.update');
-    Route::delete('/backoffice/users/{user}',  [BackOfficeController::class, 'destroy'])->name('backoffice.destroy');
+        Route::get('/backoffice',                  [BackOfficeController::class, 'index'])->name('backoffice.index');
+        Route::post('/backoffice/users',           [BackOfficeController::class, 'store'])->name('backoffice.store');
+        Route::get('/backoffice/users/{id}',       [BackofficeController::class, 'showUser'])->name('backoffice.show');
+        Route::put('/backoffice/{user}',           [BackOfficeController::class, 'update'])->name('backoffice.update');
+        Route::delete('/backoffice/users/{user}',  [BackOfficeController::class, 'destroy'])->name('backoffice.destroy');
     });
 
     Route::get('/map', [MapController::class, 'index'])->name('map');
@@ -102,7 +105,4 @@ Route::middleware('auth')->group(function () {
     Route::get('/capteurs/{id}/chart-data', [CapteurController::class, 'chartData'])->name('capteurs.chart-data');
     Route::post('/capteurs', [CapteurController::class, 'store'])->name('capteurs.store');
     Route::post('/capteurs/bluetooth/sync', [CapteurController::class, 'syncBluetooth'])->name('capteurs.bluetooth.sync');
-
-    Route::get('/statistiques', [StatistiqueController::class, 'index'])->name('statistiques.index');
-    Route::get('/statistiques/export', [StatistiqueController::class, 'export'])->name('statistiques.export');
 });
