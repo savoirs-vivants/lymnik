@@ -249,7 +249,7 @@ class AnalyseController extends Controller
             $qualite     = $this->qualiteService->calculer($mesures);
             $participant = session('participant');
 
-            Analyse::create([
+            $analyse = Analyse::create([
                 'point_id'       => $point->id,
                 'type'           => $request->type,
                 'image'          => $imagePath,
@@ -261,6 +261,12 @@ class AnalyseController extends Controller
                 'session_id'     => $participant['id_session'] ?? null,
                 'nom'            => $request->filled('nom') ? trim($request->nom) : null,
             ]);
+
+            if ($request->filled('date_prelevement')) {
+                DB::table('analyses')
+                    ->where('id', $analyse->id)
+                    ->update(['created_at' => \Carbon\Carbon::parse($request->date_prelevement)]);
+            }
         });
 
         $lat = $request->input('latitude');

@@ -23,7 +23,8 @@ class StoreAnalyseRequest extends FormRequest
             'cours_d_eau_id' => 'nullable|integer|exists:cours_d_eaus,id',
             'ville'          => ['nullable', 'string', 'max:100'],
             'redirect_to'    => ['nullable', 'string', 'max:255'],
-            'nom'            => ['nullable', 'string', 'max:150'],
+            'nom'              => ['nullable', 'string', 'max:150'],
+            'date_prelevement' => ['nullable', 'date', 'before_or_equal:now'],
 
             'mesures.bandelette.nitrates'      => ['nullable', 'numeric', 'min:0'],
             'mesures.bandelette.nitrites'      => ['nullable', 'numeric', 'min:0'],
