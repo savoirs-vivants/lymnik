@@ -174,7 +174,7 @@ class AnalyseController extends Controller
             'note'       => $mesures['note'] ?? null,
             'bandelette' => $mesures['bandelette'] ?? null,
             'photometre' => $mesures['photometre'] ?? null,
-            'user'       => $a->user?->firstname . ' ' . $a->user?->name,
+            'user'       => trim($a->user?->firstname . ' ' . $a->user?->name) ?: $a->nom,
             'date'       => $a->created_at?->translatedFormat('d M Y'),
             'time'       => $a->created_at?->format('H:i'),
             'created_at' => $a->created_at?->toISOString(),

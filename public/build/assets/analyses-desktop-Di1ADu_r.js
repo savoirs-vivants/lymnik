@@ -33,7 +33,7 @@ import{n as e,t}from"./map-utils-BX27QVU9.js";import{a as n,i as r,n as i}from".
                 <span class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-xs font-black text-slate-500 shrink-0">${t+1}</span>
                 <div class="min-w-0">
                     <p class="text-[13px] sm:text-[15px] font-bold text-slate-800 truncate">${e.date||`—`} <span class="text-slate-400 font-normal text-xs sm:text-sm ml-1">${e.time||``}</span></p>
-                    ${e.saisi_par?`<p class="text-[10px] sm:text-[11px] text-[#1565c0] font-mono font-bold mt-0.5 truncate">Saisi par ${e.saisi_par}</p>`:``}
+                    ${e.user?`<p class="text-[10px] sm:text-[11px] text-[#1565c0] font-mono font-bold mt-0.5 truncate">Saisi par ${e.user}</p>`:``}
                 </div>
             </div>
             <div class="flex items-center gap-3 pl-2">
