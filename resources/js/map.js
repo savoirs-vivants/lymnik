@@ -234,9 +234,9 @@ document.addEventListener("DOMContentLoaded", () => {
         ?.addEventListener("click", hideCreateCard);
 
     // 5. MARQUEURS (Utilisation de map-utils.js)
-    const points = window.mapPoints ?? [];
     const capteurs = window.mapCapteurs ?? [];
-    const pointMarkers = [];
+    let pointMarkers = [];
+    const activePills = new Set();
 
     function typeLabel(type) {
         return (
@@ -248,28 +248,42 @@ document.addEventListener("DOMContentLoaded", () => {
         );
     }
 
-    points.forEach((p) => {
-        const q =
-            p.analyse?.est_valide === false
-                ? "non_valide"
-                : (p.analyse?.qualite ?? null);
-        const color =
-            q && q !== "non_valide"
-                ? QUALITE_CONFIG[q]?.hex || "#94a3b8"
-                : "#94a3b8";
-        const marker = L.marker([p.latitude, p.longitude], {
-            icon: createCustomMarker(color, false),
-        }).addTo(map);
-        marker.on("click", (e) => {
-            L.DomEvent.stopPropagation(e);
-            hideCreateCard();
-            populateSheet(p);
-            openSheet();
-        });
-        pointMarkers.push({ marker, qualite: q });
-    });
+    function renderMarkers(points) {
+        // Supprime les markers existants
+        pointMarkers.forEach(({ marker }) => marker.remove());
+        pointMarkers = [];
 
-    const activePills = new Set();
+        points.forEach((p) => {
+            const q =
+                p.analyse?.est_valide === false
+                    ? "non_valide"
+                    : (p.analyse?.qualite ?? null);
+            const color =
+                q && q !== "non_valide"
+                    ? QUALITE_CONFIG[q]?.hex || "#94a3b8"
+                    : "#94a3b8";
+            const marker = L.marker([p.latitude, p.longitude], {
+                icon: createCustomMarker(color, false),
+            }).addTo(map);
+            marker.on("click", (e) => {
+                L.DomEvent.stopPropagation(e);
+                hideCreateCard();
+                populateSheet(p);
+                openSheet();
+            });
+            pointMarkers.push({ marker, qualite: q });
+        });
+
+        // Réapplique les filtres qualité actifs
+        if (activePills.size > 0) {
+            pointMarkers.forEach(({ marker, qualite }) => {
+                if (!activePills.has(qualite)) marker.remove();
+            });
+        }
+    }
+
+    renderMarkers(window.mapPoints ?? []);
+
     document.querySelectorAll(".pill[data-quality]").forEach((pill) => {
         pill.addEventListener("click", () => {
             const q = pill.dataset.quality;
@@ -281,12 +295,15 @@ document.addEventListener("DOMContentLoaded", () => {
                 pill.classList.add("active");
             }
             pointMarkers.forEach(({ marker, qualite }) => {
-                const visible =
-                    activePills.size === 0 || activePills.has(qualite);
+                const visible = activePills.size === 0 || activePills.has(qualite);
                 if (visible) marker.addTo(map);
                 else marker.remove();
             });
         });
+    });
+
+    window.addEventListener('lymnik:reloadMarkers', () => {
+        renderMarkers(window.mapPoints ?? []);
     });
 
     capteurs.forEach((c) => {

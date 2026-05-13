@@ -29,6 +29,24 @@
                     </div>
                 @endforeach
             </div>
+
+            {{-- Filtres session / groupe --}}
+            <div class="flex gap-1.5 md:gap-2 pointer-events-auto" id="participant-filters">
+                <button data-filter="all"
+                    class="map-filter-btn active bg-[#222a60] text-white px-2.5 md:px-3 py-1 md:py-1.5 rounded-full shadow-sm text-[9px] md:text-[10px] font-black uppercase tracking-wider transition-all border border-transparent">
+                    Tous
+                </button>
+                <button data-filter="session"
+                    class="map-filter-btn bg-white/90 text-slate-700 px-2.5 md:px-3 py-1 md:py-1.5 rounded-full shadow-sm text-[9px] md:text-[10px] font-black uppercase tracking-wider transition-all border border-transparent hover:bg-white">
+                    Ma session
+                </button>
+                @if(($participantInfo['id_groupe'] ?? 0) > 0)
+                <button data-filter="group"
+                    class="map-filter-btn bg-white/90 text-slate-700 px-2.5 md:px-3 py-1 md:py-1.5 rounded-full shadow-sm text-[9px] md:text-[10px] font-black uppercase tracking-wider transition-all border border-transparent hover:bg-white">
+                    Mon groupe
+                </button>
+                @endif
+            </div>
         </div>
 
         <div id="bottom-sheet"
@@ -131,17 +149,54 @@
     </div>
 
     <script>
-        window.mapPoints = @json($pointsJson ?? []);
-        window.mapRivers = @json($riversJson ?? []);
-        window.mapCapteurs = {!! $capteursJson ?? '[]' !!};
+        window.allMapPoints     = @json($pointsJson ?? []);
+        window.mapPoints        = window.allMapPoints;
+        window.mapRivers        = @json($riversJson ?? []);
+        window.mapCapteurs      = {!! $capteursJson ?? '[]' !!};
         window.createAnalyseUrl = "{{ route('analyse.create') }}";
-        {{-- Pour les participants, on simule userAuthenticated=true afin que la carte fonctionne --}}
         window.userAuthenticated = {{ (auth()->check() || session()->has('participant')) ? 'true' : 'false' }};
-        window.loginUrl = "{{ route('login') }}";
+        window.loginUrl         = "{{ route('login') }}";
+        window.sessionPointIds  = @json($sessionPointIds ?? []);
+        window.groupPointIds    = @json($groupPointIds ?? []);
+        window.hasGroups        = {{ ($participantInfo['id_groupe'] ?? 0) > 0 ? 'true' : 'false' }};
     </script>
 
 @endsection
 
 @push('scripts')
     @vite('resources/js/map.js')
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // map.js expose window.map — on attend qu'il soit prêt
+        const filterBtns = document.querySelectorAll('.map-filter-btn');
+
+        filterBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const filter = btn.dataset.filter;
+
+                // Style actif
+                filterBtns.forEach(b => {
+                    b.classList.toggle('bg-[#222a60]', b === btn);
+                    b.classList.toggle('text-white',   b === btn);
+                    b.classList.toggle('bg-white/90',  b !== btn);
+                    b.classList.toggle('text-slate-700', b !== btn);
+                });
+
+                // Filtre les points avant que map.js les lise
+                if (filter === 'all') {
+                    window.mapPoints = window.allMapPoints;
+                } else if (filter === 'session') {
+                    const ids = new Set(window.sessionPointIds);
+                    window.mapPoints = window.allMapPoints.filter(p => ids.has(p.id));
+                } else if (filter === 'group') {
+                    const ids = new Set(window.groupPointIds);
+                    window.mapPoints = window.allMapPoints.filter(p => ids.has(p.id));
+                }
+
+                // Recharge la carte avec les nouveaux points
+                window.dispatchEvent(new CustomEvent('lymnik:reloadMarkers'));
+            });
+        });
+    });
+    </script>
 @endpush
