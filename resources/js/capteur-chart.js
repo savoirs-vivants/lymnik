@@ -1,138 +1,146 @@
 document.addEventListener('DOMContentLoaded', function () {
     const chartDataEl = document.getElementById('chart-data');
-    const canvasEl = document.getElementById('capteurChart');
-
+    const canvasEl    = document.getElementById('capteurChart');
     if (!chartDataEl || !canvasEl) return;
 
-    try {
-        const data = {
-            labels:       JSON.parse(chartDataEl.dataset.labels || '[]'),
-            temp:         JSON.parse(chartDataEl.dataset.temp || '[]'),
-            debit:        JSON.parse(chartDataEl.dataset.debit || '[]'),
-            hauteur:      JSON.parse(chartDataEl.dataset.hauteur || '[]'),
-            turbidite:    JSON.parse(chartDataEl.dataset.turbidite || '[]'),
-            conductivite: JSON.parse(chartDataEl.dataset.conductivite || '[]')
-        };
+    const chartUrl  = chartDataEl.dataset.chartUrl;
+    const countEl   = document.getElementById('chart-count');
+    const limitInput = document.getElementById('chart-limit');
+    const customRange = document.getElementById('custom-range');
+    const limitControl = document.getElementById('limit-control');
+    const fromInput  = document.getElementById('chart-from');
+    const toInput    = document.getElementById('chart-to');
 
-        if (!data.labels.length) return;
+    let chart       = null;
+    let activePeriod = '1m'; // période active par défaut
 
-        const ctx = canvasEl.getContext('2d');
+    const DATASETS_META = [
+        { key: 'temp',         label: 'Température (°C)',   color: '#f97316', yAxis: 'y' },
+        { key: 'debit',        label: 'Débit (L/min)',       color: '#3b82f6', yAxis: 'y' },
+        { key: 'hauteur',      label: 'Hauteur (cm)',        color: '#06b6d4', yAxis: 'y' },
+        { key: 'turbidite',    label: 'Turbidité (NTU)',     color: '#f59e0b', yAxis: 'y' },
+        { key: 'conductivite', label: 'Conductivité (µS/cm)',color: '#8b5cf6', yAxis: 'yRight' },
+    ];
 
-        new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: data.labels,
-                datasets: [
-                    {
-                        label: 'Température (°C)',
-                        data: data.temp,
-                        borderColor: '#f97316',
-                        backgroundColor: 'rgba(249,115,22,0.08)',
-                        borderWidth: 2,
-                        pointRadius: 2,
-                        tension: 0.4,
-                        fill: false,
-                        yAxisID: 'y',
-                    },
-                    {
-                        label: 'Débit (L/min)',
-                        data: data.debit,
-                        borderColor: '#3b82f6',
-                        backgroundColor: 'rgba(59,130,246,0.08)',
-                        borderWidth: 2,
-                        pointRadius: 2,
-                        tension: 0.4,
-                        fill: false,
-                        yAxisID: 'y',
-                    },
-                    {
-                        label: 'Hauteur (cm)',
-                        data: data.hauteur,
-                        borderColor: '#06b6d4',
-                        backgroundColor: 'rgba(6,182,212,0.08)',
-                        borderWidth: 2,
-                        pointRadius: 2,
-                        tension: 0.4,
-                        fill: false,
-                        yAxisID: 'y',
-                    },
-                    {
-                        label: 'Turbidité (NTU)',
-                        data: data.turbidite,
-                        borderColor: '#f59e0b',
-                        backgroundColor: 'rgba(245,158,11,0.08)',
-                        borderWidth: 2,
-                        pointRadius: 2,
-                        tension: 0.4,
-                        fill: false,
-                        yAxisID: 'y',
-                    },
-                    {
-                        label: 'Conductivité (µS/cm)',
-                        data: data.conductivite,
-                        borderColor: '#8b5cf6',
-                        backgroundColor: 'rgba(139,92,246,0.08)',
-                        borderWidth: 2,
-                        pointRadius: 2,
-                        tension: 0.4,
-                        fill: false,
-                        yAxisID: 'yRight',
-                    },
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                interaction: { mode: 'index', intersect: false },
-                plugins: {
-                    legend: {
-                        position: 'top',
-                        labels: {
-                            usePointStyle: true,
-                            pointStyleWidth: 8,
-                            padding: 16,
-                            font: { family: "'Space Grotesk', sans-serif", size: 12 }
+    function buildParams() {
+        const params = new URLSearchParams();
+
+        // Limite toujours envoyée, quelle que soit la période active
+        params.set('limit', parseInt(limitInput.value) || 50);
+
+        if (activePeriod === 'custom') {
+            if (fromInput.value) params.set('from', fromInput.value);
+            if (toInput.value)   params.set('to',   toInput.value);
+        } else if (activePeriod !== 'none') {
+            const now  = new Date();
+            const from = new Date(now);
+            if (activePeriod === '1m') from.setMonth(now.getMonth() - 1);
+            if (activePeriod === '6m') from.setMonth(now.getMonth() - 6);
+            if (activePeriod === '1a') from.setFullYear(now.getFullYear() - 1);
+            params.set('from', from.toISOString().slice(0, 10));
+            params.set('to',   now.toISOString().slice(0, 10));
+        }
+
+        return params;
+    }
+
+    async function loadChart() {
+        const params = buildParams();
+        const res    = await fetch(`${chartUrl}?${params}`);
+        const data   = await res.json();
+
+        if (countEl) countEl.textContent = `${data.count} mesures`;
+
+        const datasets = DATASETS_META.map((m) => ({
+            label:           m.label,
+            data:            data[m.key],
+            borderColor:     m.color,
+            backgroundColor: m.color + '14',
+            borderWidth:     2,
+            pointRadius:     data.count > 200 ? 0 : 2,
+            tension:         0.4,
+            fill:            false,
+            yAxisID:         m.yAxis,
+        }));
+
+        if (chart) {
+            chart.data.labels   = data.labels;
+            datasets.forEach((ds, i) => { chart.data.datasets[i].data = ds.data; chart.data.datasets[i].pointRadius = ds.pointRadius; });
+            chart.update('none');
+        } else {
+            const ctx = canvasEl.getContext('2d');
+            chart = new Chart(ctx, {
+                type: 'line',
+                data: { labels: data.labels, datasets },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: { usePointStyle: true, pointStyleWidth: 8, padding: 16, font: { family: "'Space Grotesk', sans-serif", size: 12 } }
+                        },
+                        tooltip: {
+                            backgroundColor: '#0f172a',
+                            titleFont: { family: "'Space Grotesk', sans-serif", size: 12 },
+                            bodyFont:  { family: "'Space Mono', monospace", size: 11 },
+                            padding: 12, cornerRadius: 10,
+                            borderColor: 'rgba(255,255,255,0.08)', borderWidth: 1,
                         }
                     },
-                    tooltip: {
-                        backgroundColor: '#0f172a',
-                        titleFont: { family: "'Space Grotesk', sans-serif", size: 12 },
-                        bodyFont: { family: "'Space Mono', monospace", size: 11 },
-                        padding: 12,
-                        cornerRadius: 10,
-                        borderColor: 'rgba(255,255,255,0.08)',
-                        borderWidth: 1,
-                    }
-                },
-                scales: {
-                    x: {
-                        grid: { display: false },
-                        ticks: {
-                            font: { family: "'Space Mono', monospace", size: 10 },
-                            color: '#94a3b8',
-                            maxRotation: 0,
-                            autoSkip: true,
-                            maxTicksLimit: 10,
+                    scales: {
+                        x: {
+                            grid: { display: false },
+                            ticks: { font: { family: "'Space Mono', monospace", size: 10 }, color: '#94a3b8', maxRotation: 0, autoSkip: true, maxTicksLimit: 10 }
+                        },
+                        y: {
+                            type: 'linear', position: 'left',
+                            grid: { color: 'rgba(0,0,0,0.04)', borderDash: [4, 4] },
+                            ticks: { font: { family: "'Space Mono', monospace", size: 10 }, color: '#94a3b8' },
+                            title: { display: true, text: 'Valeurs', font: { size: 10, family: "'Space Mono', monospace" }, color: '#94a3b8' }
+                        },
+                        yRight: {
+                            type: 'linear', position: 'right',
+                            grid: { drawOnChartArea: false },
+                            ticks: { font: { family: "'Space Mono', monospace", size: 10 }, color: '#8b5cf6' },
+                            title: { display: true, text: 'µS/cm', font: { size: 10, family: "'Space Mono', monospace" }, color: '#8b5cf6' }
                         }
-                    },
-                    y: {
-                        type: 'linear',
-                        position: 'left',
-                        grid: { color: 'rgba(0,0,0,0.04)', borderDash: [4, 4] },
-                        ticks: { font: { family: "'Space Mono', monospace", size: 10 }, color: '#94a3b8' },
-                        title: { display: true, text: 'Valeurs', font: { size: 10, family: "'Space Mono', monospace" }, color: '#94a3b8' }
-                    },
-                    yRight: {
-                        type: 'linear',
-                        position: 'right',
-                        grid: { drawOnChartArea: false },
-                        ticks: { font: { family: "'Space Mono', monospace", size: 10 }, color: '#8b5cf6' },
-                        title: { display: true, text: 'µS/cm', font: { size: 10, family: "'Space Mono', monospace" }, color: '#8b5cf6' }
                     }
                 }
-            }
-        });
-    } catch (e) {
-        console.error("Erreur de parsing des données du graphique capteur", e);
+            });
+        }
     }
+
+    function setActivePeriod(period) {
+        activePeriod = period;
+        document.querySelectorAll('.chart-period-btn').forEach((b) => {
+            const active = b.dataset.period === period;
+            b.classList.toggle('bg-white',       active);
+            b.classList.toggle('text-slate-800', active);
+            b.classList.toggle('shadow-sm',      active);
+            b.classList.toggle('text-slate-500', !active);
+        });
+        customRange.classList.toggle('hidden', period !== 'custom');
+        // Le champ "nombre de mesures" est toujours visible — il s'applique en plus du filtre temporel
+    }
+
+    // Boutons de période
+    document.querySelectorAll('.chart-period-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+            setActivePeriod(btn.dataset.period);
+            if (activePeriod !== 'custom') loadChart();
+        });
+    });
+
+    // Bouton OK du custom
+    document.getElementById('chart-custom-apply')?.addEventListener('click', loadChart);
+
+    // Bouton "Appliquer" de la limite
+    document.getElementById('chart-limit-apply')?.addEventListener('click', loadChart);
+    limitInput?.addEventListener('keydown', (e) => { if (e.key === 'Enter') loadChart(); });
+
+    // Chargement initial — 1 mois par défaut, limit-control masqué
+    setActivePeriod('1m');
+    loadChart();
 });

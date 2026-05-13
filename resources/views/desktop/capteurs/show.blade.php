@@ -22,13 +22,9 @@
     $derniere = $mesures->first();
 @endphp
 
-<div id="chart-data" class="hidden" style="display:none;"
-     data-labels="{{ json_encode($graphLabels ?? []) }}"
-     data-temp="{{ json_encode($graphTemp ?? []) }}"
-     data-debit="{{ json_encode($graphDebit ?? []) }}"
-     data-hauteur="{{ json_encode($graphHauteur ?? []) }}"
-     data-turbidite="{{ json_encode($graphTurbidite ?? []) }}"
-     data-conductivite="{{ json_encode($graphConductivite ?? []) }}">
+<div id="chart-data" class="hidden"
+     data-capteur-id="{{ $capteur->id }}"
+     data-chart-url="{{ route('capteurs.chart-data', $capteur->id) }}">
 </div>
 
 <div class="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
@@ -85,10 +81,50 @@
 </div>
 
 <div class="bg-white rounded-2xl border border-slate-100 shadow-[0_2px_12px_rgba(34,42,96,0.06)] p-6 mb-6">
-    <div class="flex items-center justify-between mb-5">
-        <h2 class="text-sm font-semibold text-slate-700">Évolution des paramètres</h2>
-        <span class="text-[10px] font-mono font-bold uppercase tracking-widest text-slate-400">15 dernières mesures</span>
+    <div class="flex flex-wrap items-start justify-between gap-4 mb-5">
+        <div>
+            <h2 class="text-sm font-semibold text-slate-700">Évolution des paramètres</h2>
+            <span id="chart-count" class="text-[10px] font-mono text-slate-400"></span>
+        </div>
+
+        <div class="flex flex-wrap items-end gap-3">
+            {{-- Filtre temporel --}}
+            <div>
+                <p class="text-[9px] font-mono font-bold uppercase tracking-widest text-slate-400 mb-1.5">Période</p>
+                <div class="flex items-center gap-1 bg-slate-100 rounded-xl p-1">
+                    @foreach(['1m' => '1 mois', '6m' => '6 mois', '1a' => '1 an', 'custom' => 'Custom'] as $val => $label)
+                    <button data-period="{{ $val }}"
+                        class="chart-period-btn px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all
+                               {{ $val === '1m' ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:text-slate-700' }}">
+                        {{ $label }}
+                    </button>
+                    @endforeach
+                </div>
+            </div>
+
+            {{-- Plage custom (cachée par défaut) --}}
+            <div id="custom-range" class="hidden">
+                <p class="text-[9px] font-mono font-bold uppercase tracking-widest text-slate-400 mb-1.5">Plage personnalisée</p>
+                <div class="flex items-center gap-2">
+                    <input type="date" id="chart-from" class="text-xs border border-slate-200 rounded-lg px-2 py-1.5 text-slate-600 font-mono">
+                    <span class="text-slate-400 text-xs">→</span>
+                    <input type="date" id="chart-to" class="text-xs border border-slate-200 rounded-lg px-2 py-1.5 text-slate-600 font-mono">
+                    <button id="chart-custom-apply" class="px-3 py-1.5 bg-sv-blue text-white text-[11px] font-semibold rounded-lg hover:opacity-90 transition-opacity">Appliquer</button>
+                </div>
+            </div>
+
+            {{-- Limite du nombre de mesures affichées --}}
+            <div>
+                <p class="text-[9px] font-mono font-bold uppercase tracking-widest text-slate-400 mb-1.5">Max. mesures affichées</p>
+                <div class="flex items-center gap-2">
+                    <input type="number" id="chart-limit" value="50" min="5" max="2000" step="5"
+                        class="w-24 text-xs border border-slate-200 rounded-lg px-2 py-1.5 text-slate-700 font-mono text-center">
+                    <button id="chart-limit-apply" class="px-3 py-1.5 bg-slate-700 text-white text-[11px] font-semibold rounded-lg hover:opacity-90 transition-opacity">Appliquer</button>
+                </div>
+            </div>
+        </div>
     </div>
+
     <div class="relative w-full h-72 lg:h-96">
         @if ($mesures->isEmpty())
             <div class="absolute inset-0 flex items-center justify-center text-slate-400 text-sm italic">

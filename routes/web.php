@@ -99,6 +99,7 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/capteurs', [CapteurController::class, 'index'])->name('capteurs.index');
     Route::get('/capteurs/{id}', [CapteurController::class, 'show'])->name('capteurs.show');
+    Route::get('/capteurs/{id}/chart-data', [CapteurController::class, 'chartData'])->name('capteurs.chart-data');
     Route::post('/capteurs', [CapteurController::class, 'store'])->name('capteurs.store');
     Route::post('/capteurs/bluetooth/sync', [CapteurController::class, 'syncBluetooth'])->name('capteurs.bluetooth.sync');
 

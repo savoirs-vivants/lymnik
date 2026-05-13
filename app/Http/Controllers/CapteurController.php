@@ -49,6 +49,35 @@ class CapteurController extends Controller
         ));
     }
 
+    public function chartData(int $id, \Illuminate\Http\Request $request): \Illuminate\Http\JsonResponse
+    {
+        Capteur::findOrFail($id);
+
+        $limit = min((int) ($request->query('limit', 50)), 2000);
+
+        $query = Mesure::where('capteur_id', $id);
+
+        if ($request->filled('from')) {
+            $query->where('created_at', '>=', Carbon::parse($request->from)->startOfDay());
+        }
+        if ($request->filled('to')) {
+            $query->where('created_at', '<=', Carbon::parse($request->to)->endOfDay());
+        }
+
+        // latest() pour prendre les N plus récentes dans la période, puis re-trier pour l'affichage
+        $query = $query->latest()->limit($limit)->get()->sortBy('created_at')->values();
+
+        return response()->json([
+            'labels'       => $query->map(fn($m) => Carbon::parse($m->date_mesure_bluetooth ?? $m->created_at)->format('d/m H:i')),
+            'temp'         => $query->pluck('temp_eau'),
+            'debit'        => $query->pluck('debit'),
+            'hauteur'      => $query->pluck('hauteur'),
+            'turbidite'    => $query->pluck('turbidite'),
+            'conductivite' => $query->pluck('conductivite'),
+            'count'        => $query->count(),
+        ]);
+    }
+
     public function store(\Illuminate\Http\Request $request)
     {
         $request->validate([
