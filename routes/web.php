@@ -44,6 +44,7 @@ Route::get('/mobile', [MobileController::class, 'index'])->name('mobile');
 // Routes cours d'eau accessibles sans auth
 Route::get('/mobile/cours-d-eau/nearest', [CoursDEauController::class, 'nearest'])->name('cours-d-eau.nearest');
 Route::get('/cours-d-eau/search',         [CoursDEauController::class, 'search'])->name('cours-d-eau.search');
+Route::get('/cours-d-eau/traces',         [CoursDEauController::class, 'traces'])->name('cours-d-eau.traces');
 
 // GET + POST /analyse accessibles aux utilisateurs auth ET aux participants
 Route::middleware(\App\Http\Middleware\AuthOrParticipant::class)->group(function () {

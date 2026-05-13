@@ -28,6 +28,28 @@ class CoursDEauController extends Controller
         ]);
     }
 
+    public function traces(Request $request): JsonResponse
+    {
+        $ids = array_filter(array_map('intval', explode(',', $request->query('ids', ''))));
+
+        if (empty($ids)) {
+            return response()->json([]);
+        }
+
+        $rivers = CoursDEau::whereIn('id', $ids)
+            ->select(['id', 'nom', 'trace'])
+            ->get()
+            ->map(fn($r) => [
+                'id'       => $r->id,
+                'nom'      => $r->nom,
+                'geometry' => ($decoded = json_decode($r->trace, true)) && is_string($decoded)
+                    ? json_decode($decoded, true)
+                    : $decoded,
+            ]);
+
+        return response()->json($rivers);
+    }
+
     public function search(Request $request): JsonResponse
     {
         $q = trim($request->query('q', ''));

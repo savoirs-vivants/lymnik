@@ -47,15 +47,9 @@ class MapController extends Controller
 
         $riverIds   = $points->whereNotNull('cours_d_eau_id')->pluck('cours_d_eau_id')->unique()->values();
         $riversJson = CoursDEau::whereIn('id', $riverIds)
-            ->select(['id', 'nom', 'trace'])
+            ->select(['id', 'nom'])
             ->get()
-            ->map(fn($r) => [
-                'id'       => $r->id,
-                'nom'      => $r->nom,
-                'geometry' => ($decoded = json_decode($r->trace, true)) && is_string($decoded)
-                    ? json_decode($decoded, true)
-                    : $decoded,
-            ]);
+            ->map(fn($r) => ['id' => $r->id, 'nom' => $r->nom]);
 
         return view('desktop.map', compact('pointsJson', 'riversJson', 'capteursJson'));
     }

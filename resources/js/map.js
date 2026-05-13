@@ -39,15 +39,10 @@ document.addEventListener("DOMContentLoaded", () => {
         localStorage.setItem("lymnik_map_zoom", map.getZoom());
     });
 
-    if (window.mapRivers?.length) {
-        const features = window.mapRivers.map((r) => ({
-            type: "Feature",
-            properties: { nom: r.nom, id: r.id },
-            geometry: r.geometry,
-        }));
-
+    function addRiverLayer(river) {
+        if (!river.geometry) return;
         L.geoJSON(
-            { type: "FeatureCollection", features },
+            { type: "Feature", properties: { nom: river.nom, id: river.id }, geometry: river.geometry },
             {
                 style: { color: "#222a60", weight: 4, opacity: 0.95 },
                 onEachFeature(feature, layer) {
@@ -57,19 +52,24 @@ document.addEventListener("DOMContentLoaded", () => {
                     });
                     layer.on("click", async (e) => {
                         L.DomEvent.stopPropagation(e);
-                        if (sheetOpen) {
-                            closeSheet();
-                            return;
-                        }
-                        if (!window.userAuthenticated) {
-                            showAuthToast();
-                            return;
-                        }
+                        if (sheetOpen) { closeSheet(); return; }
+                        if (!window.userAuthenticated) { showAuthToast(); return; }
                         await showCreateCard(e.latlng);
                     });
                 },
             },
         ).addTo(map);
+    }
+
+    if (window.mapRivers?.length) {
+        const CHUNK = 30;
+        for (let i = 0; i < window.mapRivers.length; i += CHUNK) {
+            const ids = window.mapRivers.slice(i, i + CHUNK).map((r) => r.id).join(",");
+            fetch(`/cours-d-eau/traces?ids=${ids}`)
+                .then((res) => res.json())
+                .then((rivers) => rivers.forEach((r) => addRiverLayer(r)))
+                .catch(() => {});
+        }
     }
 
     const userIcon = L.divIcon({
