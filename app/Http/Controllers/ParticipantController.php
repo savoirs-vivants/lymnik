@@ -82,16 +82,38 @@ class ParticipantController extends Controller
 
     public function map()
     {
+        $p = session('participant');
+
         /** @var \Illuminate\View\View $view */
         $view = app(\App\Http\Controllers\MapController::class)->index();
-        return view('participant.map', $view->getData());
+        $data = $view->getData();
+
+        // IDs des points analysés dans la session courante
+        $sessionPointIds = Analyse::where('session_id', $p['id_session'])
+            ->pluck('point_id')->unique()->values()->toArray();
+
+        // IDs des points analysés par le groupe du participant
+        $groupPointIds = [];
+        if ($p['id_groupe'] > 0) {
+            $groupParticipantIds = SessionParticipant::where('id_session', $p['id_session'])
+                ->where('id_groupe', $p['id_groupe'])
+                ->pluck('id');
+            $groupPointIds = Analyse::whereIn('participant_id', $groupParticipantIds)
+                ->pluck('point_id')->unique()->values()->toArray();
+        }
+
+        return view('participant.map', array_merge($data, [
+            'sessionPointIds' => $sessionPointIds,
+            'groupPointIds'   => $groupPointIds,
+            'participantInfo' => $p,
+        ]));
     }
 
     public function statistiques()
     {
         /** @var \Illuminate\View\View $view */
-        $view = app(\App\Http\Controllers\StatistiqueController::class)->index();
-        return view('participant.statistiques', $view->getData());
+        $view = app(\App\Http\Controllers\StatistiqueController::class)->index(new \Illuminate\Http\Request());
+        return view('participant.statistiques.index', $view->getData());
     }
 
     public function logout()
@@ -118,7 +140,7 @@ class ParticipantController extends Controller
         return CoursDEau::whereHas('points', fn($q) => $q->whereIn('id', $pointIds))
             ->with(['points' => function ($q) use ($pointIds, $participantIds) {
                 $q->whereIn('id', $pointIds)->with(['analyses' => function ($q2) use ($participantIds) {
-                    $q2->whereIn('participant_id', $participantIds)->latest();
+                    $q2->whereIn('participant_id', $participantIds)->latest()->with('participant');
                 }]);
             }])
             ->orderBy('nom')
@@ -159,6 +181,7 @@ class ParticipantController extends Controller
     private function formatAnalyse(Analyse $a): array
     {
         $mesures = is_string($a->mesures) ? json_decode($a->mesures, true) : ($a->mesures ?? []);
+        $pseudo  = $a->participant?->pseudo ?? null;
         return [
             'id'         => $a->id,
             'type'       => $a->type,
@@ -170,6 +193,7 @@ class ParticipantController extends Controller
             'date'       => $a->created_at?->format('d/m/Y'),
             'time'       => $a->created_at?->format('H:i'),
             'created_at' => $a->created_at?->toISOString(),
+            'user'       => $pseudo,
         ];
     }
 }
