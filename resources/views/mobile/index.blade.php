@@ -85,7 +85,7 @@
                 <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
                 </svg>
-                Déclarer une coulée de boue
+                Signaler un problème
             </button>
         </div>
         @endauth
@@ -341,29 +341,25 @@
         @endif
 
         @auth
-        {{-- Bouton mobile flottant coulée de boue --}}
         <button id="btn-declare-coulee"
             class="md:hidden absolute right-4 bottom-[104px] z-10 flex items-center gap-1.5 px-3.5 py-2.5 rounded-full shadow-[0_4px_16px_rgba(0,0,0,0.15)] border border-amber-300 bg-amber-50/95 backdrop-blur-md text-amber-700 font-semibold text-xs active:scale-95 transition-transform cursor-pointer">
             <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
             </svg>
-            Coulée de boue
+            Signaler un problème
         </button>
         @endauth
 
-        {{-- Overlay mode placement coulée de boue --}}
         <div id="coulee-mode-overlay" class="hidden absolute inset-0 z-[60] flex flex-col pointer-events-none">
-            {{-- Bannière en haut --}}
             <div class="pointer-events-auto bg-amber-500 text-white flex items-center justify-between px-4 py-3 shadow-lg">
                 <div class="flex items-center gap-2 text-sm font-semibold">
                     <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
                     </svg>
-                    Touchez la carte pour placer la coulée
+                    Touchez la carte pour placer l'emplacement du problème
                 </div>
                 <button id="coulee-mode-cancel" class="text-white/80 hover:text-white active:opacity-60 text-xs font-bold underline bg-transparent border-none cursor-pointer">Annuler</button>
             </div>
-            {{-- Confirmation en bas --}}
             <div id="coulee-confirm-bar" class="hidden pointer-events-auto mt-auto bg-white border-t border-slate-100 px-4 py-3 shadow-[0_-4px_20px_rgba(0,0,0,0.08)] flex items-center gap-3">
                 <div class="flex-1 text-xs text-slate-600">
                     <div class="font-semibold text-slate-800">Point placé</div>
@@ -377,6 +373,52 @@
             </div>
         </div>
 
+        <div id="coulee-details-modal" class="hidden absolute inset-0 z-[70] bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 pointer-events-auto">
+            <div class="bg-white rounded-3xl shadow-2xl w-full max-w-sm overflow-hidden flex flex-col">
+                <div class="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                    <h3 class="font-bold text-slate-800 text-sm">Détails du signalement</h3>
+                    <button id="coulee-details-close" class="text-slate-400 hover:text-slate-600 active:scale-95 transition-transform bg-transparent border-none">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                </div>
+
+                <div class="p-5 space-y-4">
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Type de problème</label>
+                        <select id="coulee-type" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-700 outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 transition-all">
+                            <option value="">Sélectionnez un type...</option>
+                            <option value="Pollution">Pollution</option>
+                            <option value="Déchets sauvages">Déchets sauvages</option>
+                            <option value="Assèchement">Assèchement</option>
+                            <option value="Inondation / Débordement">Inondation / Débordement</option>
+                            <option value="Coulée de boue">Coulée de boue</option>
+                            <option value="Autre">Autre (préciser)</option>
+                        </select>
+
+                        <input type="text" id="coulee-type-autre" placeholder="Précisez la nature du problème..."
+                            class="hidden mt-3 w-full bg-white border border-amber-200 rounded-xl px-3 py-2.5 text-sm text-slate-700 outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 transition-all shadow-sm">
+                    </div>
+
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Date de l'événement</label>
+                        <input type="date" id="coulee-date" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-700 outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 transition-all">
+                    </div>
+
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Photo (Optionnelle)</label>
+                        <input type="file" id="coulee-image" accept="image/*" class="w-full text-sm text-slate-500 file:mr-3 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-amber-50 file:text-amber-700 hover:file:bg-amber-100 transition-colors cursor-pointer">
+                    </div>
+                </div>
+
+                <div class="p-4 border-t border-slate-100 flex gap-3">
+                    <button id="coulee-details-cancel" class="flex-1 py-3 rounded-xl text-sm font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors border-none cursor-pointer">Annuler</button>
+                    <button id="coulee-details-submit" class="flex-1 py-3 rounded-xl text-sm font-semibold text-white bg-amber-500 hover:bg-amber-600 active:scale-95 transition-all border-none cursor-pointer">
+                        Enregistrer
+                    </button>
+                </div>
+            </div>
+        </div>
+
         @if (Auth::check())
         <button id="btn-open-bt-desk"
             class="hidden md:flex absolute bottom-4 left-4 z-10 items-center gap-2 px-4 py-2.5 bg-white/90 backdrop-blur-md rounded-xl shadow-[0_4px_16px_rgba(0,0,0,0.12)] border border-slate-100 text-sm font-semibold text-[#222a60] hover:bg-white transition-colors cursor-pointer">
@@ -387,6 +429,13 @@
 
     </div>
 
+</div>
+
+<div id="image-lightbox" class="hidden fixed inset-0 z-[9999] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+    <button id="lightbox-close" class="absolute top-4 right-4 w-10 h-10 flex items-center justify-center text-white/70 hover:text-white bg-black/50 hover:bg-black/80 rounded-full z-10 transition-all cursor-pointer border-none">
+        <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+    </button>
+    <img id="lightbox-img" src="" class="max-w-full max-h-full object-contain rounded-xl shadow-2xl transform scale-95 transition-transform duration-300" alt="Signalement en grand">
 </div>
 
 <script>
@@ -404,7 +453,5 @@
     window.currentUserId      = {{ auth()->id() ?? 'null' }};
     window.csrfToken          = "{{ csrf_token() }}";
 </script>
-
-{{-- Logique Bluetooth dans resources/js/bluetooth.js --}}
 
 @endsection

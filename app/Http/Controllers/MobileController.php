@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\CoursDEau;
 use App\Models\CouleeDeBoue;
 use App\Models\Point;
-use Illuminate\Support\Facades\Auth;
 use App\Models\Capteur;
 
 class MobileController extends Controller
@@ -59,7 +58,11 @@ class MobileController extends Controller
                 'lng'     => (float) $c->lng,
                 'user'    => trim($c->user?->firstname . ' ' . $c->user?->name),
                 'user_id' => $c->user_id,
-                'date'    => $c->created_at?->translatedFormat('d M Y'),
+                'type'    => $c->type,
+                'image'   => $c->image ? asset('storage/' . $c->image) : null,
+                'date'    => $c->date
+                             ? \Carbon\Carbon::parse($c->date)->translatedFormat('d M Y')
+                             : $c->created_at?->translatedFormat('d M Y'),
             ]);
 
         return view('mobile.index', compact('pointsJson', 'riversJson', 'capteursJson', 'couleesJson'));

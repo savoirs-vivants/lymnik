@@ -514,6 +514,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const couleeMarkers = [];
 
     function addCouleeMarker(c) {
+        console.log("Données reçues pour le marqueur :", c);
         const marker = L.marker([c.lat, c.lng], { icon: couleeIcon }).addTo(map);
         const isOwner = window.currentUserId && c.user_id === window.currentUserId;
         const deleteBtn = isOwner
@@ -523,10 +524,12 @@ document.addEventListener("DOMContentLoaded", () => {
             : '';
         marker.bindPopup(`
             <div style="font-family:'Space Grotesk',sans-serif;min-width:160px;">
-                <div style="font-weight:700;color:#b45309;margin-bottom:4px;">⚠ Coulée de boue</div>
+                <div style="font-weight:700;color:#b45309;margin-bottom:4px;">⚠ Signalement</div>
                 <div style="font-size:11px;color:#64748b;">Par ${c.user || 'inconnu'}</div>
                 <div style="font-size:11px;color:#94a3b8;">${c.date || ''}</div>
                 <div style="font-size:10px;font-family:monospace;color:#94a3b8;margin-top:4px;">${c.lat.toFixed(5)}, ${c.lng.toFixed(5)}</div>
+                <div style="font-size:11px;font-weight:bold;color:#b45309;margin-top:2px;">${c.type }</div>
+                ${c.image ? `<div style="margin-top:6px; cursor:zoom-in;" onclick="window.openLightbox('${c.image}')"><img src="${c.image}" style="width:100%;height:80px;object-fit:cover;border-radius:6px;border:1px solid #e2e8f0; pointer-events:none;"></div>` : ''}
                 ${deleteBtn}
             </div>
         `);
@@ -558,7 +561,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     (window.mapCoulees ?? []).forEach((c) => addCouleeMarker(c));
 
-    // Mode placement
     let coulee_tempMarker = null;
     let coulee_pendingLatLng = null;
 
@@ -591,34 +593,147 @@ document.addEventListener("DOMContentLoaded", () => {
         couleeConfirmBar?.classList.add("hidden");
     });
 
-    document.getElementById("coulee-confirm-save")?.addEventListener("click", async () => {
+    // -- Modale de détails Coulée --
+    const couleeDetailsModal = document.getElementById("coulee-details-modal");
+    const couleeTypeSelect = document.getElementById("coulee-type");
+    const couleeTypeAutre = document.getElementById("coulee-type-autre");
+
+    // 0. Afficher le champ texte si "Autre" est sélectionné
+    couleeTypeSelect?.addEventListener("change", function () {
+        if (this.value === "Autre") {
+            couleeTypeAutre.classList.remove("hidden");
+            couleeTypeAutre.focus();
+        } else {
+            couleeTypeAutre.classList.add("hidden");
+            couleeTypeAutre.value = "";
+        }
+    });
+
+    // 1. Clic sur "Valider" la position -> Ouvre la modale de détails
+    document.getElementById("coulee-confirm-save")?.addEventListener("click", () => {
+        if (!coulee_pendingLatLng) return;
+
+        // Pré-remplir la date à aujourd'hui
+        document.getElementById("coulee-date").value = new Date().toISOString().split('T')[0];
+
+        // Réinitialiser les champs
+        couleeTypeSelect.value = "";
+        couleeTypeAutre.value = "";
+        couleeTypeAutre.classList.add("hidden");
+        document.getElementById("coulee-image").value = "";
+
+        couleeDetailsModal.classList.remove("hidden");
+    });
+
+    // 2. Fermer la modale
+    const closeCouleeDetails = () => couleeDetailsModal.classList.add("hidden");
+    document.getElementById("coulee-details-close")?.addEventListener("click", closeCouleeDetails);
+    document.getElementById("coulee-details-cancel")?.addEventListener("click", closeCouleeDetails);
+
+    const compressImage = async (file, maxWidth = 1000) => {
+        return new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = (event) => {
+                const img = new Image();
+                img.src = event.target.result;
+                img.onload = () => {
+                    let width = img.width;
+                    let height = img.height;
+
+                    if (width > maxWidth) {
+                        height = Math.round((height * maxWidth) / width);
+                        width = maxWidth;
+                    }
+
+                    const canvas = document.createElement('canvas');
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    // Compression JPEG à 80% de qualité
+                    canvas.toBlob((blob) => {
+                        resolve(new File([blob], 'photo.jpg', {
+                            type: 'image/jpeg',
+                            lastModified: Date.now()
+                        }));
+                    }, 'image/jpeg', 0.8);
+                };
+            };
+        });
+    };
+
+    // 3. Soumission finale au serveur
+    document.getElementById("coulee-details-submit")?.addEventListener("click", async () => {
         if (!coulee_pendingLatLng || !window.couleesStoreUrl) return;
-        const btn = document.getElementById("coulee-confirm-save");
+
+        const btn = document.getElementById("coulee-details-submit");
         btn.disabled = true;
-        btn.textContent = "Enregistrement…";
+        btn.textContent = "Compression..."; // Indique à l'utilisateur ce qu'il se passe
+
+        const formData = new FormData();
+        formData.append("lat", coulee_pendingLatLng.lat);
+        formData.append("lng", coulee_pendingLatLng.lng);
+
+        let typeVal = couleeTypeSelect.value;
+        if (typeVal === "Autre") {
+            typeVal = couleeTypeAutre.value.trim();
+        }
+        if (typeVal) formData.append("type", typeVal);
+
+        const dateVal = document.getElementById("coulee-date").value;
+        if (dateVal) formData.append("date", dateVal);
+
+        // Traitement de l'image
+        const imageInput = document.getElementById("coulee-image");
+        if (imageInput.files && imageInput.files[0]) {
+            try {
+                // Compresse l'image avant l'envoi (max 1000px de large)
+                const compressedFile = await compressImage(imageInput.files[0], 1000);
+                formData.append("image", compressedFile);
+            } catch (err) {
+                console.error("Erreur de compression :", err);
+                // Si la compression échoue, on envoie le fichier original
+                formData.append("image", imageInput.files[0]);
+            }
+        }
+
+        btn.textContent = "Envoi...";
+
         try {
             const res = await fetch(window.couleesStoreUrl, {
                 method: "POST",
                 headers: {
-                    "Content-Type": "application/json",
                     "X-CSRF-TOKEN": window.csrfToken,
-                    "Accept": "application/json",
+                    "Accept": "application/json"
                 },
-                body: JSON.stringify({ lat: coulee_pendingLatLng.lat, lng: coulee_pendingLatLng.lng }),
+                body: formData,
             });
-            if (!res.ok) throw new Error();
+
+            if (!res.ok) {
+                // Pour t'aider à débugger s'il y a encore une erreur
+                const errorData = await res.json();
+                console.error("Détail de l'erreur serveur :", errorData);
+                throw new Error(errorData.message || "Erreur serveur");
+            }
+
             const data = await res.json();
+
             if (coulee_tempMarker) { coulee_tempMarker.remove(); coulee_tempMarker = null; }
+
             addCouleeMarker(data);
+
+            closeCouleeDetails();
             exitCouleeMode();
-        } catch {
-            alert("Erreur lors de l'enregistrement.");
+        } catch (error) {
+            console.error(error);
+            alert("Erreur lors de l'enregistrement. Vérifiez que la photo n'est pas trop lourde.");
+        } finally {
             btn.disabled = false;
-            btn.textContent = "Valider";
+            btn.textContent = "Enregistrer";
         }
     });
-
-    // Intercept map clicks en mode coulée
     const origMapClick = map._events?.click ? null : null;
     map.on("click", (e) => {
         if (!couleeMode) return;
@@ -709,4 +824,42 @@ document.addEventListener("DOMContentLoaded", () => {
                 searchResults.classList.add("hidden");
         });
     }
+
+    // -- Gestion de la Lightbox (Image en grand) --
+    window.openLightbox = function(imageSrc) {
+        const lightbox = document.getElementById('image-lightbox');
+        const img = document.getElementById('lightbox-img');
+
+        img.src = imageSrc;
+        lightbox.classList.remove('hidden');
+
+        // Petit délai pour laisser le navigateur appliquer le display:block avant d'animer
+        requestAnimationFrame(() => {
+            lightbox.classList.remove('opacity-0');
+            img.classList.remove('scale-95');
+            img.classList.add('scale-100');
+        });
+    };
+
+    window.closeLightbox = function() {
+        const lightbox = document.getElementById('image-lightbox');
+        const img = document.getElementById('lightbox-img');
+
+        lightbox.classList.add('opacity-0');
+        img.classList.remove('scale-100');
+        img.classList.add('scale-95');
+
+        // On attend la fin de l'animation (300ms) pour cacher la div
+        setTimeout(() => {
+            lightbox.classList.add('hidden');
+            img.src = ''; // On vide la source pour éviter un flash à la prochaine ouverture
+        }, 300);
+    };
+
+    // Fermer si on clique dans le vide noir ou sur la croix
+    document.getElementById('image-lightbox')?.addEventListener('click', function(e) {
+        if (e.target === this || e.target.closest('#lightbox-close')) {
+            window.closeLightbox();
+        }
+    });
 });
