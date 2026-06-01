@@ -182,7 +182,6 @@
                                 </label>
                                 <input id="date-prelevement" type="datetime-local" name="date_prelevement"
                                     value="{{ old('date_prelevement') }}"
-                                    max="{{ now()->format('Y-m-d\TH:i') }}"
                                     class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-[13px] text-slate-800 focus:border-[#222a60] focus:bg-white focus:ring-2 focus:ring-[#222a60]/15 focus:outline-none transition-all font-mono">
                             </div>
 
