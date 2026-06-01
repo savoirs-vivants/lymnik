@@ -16,13 +16,23 @@
 
         <aside id="sidebar-list"
             class="w-full lg:w-80 flex-shrink-0 border-r border-slate-100 bg-white flex flex-col z-10 transition-all">
+
             <div class="p-5 border-b border-slate-100 bg-slate-50/50">
-                <h2 class="text-sm font-black text-[#222a60]">Toutes les Campagnes ({{ count($campagnes) }})</h2>
+                <h2 class="text-sm font-black text-[#222a60]">Campagnes ({{ count($campagnes) }})</h2>
+
+                {{-- Onglets de filtre visibles uniquement par l'admin --}}
+                @if($isAdmin)
+                <div class="mt-3 flex gap-1 bg-slate-200/50 p-1 rounded-lg">
+                    <button id="tab-all" onclick="filterCampagnes('all')" class="flex-1 text-xs font-bold px-3 py-1.5 rounded-md bg-white shadow-sm text-[#222a60] transition-all">Toutes</button>
+                    <button id="tab-mine" onclick="filterCampagnes('mine')" class="flex-1 text-xs font-bold px-3 py-1.5 rounded-md text-slate-500 hover:bg-white/50 transition-all">Mes campagnes</button>
+                </div>
+                @endif
             </div>
 
             <div class="flex-1 overflow-y-auto divide-y divide-slate-100">
                 @forelse ($campagnes as $campagne)
-                    <div class="campagne-accordion">
+                    {{-- Ajout du data-is-mine pour le filtrage JS --}}
+                    <div class="campagne-accordion block" data-is-mine="{{ $campagne['is_mine'] ? 'true' : 'false' }}">
                         <button
                             class="w-full text-left px-5 py-4 hover:bg-slate-50 transition-colors flex justify-between items-center toggle-accordion focus:outline-none">
                             <div>
@@ -36,7 +46,7 @@
                         </button>
 
                         <div class="hidden bg-slate-50/30 border-t border-slate-100 groupes-container">
-                            @foreach ($campagne['groupes'] as $groupe)
+                            @forelse ($campagne['groupes'] as $groupe)
                                 <button
                                     onclick="selectGroupe({{ $campagne['id'] }}, {{ $groupe['id_groupe'] }}, '{{ addslashes($campagne['nom']) }}')"
                                     data-campagne-id="{{ $campagne['id'] }}" data-groupe-id="{{ $groupe['id_groupe'] }}"
@@ -50,11 +60,15 @@
                                     </div>
                                     <x-quality-badge :qualite="$groupe['qualite_globale']" class="shrink-0" />
                                 </button>
-                            @endforeach
+                            @empty
+                                <div class="px-5 py-4 text-xs text-slate-400 italic font-mono text-center">
+                                    Aucune donnée pour le moment.
+                                </div>
+                            @endforelse
                         </div>
                     </div>
                 @empty
-                    <div class="p-6 text-center text-sm text-slate-400 italic">Aucune campagne avec des analyses.</div>
+                    <div class="p-6 text-center text-sm text-slate-400 italic">Aucune campagne trouvée.</div>
                 @endforelse
             </div>
         </aside>

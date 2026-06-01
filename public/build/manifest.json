@@ -36,7 +36,7 @@
     "src": "node_modules/leaflet/dist/images/marker-icon.png"
   },
   "resources/css/app.css": {
-    "file": "assets/app-BRxqk1Fr.css",
+    "file": "assets/app-B-sXqsIX.css",
     "name": "app",
     "names": [
       "app.css"
@@ -74,7 +74,7 @@
     "isEntry": true
   },
   "resources/js/campagne-dashboard.js": {
-    "file": "assets/campagne-dashboard-z5s8ww_c.js",
+    "file": "assets/campagne-dashboard-D_bmR55P.js",
     "name": "campagne-dashboard",
     "src": "resources/js/campagne-dashboard.js",
     "isEntry": true,

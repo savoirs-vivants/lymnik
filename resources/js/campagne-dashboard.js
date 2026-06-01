@@ -193,3 +193,31 @@ window.openOverlay = function (pointId) {
 window.closeOverlay = function () {
     document.getElementById("point-overlay").classList.add("hidden");
 };
+
+window.filterCampagnes = function (mode) {
+    const allTab = document.getElementById("tab-all");
+    const mineTab = document.getElementById("tab-mine");
+    const accordions = document.querySelectorAll(".campagne-accordion");
+
+    if (mode === "all") {
+        allTab.classList.add("bg-white", "shadow-sm", "text-[#222a60]");
+        allTab.classList.remove("text-slate-500", "hover:bg-white/50");
+        mineTab.classList.remove("bg-white", "shadow-sm", "text-[#222a60]");
+        mineTab.classList.add("text-slate-500", "hover:bg-white/50");
+
+        accordions.forEach((el) => (el.style.display = "block"));
+    } else {
+        mineTab.classList.add("bg-white", "shadow-sm", "text-[#222a60]");
+        mineTab.classList.remove("text-slate-500", "hover:bg-white/50");
+        allTab.classList.remove("bg-white", "shadow-sm", "text-[#222a60]");
+        allTab.classList.add("text-slate-500", "hover:bg-white/50");
+
+        accordions.forEach((el) => {
+            if (el.dataset.isMine === "true") {
+                el.style.display = "block";
+            } else {
+                el.style.display = "none";
+            }
+        });
+    }
+};
