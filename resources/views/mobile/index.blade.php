@@ -4,7 +4,7 @@
 
 <div id="app-shell"
     class="relative w-full h-[100dvh] flex flex-col overflow-hidden bg-slate-50 font-grotesk text-slate-900 md:flex-row">
-    
+
     <aside class="hidden md:flex md:flex-col md:w-64 lg:w-72 md:h-full md:shrink-0 bg-white border-r border-slate-100 shadow-[2px_0_10px_rgba(0,0,0,0.04)] z-20 overflow-hidden">
 
         <div class="px-5 py-4 border-b border-slate-100 shrink-0">
@@ -50,9 +50,9 @@
                     <circle cx="11" cy="11" r="8" stroke-width="2"/>
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35"/>
                 </svg>
-                <input type="text" id="search-input-desk" placeholder="Commune ou code postal" autocomplete="off"
+                <input type="text" id="search-input" placeholder="Commune ou code postal" autocomplete="off"
                     class="w-full pl-8 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 placeholder-slate-400 outline-none focus:ring-2 focus:ring-[#222a60]/15 focus:border-[#222a60] transition-all">
-                <div id="search-results-desk" class="absolute top-[calc(100%+4px)] left-0 right-0 bg-white rounded-xl shadow-[0_12px_40px_rgba(34,42,96,0.15)] border border-slate-100 overflow-hidden hidden z-50"></div>
+                <div id="search-results" class="absolute top-[calc(100%+4px)] left-0 right-0 bg-white rounded-xl shadow-[0_12px_40px_rgba(34,42,96,0.15)] border border-slate-100 overflow-hidden hidden z-50"></div>
             </div>
         </div>
 
