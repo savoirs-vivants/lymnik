@@ -43,18 +43,15 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middl
 Route::get('/mobile', [MobileController::class, 'index'])->name('mobile');
 Route::get('/coulees-de-boue', [CouleeDeBoueController::class, 'index'])->name('coulees-de-boue.index');
 
-// Routes cours d'eau accessibles sans auth
 Route::get('/mobile/cours-d-eau/nearest', [CoursDEauController::class, 'nearest'])->name('cours-d-eau.nearest');
 Route::get('/cours-d-eau/search',         [CoursDEauController::class, 'search'])->name('cours-d-eau.search');
 Route::get('/cours-d-eau/traces',         [CoursDEauController::class, 'traces'])->name('cours-d-eau.traces');
 
-// GET + POST /analyse accessibles aux utilisateurs auth ET aux participants
 Route::middleware(\App\Http\Middleware\AuthOrParticipant::class)->group(function () {
     Route::get('/analyse/create', [AnalyseController::class, 'create'])->name('analyse.create');
     Route::post('/analyse',       [AnalyseController::class, 'store'])->name('analyse.store');
 });
 
-// ─── Session participant (sans compte) ────────────────────────────────────────
 Route::get('/code',               [ParticipantController::class, 'showJoin'])->name('participant.join');
 Route::post('/code/valider',      [ParticipantController::class, 'validateCode'])->name('participant.validateCode');
 Route::post('/session/rejoindre', [ParticipantController::class, 'register'])->name('participant.register');
@@ -67,9 +64,8 @@ Route::middleware(\App\Http\Middleware\ParticipantSession::class)->prefix('sessi
 });
 
 Route::get('/statistiques', [StatistiqueController::class, 'index'])->name('statistiques.index');
-Route::get('/statistiques/export', [StatistiqueController::class, 'export'])->name('statistiques.export');
+    Route::get('/statistiques/export', [StatistiqueController::class, 'export'])->name('statistiques.export');
 
-// ─── Utilisateurs authentifiés ────────────────────────────────────────────────
 Route::middleware('auth')->group(function () {
     Route::post('/coulees-de-boue', [CouleeDeBoueController::class, 'store'])->name('coulees-de-boue.store');
     Route::delete('/coulees-de-boue/{couleeDeBoue}', [CouleeDeBoueController::class, 'destroy'])->name('coulees-de-boue.destroy');
@@ -110,4 +106,5 @@ Route::middleware('auth')->group(function () {
     Route::get('/capteurs/{id}/chart-data', [CapteurController::class, 'chartData'])->name('capteurs.chart-data');
     Route::post('/capteurs', [CapteurController::class, 'store'])->name('capteurs.store');
     Route::post('/capteurs/bluetooth/sync', [CapteurController::class, 'syncBluetooth'])->name('capteurs.bluetooth.sync');
+    Route::get('/capteurs/{id}/export', [CapteurController::class, 'export'])->name('capteurs.export');
 });

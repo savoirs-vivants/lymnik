@@ -24,7 +24,8 @@
 
 <div id="chart-data" class="hidden"
      data-capteur-id="{{ $capteur->id }}"
-     data-chart-url="{{ route('capteurs.chart-data', $capteur->id) }}">
+     data-chart-url="{{ route('capteurs.chart-data', $capteur->id) }}"
+     data-export-url="{{ route('capteurs.export', $capteur->id) }}">
 </div>
 
 <div class="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
@@ -43,38 +44,45 @@
 </div>
 
 <div class="bg-white rounded-2xl border border-slate-100 shadow-[0_2px_12px_rgba(34,42,96,0.06)] p-4 sm:p-5 mb-6">
-    <div class="flex flex-wrap items-center gap-4 sm:gap-6">
-        <div>
-            <p class="text-[9px] font-mono font-bold uppercase tracking-widest text-slate-400 mb-1">Identifiant</p>
-            <p class="text-sm font-semibold text-slate-800">{{ $titreCapteur }}</p>
+    <div class="flex flex-wrap items-start justify-between gap-4">
+        {{-- Les infos du capteur --}}
+        <div class="flex flex-wrap items-center gap-4 sm:gap-6">
+            <div>
+                <p class="text-[9px] font-mono font-bold uppercase tracking-widest text-slate-400 mb-1">Identifiant</p>
+                <p class="text-sm font-semibold text-slate-800">{{ $titreCapteur }}</p>
+            </div>
+            @if($capteur->coursDEau)
+            <div>
+                <p class="text-[9px] font-mono font-bold uppercase tracking-widest text-slate-400 mb-1">Cours d'eau</p>
+                <p class="text-sm font-semibold text-blue-600">{{ $capteur->coursDEau->nom }}</p>
+            </div>
+            @endif
+            <div>
+                <p class="text-[9px] font-mono font-bold uppercase tracking-widest text-slate-400 mb-1">Coordonnées</p>
+                <p class="font-mono text-xs sm:text-sm text-slate-600">{{ $capteur->lat }}, {{ $capteur->long }}</p>
+            </div>
+            <div>
+                <p class="text-[9px] font-mono font-bold uppercase tracking-widest text-slate-400 mb-1">Mesures</p>
+                <p class="text-sm font-semibold text-slate-800">{{ $mesures->count() }}</p>
+            </div>
+            @if ($derniere)
+            <div>
+                <p class="text-[9px] font-mono font-bold uppercase tracking-widest text-slate-400 mb-1">Dernière mesure</p>
+                <p class="text-sm font-semibold text-slate-800">{{ $derniere->created_at->diffForHumans() }}</p>
+            </div>
+            @endif
         </div>
-        @if($capteur->coursDEau)
-        <div>
-            <p class="text-[9px] font-mono font-bold uppercase tracking-widest text-slate-400 mb-1">Cours d'eau</p>
-            <p class="text-sm font-semibold text-blue-600">{{ $capteur->coursDEau->nom }}</p>
-        </div>
-        @endif
-        <div>
-            <p class="text-[9px] font-mono font-bold uppercase tracking-widest text-slate-400 mb-1">Coordonnées</p>
-            <p class="font-mono text-xs sm:text-sm text-slate-600">{{ $capteur->lat }}, {{ $capteur->long }}</p>
-        </div>
-        <div>
-            <p class="text-[9px] font-mono font-bold uppercase tracking-widest text-slate-400 mb-1">Mesures (15 dern.)</p>
-            <p class="text-sm font-semibold text-slate-800">{{ $mesures->count() }}</p>
-        </div>
-        @if ($derniere)
-        <div>
-            <p class="text-[9px] font-mono font-bold uppercase tracking-widest text-slate-400 mb-1">Dernière mesure</p>
-            <p class="text-sm font-semibold text-slate-800">{{ $derniere->created_at->diffForHumans() }}</p>
-        </div>
-        @endif
+
+        <button id="btn-export-excel" title="Exporter les données filtrées en Excel"
+            class="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-lg border border-emerald-200 text-xs font-bold transition-colors">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            Excel
+        </button>
     </div>
+
     <div class="mt-4 pt-4 border-t border-slate-100">
-        <a href="{{ route('capteurs.index') }}"
-            class="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-slate-200 text-sm font-semibold text-slate-600 hover:bg-slate-50 transition-colors no-underline">
-            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
-            </svg>
+        <a href="{{ route('capteurs.index') }}" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-slate-200 text-sm font-semibold text-slate-600 hover:bg-slate-50 transition-colors no-underline">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
             Retour
         </a>
     </div>
@@ -83,7 +91,17 @@
 <div class="bg-white rounded-2xl border border-slate-100 shadow-[0_2px_12px_rgba(34,42,96,0.06)] p-6 mb-6">
     <div class="flex flex-wrap items-start justify-between gap-4 mb-5">
         <div>
-            <h2 class="text-sm font-semibold text-slate-700">Évolution des paramètres</h2>
+            <div class="flex items-center gap-3">
+                <h2 class="text-sm font-semibold text-slate-700">Évolution des paramètres</h2>
+
+                <div class="flex items-center gap-1.5 ml-2">
+<button id="btn-export-png" title="Exporter le graphique en PNG"
+                        class="flex items-center gap-1 px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded text-[10px] font-bold transition-colors">
+                        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                        PNG
+                    </button>
+                </div>
+            </div>
             <span id="chart-count" class="text-[10px] font-mono text-slate-400"></span>
         </div>
 

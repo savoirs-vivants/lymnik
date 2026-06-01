@@ -213,4 +213,57 @@ class CapteurController extends Controller
             ], 500);
         }
     }
+
+    public function export(int $id)
+    {
+        $mesuresRaw = \Illuminate\Support\Facades\DB::table('mesures')
+            ->where('capteur_id', $id)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setTitle('Mesures Capteur ' . $id);
+
+        $headers = ['Date & Heure', 'Température (°C)', 'Débit (L/min)', 'Hauteur (cm)', 'Turbidité (NTU)', 'Conductivité (µS/cm)'];
+        $sheet->fromArray($headers, NULL, 'A1');
+        $sheet->getStyle('A1:F1')->getFont()->setBold(true);
+        $sheet->getStyle('A1:F1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('E2E8F0');
+
+        $row = 2;
+        foreach ($mesuresRaw as $m) {
+            $rawDate = $m->date_mesure_bluetooth ?: $m->created_at;
+            $dateFormatted = $rawDate ? \Carbon\Carbon::parse($rawDate)->format('d/m/Y H:i:s') : '';
+
+            $sheet->fromArray([
+                $dateFormatted,
+                $m->temp_eau ?? null,
+                $m->debit ?? null,
+                $m->hauteur ?? null,
+                $m->turbidite ?? null,
+                $m->conductivite ?? null
+            ], NULL, 'A' . $row);
+
+            $row++;
+        }
+
+        foreach (range('A', 'F') as $col) {
+            $sheet->getColumnDimension($col)->setAutoSize(true);
+        }
+
+        $fileName = 'Capteur_' . $id . '_Toutes_Les_Mesures_' . date('Ymd_Hi') . '.xlsx';
+
+        if (ob_get_length()) {
+            ob_end_clean();
+        }
+
+        // 4. Téléchargement
+        return response()->streamDownload(function () use ($spreadsheet) {
+            $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
+            $writer->save('php://output');
+        }, $fileName, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'Content-Disposition' => 'attachment; filename="' . $fileName . '"',
+        ]);
+    }
 }
