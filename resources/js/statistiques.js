@@ -20,7 +20,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // ── Helpers ─────────────────────────────────────────────────────
 
     function avg(arr) {
-        const v = arr.filter(x => x !== null && x !== undefined);
+        const v = arr.map(x => parseFloat(x)).filter(x => !isNaN(x));
         return v.length ? v.reduce((a, b) => a + b, 0) / v.length : null;
     }
 
@@ -144,9 +144,22 @@ document.addEventListener("DOMContentLoaded", function () {
     if (qualEl) charts.qualite = new Chart(qualEl, {
         type: "bar", data: { labels: [], datasets: [] },
         options: {
-            responsive: true, maintainAspectRatio: false, indexAxis: "y",
-            plugins: { legend: { position: "top" }, tooltip: DEFAULT_TOOLTIP },
-            scales: { x: { stacked: true }, y: { stacked: true, grid: { display: false } } },
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: "top", labels: { usePointStyle: true, padding: 12, font: CHART_FONTS.title } },
+                tooltip: DEFAULT_TOOLTIP
+            },
+            scales: {
+                x: {
+                    stacked: true,
+                    grid: { display: false }
+                },
+                y: {
+                    stacked: true, 
+                    grid: { borderDash: [4, 4] }
+                }
+            },
         },
     });
 
@@ -230,7 +243,11 @@ document.addEventListener("DOMContentLoaded", function () {
             const meta = MESURES_META[m] || {}, color = meta.color || "#94a3b8";
             return {
                 label: meta.label || m,
-                data:  groups.map(g => { const v = g.items.map(d => d[m]).filter(x => x != null); return v.length ? +avg(v).toFixed(3) : null; }),
+                data:  groups.map(g => {
+                    const v = g.items.map(d => d[m]).filter(x => x !== null && x !== "");
+                    const moyenne = avg(v);
+                    return moyenne !== null ? +(moyenne.toFixed(3)) : null;
+                }),
                 backgroundColor: color + "bb", borderColor: color, borderWidth: 2, borderRadius: 6,
             };
         });

@@ -36,7 +36,7 @@
     "src": "node_modules/leaflet/dist/images/marker-icon.png"
   },
   "resources/css/app.css": {
-    "file": "assets/app-BcrUsEy0.css",
+    "file": "assets/app-CK9Bq_2p.css",
     "name": "app",
     "names": [
       "app.css"
@@ -166,7 +166,7 @@
     ]
   },
   "resources/js/statistiques.js": {
-    "file": "assets/statistiques-wAO8zVMG.js",
+    "file": "assets/statistiques-B-LRwXHO.js",
     "name": "statistiques",
     "src": "resources/js/statistiques.js",
     "isEntry": true,
