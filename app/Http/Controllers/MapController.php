@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Capteur;
+use App\Models\CouleeDeBoue;
 use App\Models\CoursDEau;
 use App\Models\Point;
 use Illuminate\Http\Request;
@@ -51,6 +52,17 @@ class MapController extends Controller
             ->get()
             ->map(fn($r) => ['id' => $r->id, 'nom' => $r->nom]);
 
-        return view('desktop.map', compact('pointsJson', 'riversJson', 'capteursJson'));
+        $couleesJson = CouleeDeBoue::with('user:id,firstname,name')
+            ->get()
+            ->map(fn($c) => [
+                'id'      => $c->id,
+                'lat'     => (float) $c->lat,
+                'lng'     => (float) $c->lng,
+                'user'    => trim($c->user?->firstname . ' ' . $c->user?->name),
+                'user_id' => $c->user_id,
+                'date'    => $c->created_at?->translatedFormat('d M Y'),
+            ]);
+
+        return view('desktop.map', compact('pointsJson', 'riversJson', 'capteursJson', 'couleesJson'));
     }
 }

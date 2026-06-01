@@ -400,6 +400,8 @@
     window.loginUrl           = "{{ route('login', ['source' => 'mobile']) }}";
     window.btSyncUrl          = "{{ route('capteurs.bluetooth.sync') }}";
     window.couleesStoreUrl    = "{{ auth()->check() ? route('coulees-de-boue.store') : '' }}";
+    window.couleesDestroyBase = "{{ auth()->check() ? url('coulees-de-boue') : '' }}";
+    window.currentUserId      = {{ auth()->id() ?? 'null' }};
     window.csrfToken          = "{{ csrf_token() }}";
 </script>
 

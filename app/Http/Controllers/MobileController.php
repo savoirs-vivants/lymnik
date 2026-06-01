@@ -54,11 +54,12 @@ class MobileController extends Controller
         $couleesJson = CouleeDeBoue::with('user:id,firstname,name')
             ->get()
             ->map(fn($c) => [
-                'id'   => $c->id,
-                'lat'  => (float) $c->lat,
-                'lng'  => (float) $c->lng,
-                'user' => trim($c->user?->firstname . ' ' . $c->user?->name),
-                'date' => $c->created_at?->translatedFormat('d M Y'),
+                'id'      => $c->id,
+                'lat'     => (float) $c->lat,
+                'lng'     => (float) $c->lng,
+                'user'    => trim($c->user?->firstname . ' ' . $c->user?->name),
+                'user_id' => $c->user_id,
+                'date'    => $c->created_at?->translatedFormat('d M Y'),
             ]);
 
         return view('mobile.index', compact('pointsJson', 'riversJson', 'capteursJson', 'couleesJson'));

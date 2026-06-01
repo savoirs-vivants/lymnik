@@ -72,6 +72,7 @@ Route::get('/statistiques/export', [StatistiqueController::class, 'export'])->na
 // ─── Utilisateurs authentifiés ────────────────────────────────────────────────
 Route::middleware('auth')->group(function () {
     Route::post('/coulees-de-boue', [CouleeDeBoueController::class, 'store'])->name('coulees-de-boue.store');
+    Route::delete('/coulees-de-boue/{couleeDeBoue}', [CouleeDeBoueController::class, 'destroy'])->name('coulees-de-boue.destroy');
 
     Route::get('/analyses', [AnalyseController::class, 'index'])->name('analyses.index');
     Route::get('/analyses/invalides', [AnalyseController::class, 'invalides'])->name('analyses.invalides');

@@ -14,11 +14,12 @@ class CouleeDeBoueController extends Controller
             CouleeDeBoue::with('user:id,firstname,name')
                 ->get()
                 ->map(fn($c) => [
-                    'id'   => $c->id,
-                    'lat'  => (float) $c->lat,
-                    'lng'  => (float) $c->lng,
-                    'user' => trim($c->user?->firstname . ' ' . $c->user?->name),
-                    'date' => $c->created_at?->translatedFormat('d M Y'),
+                    'id'      => $c->id,
+                    'lat'     => (float) $c->lat,
+                    'lng'     => (float) $c->lng,
+                    'user'    => trim($c->user?->firstname . ' ' . $c->user?->name),
+                    'user_id' => $c->user_id,
+                    'date'    => $c->created_at?->translatedFormat('d M Y'),
                 ])
         );
     }
@@ -37,11 +38,23 @@ class CouleeDeBoueController extends Controller
         ]);
 
         return response()->json([
-            'id'   => $coulée->id,
-            'lat'  => (float) $coulée->lat,
-            'lng'  => (float) $coulée->lng,
-            'user' => trim(Auth::user()->firstname . ' ' . Auth::user()->name),
-            'date' => $coulée->created_at->translatedFormat('d M Y'),
+            'id'      => $coulée->id,
+            'lat'     => (float) $coulée->lat,
+            'lng'     => (float) $coulée->lng,
+            'user'    => trim(Auth::user()->firstname . ' ' . Auth::user()->name),
+            'user_id' => $coulée->user_id,
+            'date'    => $coulée->created_at->translatedFormat('d M Y'),
         ], 201);
+    }
+
+    public function destroy(CouleeDeBoue $couleeDeBoue)
+    {
+        if ($couleeDeBoue->user_id !== Auth::id()) {
+            return response()->json(['error' => 'Interdit'], 403);
+        }
+
+        $couleeDeBoue->delete();
+
+        return response()->json(['success' => true]);
     }
 }

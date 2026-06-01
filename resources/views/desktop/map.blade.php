@@ -131,15 +131,54 @@
                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 2v3m0 14v3M2 12h3m14 0h3" />
             </svg>
         </button>
+
+        @auth
+        <button id="btn-declare-coulee-desk"
+            class="absolute right-4 md:right-[76px] bottom-4 md:bottom-6 z-[1001] flex items-center gap-2 px-4 py-2.5 bg-amber-50 hover:bg-amber-100 border border-amber-300 rounded-xl md:rounded-2xl shadow-xl text-amber-700 text-sm font-semibold transition-colors cursor-pointer outline-none">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+            </svg>
+            Coulée de boue
+        </button>
+        @endauth
+
+        {{-- Overlay mode placement coulée de boue --}}
+        <div id="coulee-mode-overlay" class="hidden absolute inset-0 z-[900] flex flex-col pointer-events-none">
+            <div class="pointer-events-auto bg-amber-500 text-white flex items-center justify-between px-5 py-3 shadow-lg">
+                <div class="flex items-center gap-2 text-sm font-semibold">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+                    </svg>
+                    Cliquez sur la carte pour placer la coulée de boue
+                </div>
+                <button id="coulee-mode-cancel" class="text-white/80 hover:text-white text-xs font-bold underline bg-transparent border-none cursor-pointer">Annuler</button>
+            </div>
+            <div id="coulee-confirm-bar" class="hidden pointer-events-auto mt-auto bg-white border-t border-slate-100 px-5 py-3 shadow-[0_-4px_20px_rgba(0,0,0,0.08)] flex items-center gap-4">
+                <div class="flex-1 text-xs text-slate-600">
+                    <div class="font-semibold text-slate-800">Point placé</div>
+                    <div id="coulee-confirm-coords" class="font-mono text-slate-400">—</div>
+                </div>
+                <button id="coulee-confirm-cancel" class="px-4 py-2 rounded-xl text-sm font-semibold text-slate-500 bg-slate-100 hover:bg-slate-200 transition-colors border-none cursor-pointer">Replacer</button>
+                <button id="coulee-confirm-save" class="px-5 py-2 rounded-xl text-sm font-semibold text-white bg-amber-500 hover:bg-amber-600 active:scale-95 transition-all border-none cursor-pointer flex items-center gap-2">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                    Valider
+                </button>
+            </div>
+        </div>
     </div>
 
     <script>
         window.mapPoints = @json($pointsJson ?? []);
         window.mapRivers = @json($riversJson ?? []);
         window.mapCapteurs = {!! $capteursJson ?? '[]' !!};
+        window.mapCoulees = @json($couleesJson ?? []);
         window.createAnalyseUrl = "{{ route('analyse.create') }}";
         window.userAuthenticated = {{ auth()->check() ? 'true' : 'false' }};
         window.loginUrl = "{{ route('login') }}";
+        window.couleesStoreUrl = "{{ auth()->check() ? route('coulees-de-boue.store') : '' }}";
+        window.couleesDestroyBase = "{{ auth()->check() ? url('coulees-de-boue') : '' }}";
+        window.currentUserId = {{ auth()->id() ?? 'null' }};
+        window.csrfToken = "{{ csrf_token() }}";
     </script>
 
 @endsection

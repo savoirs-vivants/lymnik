@@ -515,14 +515,43 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function addCouleeMarker(c) {
         const marker = L.marker([c.lat, c.lng], { icon: couleeIcon }).addTo(map);
+        const isOwner = window.currentUserId && c.user_id === window.currentUserId;
+        const deleteBtn = isOwner
+            ? `<button data-coulee-id="${c.id}" style="margin-top:8px;width:100%;padding:5px 0;background:#fee2e2;border:1px solid #fca5a5;border-radius:6px;color:#b91c1c;font-size:11px;font-weight:700;cursor:pointer;font-family:'Space Grotesk',sans-serif;">
+                   Supprimer
+               </button>`
+            : '';
         marker.bindPopup(`
             <div style="font-family:'Space Grotesk',sans-serif;min-width:160px;">
                 <div style="font-weight:700;color:#b45309;margin-bottom:4px;">⚠ Coulée de boue</div>
                 <div style="font-size:11px;color:#64748b;">Par ${c.user || 'inconnu'}</div>
                 <div style="font-size:11px;color:#94a3b8;">${c.date || ''}</div>
                 <div style="font-size:10px;font-family:monospace;color:#94a3b8;margin-top:4px;">${c.lat.toFixed(5)}, ${c.lng.toFixed(5)}</div>
+                ${deleteBtn}
             </div>
         `);
+        marker.on('popupopen', () => {
+            const btn = marker.getPopup()?.getElement()?.querySelector('[data-coulee-id]');
+            if (!btn) return;
+            btn.addEventListener('click', async () => {
+                if (!confirm('Supprimer ce signalement ?')) return;
+                btn.disabled = true;
+                btn.textContent = 'Suppression…';
+                try {
+                    const res = await fetch(`${window.couleesDestroyBase}/${c.id}`, {
+                        method: 'DELETE',
+                        headers: { 'X-CSRF-TOKEN': window.csrfToken, 'Accept': 'application/json' },
+                    });
+                    if (!res.ok) throw new Error();
+                    marker.closePopup();
+                    marker.remove();
+                } catch {
+                    btn.disabled = false;
+                    btn.textContent = 'Supprimer';
+                    alert('Erreur lors de la suppression.');
+                }
+            });
+        });
         couleeMarkers.push(marker);
         return marker;
     }
