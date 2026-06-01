@@ -184,6 +184,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const createCard = document.getElementById("create-card");
     let tempMarker = null;
+    let couleeMode = false;
 
     function showCreateCard(latlng) {
         if (tempMarker) {
@@ -322,6 +323,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     map.on("click", async (e) => {
+        if (couleeMode) return;
         if (sheetOpen) {
             closeSheet();
         }
@@ -494,6 +496,111 @@ document.addEventListener("DOMContentLoaded", () => {
             setTimeout(() => toast.remove(), 280);
         }, 4000);
     }
+
+    // ── Coulées de boue ──────────────────────────────────────────────────────
+    const couleeIcon = L.divIcon({
+        className: "",
+        html: `<div style="width:32px;height:32px;display:flex;align-items:center;justify-content:center;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.3));">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="#f59e0b" stroke="white" stroke-width="1.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+                <line x1="12" y1="9" x2="12" y2="13" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                <circle cx="12" cy="16.5" r="1" fill="white" stroke="none"/>
+            </svg>
+        </div>`,
+        iconSize: [32, 32],
+        iconAnchor: [16, 28],
+    });
+
+    const couleeMarkers = [];
+
+    function addCouleeMarker(c) {
+        const marker = L.marker([c.lat, c.lng], { icon: couleeIcon }).addTo(map);
+        marker.bindPopup(`
+            <div style="font-family:'Space Grotesk',sans-serif;min-width:160px;">
+                <div style="font-weight:700;color:#b45309;margin-bottom:4px;">⚠ Coulée de boue</div>
+                <div style="font-size:11px;color:#64748b;">Par ${c.user || 'inconnu'}</div>
+                <div style="font-size:11px;color:#94a3b8;">${c.date || ''}</div>
+                <div style="font-size:10px;font-family:monospace;color:#94a3b8;margin-top:4px;">${c.lat.toFixed(5)}, ${c.lng.toFixed(5)}</div>
+            </div>
+        `);
+        couleeMarkers.push(marker);
+        return marker;
+    }
+
+    (window.mapCoulees ?? []).forEach((c) => addCouleeMarker(c));
+
+    // Mode placement
+    let coulee_tempMarker = null;
+    let coulee_pendingLatLng = null;
+
+    const couleeOverlay   = document.getElementById("coulee-mode-overlay");
+    const couleeConfirmBar = document.getElementById("coulee-confirm-bar");
+    const couleeCoords    = document.getElementById("coulee-confirm-coords");
+
+    function enterCouleeMode() {
+        couleeMode = true;
+        couleeOverlay?.classList.remove("hidden");
+        hideCreateCard();
+        if (sheetOpen) closeSheet();
+    }
+
+    function exitCouleeMode() {
+        couleeMode = false;
+        couleeOverlay?.classList.add("hidden");
+        couleeConfirmBar?.classList.add("hidden");
+        if (coulee_tempMarker) { coulee_tempMarker.remove(); coulee_tempMarker = null; }
+        coulee_pendingLatLng = null;
+    }
+
+    document.getElementById("coulee-mode-cancel")?.addEventListener("click", exitCouleeMode);
+    document.getElementById("btn-declare-coulee")?.addEventListener("click", enterCouleeMode);
+    document.getElementById("btn-declare-coulee-desk")?.addEventListener("click", enterCouleeMode);
+
+    document.getElementById("coulee-confirm-cancel")?.addEventListener("click", () => {
+        if (coulee_tempMarker) { coulee_tempMarker.remove(); coulee_tempMarker = null; }
+        coulee_pendingLatLng = null;
+        couleeConfirmBar?.classList.add("hidden");
+    });
+
+    document.getElementById("coulee-confirm-save")?.addEventListener("click", async () => {
+        if (!coulee_pendingLatLng || !window.couleesStoreUrl) return;
+        const btn = document.getElementById("coulee-confirm-save");
+        btn.disabled = true;
+        btn.textContent = "Enregistrement…";
+        try {
+            const res = await fetch(window.couleesStoreUrl, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRF-TOKEN": window.csrfToken,
+                    "Accept": "application/json",
+                },
+                body: JSON.stringify({ lat: coulee_pendingLatLng.lat, lng: coulee_pendingLatLng.lng }),
+            });
+            if (!res.ok) throw new Error();
+            const data = await res.json();
+            if (coulee_tempMarker) { coulee_tempMarker.remove(); coulee_tempMarker = null; }
+            addCouleeMarker(data);
+            exitCouleeMode();
+        } catch {
+            alert("Erreur lors de l'enregistrement.");
+            btn.disabled = false;
+            btn.textContent = "Valider";
+        }
+    });
+
+    // Intercept map clicks en mode coulée
+    const origMapClick = map._events?.click ? null : null;
+    map.on("click", (e) => {
+        if (!couleeMode) return;
+        L.DomEvent.stopPropagation(e);
+        coulee_pendingLatLng = e.latlng;
+        if (coulee_tempMarker) coulee_tempMarker.remove();
+        coulee_tempMarker = L.marker(e.latlng, { icon: couleeIcon }).addTo(map);
+        if (couleeCoords) couleeCoords.textContent = `${e.latlng.lat.toFixed(5)}, ${e.latlng.lng.toFixed(5)}`;
+        couleeConfirmBar?.classList.remove("hidden");
+    });
+    // ─────────────────────────────────────────────────────────────────────────
 
     const hint = document.getElementById("tap-hint");
     const hideHint = () => {

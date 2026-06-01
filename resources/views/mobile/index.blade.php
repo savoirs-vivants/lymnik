@@ -4,13 +4,9 @@
 
 <div id="app-shell"
     class="relative w-full h-[100dvh] flex flex-col overflow-hidden bg-slate-50 font-grotesk text-slate-900 md:flex-row">
-
-    {{-- ================================================================ --}}
-    {{-- SIDEBAR — tablet / desktop uniquement                            --}}
-    {{-- ================================================================ --}}
+    
     <aside class="hidden md:flex md:flex-col md:w-64 lg:w-72 md:h-full md:shrink-0 bg-white border-r border-slate-100 shadow-[2px_0_10px_rgba(0,0,0,0.04)] z-20 overflow-hidden">
 
-        {{-- Logo --}}
         <div class="px-5 py-4 border-b border-slate-100 shrink-0">
             <div class="flex items-center gap-2">
                 <div class="w-7 h-7 rounded-lg bg-[#222a60] flex items-center justify-center">
@@ -23,7 +19,6 @@
             <p class="text-[10px] text-slate-400 font-mono mt-1">Suivi qualité de l'eau</p>
         </div>
 
-        {{-- Utilisateur --}}
         <div class="px-4 py-3 border-b border-slate-100 shrink-0">
             @guest
                 <a href="{{ route('login', ['source' => 'mobile']) }}"
@@ -49,7 +44,6 @@
             @endauth
         </div>
 
-        {{-- Recherche desktop --}}
         <div class="px-4 py-3 border-b border-slate-100 shrink-0">
             <div class="relative">
                 <svg class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -62,7 +56,6 @@
             </div>
         </div>
 
-        {{-- Filtres qualité desktop --}}
         <div class="px-4 py-3 border-b border-slate-100 shrink-0">
             <div class="text-[9px] font-mono font-bold uppercase tracking-widest text-slate-400 mb-2">Filtrer par qualité</div>
             <div class="flex flex-col gap-1">
@@ -84,10 +77,21 @@
             </div>
         </div>
 
-        {{-- Panneau info (peuplé par map.js au clic d'un point) --}}
+        @auth
+        <div class="px-4 py-3 border-b border-slate-100 shrink-0">
+            <div class="text-[9px] font-mono font-bold uppercase tracking-widest text-slate-400 mb-2">Signalement</div>
+            <button id="btn-declare-coulee-desk"
+                class="w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-200 hover:bg-amber-100 transition-colors cursor-pointer">
+                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+                </svg>
+                Déclarer une coulée de boue
+            </button>
+        </div>
+        @endauth
+
         <div id="sidebar-info" class="flex-1 overflow-y-auto"></div>
 
-        {{-- Navigation desktop --}}
         @auth
         <div class="border-t border-slate-100 p-3 shrink-0">
             <nav class="flex flex-col gap-0.5">
@@ -117,14 +121,10 @@
         @endauth
     </aside>
 
-    {{-- ================================================================ --}}
-    {{-- ZONE CARTE — plein écran sur mobile, flex-1 sur tablet/desktop   --}}
-    {{-- ================================================================ --}}
     <div class="relative flex-1 h-full overflow-hidden">
 
         <div id="map" class="absolute inset-0 z-0 outline-none bg-slate-200"></div>
 
-        {{-- TOP BAR — mobile uniquement --}}
         <div id="top-bar" class="absolute top-0 inset-x-0 z-50 pt-[max(52px,env(safe-area-inset-top))] px-4 pb-3 pointer-events-none md:hidden">
             <div class="flex items-center gap-2.5 pointer-events-auto relative z-20">
                 <div class="flex-1 flex items-center gap-2 bg-white/95 backdrop-blur-md rounded-2xl px-3.5 h-[46px] shadow-[0_4px_20px_rgba(34,42,96,0.12)] border border-sv-blue/5 relative">
@@ -153,7 +153,6 @@
                 @endauth
             </div>
 
-            {{-- Pills qualité mobile --}}
             <div class="flex gap-1.5 mt-2.5 px-4 pointer-events-auto overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                 <div data-quality="tres_bon" class="pill flex items-center gap-1 bg-white/95 backdrop-blur-md rounded-full px-2.5 py-1 text-[10px] font-semibold text-slate-500 shadow-sm border border-slate-100 cursor-pointer transition-all active:scale-95 select-none whitespace-nowrap [&.active]:border-[#3b82f6] [&.active]:text-[#3b82f6] [&.active]:bg-[#3b82f6]/10">
                     <span class="w-1.5 h-1.5 rounded-full bg-[#3b82f6]"></span> Très bon
@@ -173,7 +172,6 @@
             </div>
         </div>
 
-        {{-- Bouton de recherche desktop (visible en haut de la zone carte, cache le top-bar mobile) --}}
         <div class="hidden md:flex absolute top-4 left-4 right-4 z-10 items-center gap-2 pointer-events-none">
             <button id="btn-locate"
                 class="ml-auto w-10 h-10 flex items-center justify-center rounded-full shadow-[0_4px_16px_rgba(0,0,0,0.15)] border border-white/80 bg-white/90 backdrop-blur-md text-[#222a60] hover:bg-[#222a60] hover:text-white transition-colors cursor-pointer outline-none group pointer-events-auto">
@@ -185,7 +183,6 @@
             </button>
         </div>
 
-        {{-- Bouton de géolocalisation mobile --}}
         <button id="btn-locate" class="md:hidden absolute right-4 bottom-28 z-10 w-12 h-12 flex items-center justify-center rounded-full shadow-[0_4px_16px_rgba(0,0,0,0.15)] border border-white/80 bg-white/90 backdrop-blur-md text-[#222a60] active:bg-[#1565c0] active:text-white transition-colors cursor-pointer outline-none group">
             <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" class="transition-transform group-active:scale-95">
                 <circle cx="12" cy="12" r="3"/>
@@ -198,7 +195,6 @@
             Appuyez sur la carte pour créer une analyse
         </div>
 
-        {{-- Bottom sheet (mobile) / Side panel info (desktop) --}}
         <div id="bottom-sheet"
             class="absolute bottom-0 inset-x-0 z-20 bg-white rounded-t-[20px] shadow-[0_-8px_40px_rgba(34,42,96,0.14)] translate-y-full [&.open]:translate-y-0 transition-transform duration-[380ms] ease-[cubic-bezier(0.34,1.1,0.64,1)] pb-[env(safe-area-inset-bottom,12px)]
                    md:bottom-4 md:top-4 md:left-auto md:right-4 md:w-80 md:rounded-2xl md:inset-x-auto md:shadow-[0_8px_40px_rgba(34,42,96,0.18)]">
@@ -245,7 +241,6 @@
             </div>
         </div>
 
-        {{-- Modal Bluetooth --}}
         <div id="bt-modal" class="absolute inset-0 z-[100] bg-slate-50 flex flex-col transition-transform duration-300 translate-y-full">
             <div class="pt-[max(40px,env(safe-area-inset-top))] md:pt-4 px-4 pb-3 bg-white flex justify-between items-center border-b border-slate-100 shadow-sm">
                 <h2 class="text-lg font-bold text-sv-blue flex items-center gap-2">
@@ -316,7 +311,6 @@
             </div>
         </div>
 
-        {{-- Bottom nav — mobile uniquement --}}
         @if (Auth::check())
         <nav id="bottom-nav" class="absolute bottom-0 inset-x-0 z-[15] bg-white/95 backdrop-blur-md border-t border-sv-blue/5 flex justify-around items-center pt-2.5 pb-[calc(10px+env(safe-area-inset-bottom,0px))] translate-y-0 [&.hidden-nav]:translate-y-full transition-transform duration-[380ms] ease-[cubic-bezier(0.34,1.1,0.64,1)] md:hidden">
             <a href="{{ route('mobile')}}" class="nav-item active group flex flex-col items-center gap-[3px] cursor-pointer px-5 py-1 rounded-xl transition-colors active:bg-slate-100 select-none no-underline">
@@ -346,7 +340,43 @@
         </nav>
         @endif
 
-        {{-- Bouton capteur Bluetooth desktop --}}
+        @auth
+        {{-- Bouton mobile flottant coulée de boue --}}
+        <button id="btn-declare-coulee"
+            class="md:hidden absolute right-4 bottom-[104px] z-10 flex items-center gap-1.5 px-3.5 py-2.5 rounded-full shadow-[0_4px_16px_rgba(0,0,0,0.15)] border border-amber-300 bg-amber-50/95 backdrop-blur-md text-amber-700 font-semibold text-xs active:scale-95 transition-transform cursor-pointer">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+            </svg>
+            Coulée de boue
+        </button>
+        @endauth
+
+        {{-- Overlay mode placement coulée de boue --}}
+        <div id="coulee-mode-overlay" class="hidden absolute inset-0 z-[60] flex flex-col pointer-events-none">
+            {{-- Bannière en haut --}}
+            <div class="pointer-events-auto bg-amber-500 text-white flex items-center justify-between px-4 py-3 shadow-lg">
+                <div class="flex items-center gap-2 text-sm font-semibold">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+                    </svg>
+                    Touchez la carte pour placer la coulée
+                </div>
+                <button id="coulee-mode-cancel" class="text-white/80 hover:text-white active:opacity-60 text-xs font-bold underline bg-transparent border-none cursor-pointer">Annuler</button>
+            </div>
+            {{-- Confirmation en bas --}}
+            <div id="coulee-confirm-bar" class="hidden pointer-events-auto mt-auto bg-white border-t border-slate-100 px-4 py-3 shadow-[0_-4px_20px_rgba(0,0,0,0.08)] flex items-center gap-3">
+                <div class="flex-1 text-xs text-slate-600">
+                    <div class="font-semibold text-slate-800">Point placé</div>
+                    <div id="coulee-confirm-coords" class="font-mono text-slate-400">—</div>
+                </div>
+                <button id="coulee-confirm-cancel" class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-500 bg-slate-100 active:bg-slate-200 transition-colors border-none cursor-pointer">Replacer</button>
+                <button id="coulee-confirm-save" class="px-4 py-2 rounded-xl text-xs font-semibold text-white bg-amber-500 hover:bg-amber-600 active:scale-95 transition-all border-none cursor-pointer flex items-center gap-1.5">
+                    <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                    Valider
+                </button>
+            </div>
+        </div>
+
         @if (Auth::check())
         <button id="btn-open-bt-desk"
             class="hidden md:flex absolute bottom-4 left-4 z-10 items-center gap-2 px-4 py-2.5 bg-white/90 backdrop-blur-md rounded-xl shadow-[0_4px_16px_rgba(0,0,0,0.12)] border border-slate-100 text-sm font-semibold text-[#222a60] hover:bg-white transition-colors cursor-pointer">
@@ -355,19 +385,22 @@
         </button>
         @endif
 
-    </div>{{-- fin zone carte --}}
+    </div>
 
-</div>{{-- fin app-shell --}}
+</div>
 
 <script>
     window.mapPoints          = @json($pointsJson ?? []);
     window.mapRivers          = @json($riversJson ?? []);
     window.mapCapteurs        = {!! $capteursJson !!};
+    window.mapCoulees         = @json($couleesJson ?? []);
     window.createAnalyseUrl   = "{{ route('analyse.create') }}";
     window.nearestRiverUrl    = "{{ route('cours-d-eau.nearest') }}";
     window.userAuthenticated  = {{ auth()->check() ? 'true' : 'false' }};
     window.loginUrl           = "{{ route('login', ['source' => 'mobile']) }}";
     window.btSyncUrl          = "{{ route('capteurs.bluetooth.sync') }}";
+    window.couleesStoreUrl    = "{{ auth()->check() ? route('coulees-de-boue.store') : '' }}";
+    window.csrfToken          = "{{ csrf_token() }}";
 </script>
 
 {{-- Logique Bluetooth dans resources/js/bluetooth.js --}}

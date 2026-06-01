@@ -13,6 +13,7 @@ use App\Http\Controllers\MobileController;
 use App\Http\Controllers\MapController;
 use App\Http\Controllers\ParticipantController;
 use App\Http\Controllers\ProfilController;
+use App\Http\Controllers\CouleeDeBoueController;
 use App\Http\Controllers\StatistiqueController;
 
 Route::get('/', function () {
@@ -40,6 +41,7 @@ Route::post('/password/reset',          [PasswordResetController::class, 'resetP
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middleware('auth');
 
 Route::get('/mobile', [MobileController::class, 'index'])->name('mobile');
+Route::get('/coulees-de-boue', [CouleeDeBoueController::class, 'index'])->name('coulees-de-boue.index');
 
 // Routes cours d'eau accessibles sans auth
 Route::get('/mobile/cours-d-eau/nearest', [CoursDEauController::class, 'nearest'])->name('cours-d-eau.nearest');
@@ -69,6 +71,8 @@ Route::get('/statistiques/export', [StatistiqueController::class, 'export'])->na
 
 // ─── Utilisateurs authentifiés ────────────────────────────────────────────────
 Route::middleware('auth')->group(function () {
+    Route::post('/coulees-de-boue', [CouleeDeBoueController::class, 'store'])->name('coulees-de-boue.store');
+
     Route::get('/analyses', [AnalyseController::class, 'index'])->name('analyses.index');
     Route::get('/analyses/invalides', [AnalyseController::class, 'invalides'])->name('analyses.invalides');
     Route::patch('/analyse/{analyse}/valider', [AnalyseController::class, 'valider'])->name('analyse.valider');
