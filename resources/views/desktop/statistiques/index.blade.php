@@ -51,8 +51,19 @@
 <div class="space-y-4">
 
     <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
-        <h3 class="text-[13px] font-bold text-slate-800 mb-0.5">Évolution temporelle</h3>
-        <p id="time-chart-subtitle" class="text-[10px] text-slate-400 font-mono mb-4">Moyenne journalière</p>
+        <div class="flex items-start justify-between gap-3 mb-4">
+            <div>
+                <h3 class="text-[13px] font-bold text-slate-800 mb-0.5">Évolution temporelle</h3>
+                <p id="time-chart-subtitle" class="text-[10px] text-slate-400 font-mono">Moyenne journalière</p>
+            </div>
+            <button onclick="exportChartAsPng('mainTimeChart', 'evolution_temporelle')"
+                class="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg text-[11px] font-bold shrink-0 transition-colors">
+                <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                </svg>
+                PNG
+            </button>
+        </div>
         <div class="relative h-56 sm:h-72">
             <canvas id="mainTimeChart"></canvas>
         </div>
@@ -78,8 +89,19 @@
     </div>
 
     <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
-        <h3 class="text-[13px] font-bold text-slate-800 mb-0.5">Distribution de la qualité</h3>
-        <p id="qualite-chart-subtitle" class="text-[10px] text-slate-400 font-mono mb-4">Répartition des niveaux</p>
+        <div class="flex items-start justify-between gap-3 mb-4">
+            <div>
+                <h3 class="text-[13px] font-bold text-slate-800 mb-0.5">Distribution de la qualité</h3>
+                <p id="qualite-chart-subtitle" class="text-[10px] text-slate-400 font-mono">Répartition des niveaux</p>
+            </div>
+            <button onclick="exportChartAsPng('qualiteChart', 'distribution_qualite')"
+                class="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg text-[11px] font-bold shrink-0 transition-colors">
+                <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                </svg>
+                PNG
+            </button>
+        </div>
         <div class="relative h-48 sm:h-64">
             <canvas id="qualiteChart"></canvas>
         </div>

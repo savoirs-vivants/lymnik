@@ -156,7 +156,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     grid: { display: false }
                 },
                 y: {
-                    stacked: true, 
+                    stacked: true,
                     grid: { borderDash: [4, 4] }
                 }
             },
@@ -378,16 +378,23 @@ document.addEventListener("DOMContentLoaded", function () {
         if (chevron) chevron.style.transform = isHidden ? "rotate(180deg)" : "rotate(0deg)";
     };
 
-    window.exportChartAsPng = function () {
-        const canvas = document.getElementById("barChart");
+    window.exportChartAsPng = function (canvasId, prefixName) {
+        const canvas = document.getElementById(canvasId);
         if (!canvas) return;
+
         const exp = document.createElement("canvas");
-        exp.width = canvas.width; exp.height = canvas.height;
+        exp.width = canvas.width;
+        exp.height = canvas.height;
+
         const ctx = exp.getContext("2d");
-        ctx.fillStyle = "#ffffff"; ctx.fillRect(0, 0, exp.width, exp.height); ctx.drawImage(canvas, 0, 0);
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(0, 0, exp.width, exp.height);
+        ctx.drawImage(canvas, 0, 0);
+
         const link = document.createElement("a");
-        link.download = "comparaison_" + new Date().toISOString().slice(0, 10) + ".png";
-        link.href = exp.toDataURL("image/png", 1.0); link.click();
+        link.download = prefixName + "_" + new Date().toISOString().slice(0, 10) + ".png";
+        link.href = exp.toDataURL("image/png", 1.0);
+        link.click();
     };
 
     window.exportData = function (format) {
