@@ -38,8 +38,9 @@ class StatistiqueController extends Controller
 
         $analyses = $analysesRaw->map(function ($a) {
             $m = is_string($a->mesures) ? json_decode($a->mesures, true) : [];
-            $b = $m['bandelette'] ?? [];
-            $p = $m['photometre'] ?? [];
+            if (is_string($m)) $m = json_decode($m, true) ?? [];
+            $b = is_array($m) ? ($m['bandelette'] ?? []) : [];
+            $p = is_array($m) ? ($m['photometre']  ?? []) : [];
 
             return [
                 'id'              => $a->id,
@@ -155,8 +156,9 @@ class StatistiqueController extends Controller
 
         foreach ($analysesRaw as $a) {
             $m = is_string($a->mesures) ? json_decode($a->mesures, true) : [];
-            $b = $m['bandelette'] ?? [];
-            $p = $m['photometre'] ?? [];
+            if (is_string($m)) $m = json_decode($m, true) ?? [];
+            $b = is_array($m) ? ($m['bandelette'] ?? []) : [];
+            $p = is_array($m) ? ($m['photometre']  ?? []) : [];
             $qs = $a->qualite ?: 'passable';
 
             $dateObj = new \DateTime($a->created_at);
