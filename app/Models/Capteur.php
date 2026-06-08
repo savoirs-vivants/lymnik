@@ -19,6 +19,7 @@ class Capteur extends Model
         'devEUI',
         'UID',
         'quali_air',
+        'date_mesure_bluetooth',
     ];
 
     public function coursDEau()

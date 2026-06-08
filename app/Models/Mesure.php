@@ -18,6 +18,7 @@ class Mesure extends Model
         'hauteur',
         'debit',
         'quali_air',
+        'date_mesure_bluetooth',
     ];
 
     public function capteur()
