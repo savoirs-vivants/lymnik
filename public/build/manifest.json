@@ -36,7 +36,7 @@
     "src": "node_modules/leaflet/dist/images/marker-icon.png"
   },
   "resources/css/app.css": {
-    "file": "assets/app-BURTTbAJ.css",
+    "file": "assets/app-8XHQiKdl.css",
     "name": "app",
     "names": [
       "app.css"
@@ -68,7 +68,7 @@
     "isEntry": true
   },
   "resources/js/bluetooth.js": {
-    "file": "assets/bluetooth-By_bbgXH.js",
+    "file": "assets/bluetooth-DG49gk_5.js",
     "name": "bluetooth",
     "src": "resources/js/bluetooth.js",
     "isEntry": true

@@ -53,8 +53,8 @@ function formatUI(val) {
 }
 
 // Format des lignes reçues du capteur :
-//   UID:005D003D393650022037374E          → identifiant unique du capteur (clé de lookup en BDD)
-//   1,268435456,0,-13570,0,0,0            → id, timestamp_unix, turbidite, conductivite, temp_eau, hauteur, debit
+//   UID:005D003D393650022037374E                          → identifiant unique du capteur
+//   1780924130,4032,389,-310,-32768,-32768,-32768,-32768  → timestamp_unix, turbidite, conductivite, temp_eau, hauteur, debit, ...
 function decodeData(line) {
     if (line.startsWith('UID:')) {
         document.getElementById('valUid').innerText = line.substring(4).trim();
@@ -63,12 +63,17 @@ function decodeData(line) {
     const parts = line.split(',');
     if (parts.length < 3) return;
 
-    // Utilisation de formatUI pour corriger l'affichage en direct
-    if (parts[2] !== undefined) document.getElementById('valTurb').firstChild.textContent  = formatUI(parts[2]) + ' ';
-    if (parts[3] !== undefined) document.getElementById('valCond').firstChild.textContent  = formatUI(parts[3]) + ' ';
-    if (parts[4] !== undefined) document.getElementById('valTemp').innerText               = formatUI(parts[4]) + ' °C';
-    if (parts[5] !== undefined) document.getElementById('valHaut').firstChild.textContent  = formatUI(parts[5]) + ' ';
-    if (parts[6] !== undefined) document.getElementById('valDebit').firstChild.textContent = formatUI(parts[6]) + ' ';
+    // parts[0] = timestamp, parts[1] = turbidite, parts[2] = conductivite, parts[3] = temp_eau, ...
+    const displayVal = (raw, divisor = 1, decimals = 2) => {
+        const n = parseFloat(raw);
+        if (isNaN(n) || n === -32768) return '0';
+        return (n / divisor).toFixed(decimals);
+    };
+    if (parts[1] !== undefined) document.getElementById('valTurb').firstChild.textContent  = displayVal(parts[1], 1000, 3) + ' ';
+    if (parts[2] !== undefined) document.getElementById('valCond').firstChild.textContent  = displayVal(parts[2], 1000, 3) + ' ';
+    if (parts[3] !== undefined) document.getElementById('valTemp').innerText               = displayVal(parts[3], 16, 2) + ' °C';
+    if (parts[4] !== undefined) document.getElementById('valHaut').firstChild.textContent  = formatUI(parts[4]) + ' ';
+    if (parts[5] !== undefined) document.getElementById('valDebit').firstChild.textContent = formatUI(parts[5]) + ' ';
 }
 
 // Fonction utilitaire pour la BDD : parse le float et remplace -32768 par 0
@@ -101,17 +106,16 @@ function parseLog(logText) {
         const parts = line.split(',');
         if (parts.length < 3) continue;
 
-        const ts = parseInt(parts[1]);
+        const ts = parseInt(parts[0]);
         if (isNaN(ts) || ts <= 0) continue;
         if (seen.has(ts)) continue;
         seen.add(ts);
 
         lignes.push({
-            // Multiplication par 1000 pour passer des secondes aux millisecondes
-            timestamp:    ts * 1000,
+            timestamp:    ts,
             turbidite:    parseSensorValue(parts[1]) / 1000,
-            conductivite: parseSensorValue(parts[2]) /1000,
-            temp_eau:     parseSensorValue(parts[3]) /16,
+            conductivite: parseSensorValue(parts[2]) / 1000,
+            temp_eau:     parseSensorValue(parts[3]) / 16,
             hauteur:      parseSensorValue(parts[4]),
             debit:        parseSensorValue(parts[5]),
         });
