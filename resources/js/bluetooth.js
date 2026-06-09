@@ -47,6 +47,11 @@ function ecrireSysteme(message) {
     zoneLog.scrollTop = zoneLog.scrollHeight;
 }
 
+// Fonction utilitaire pour l'affichage : remplace -32768 par 0
+function formatUI(val) {
+    return val == -32768 ? '0' : val;
+}
+
 // Format des lignes reçues du capteur :
 //   UID:005D003D393650022037374E          → identifiant unique du capteur (clé de lookup en BDD)
 //   1,268435456,0,-13570,0,0,0            → id, timestamp_unix, turbidite, conductivite, temp_eau, hauteur, debit
@@ -57,11 +62,20 @@ function decodeData(line) {
     }
     const parts = line.split(',');
     if (parts.length < 3) return;
-    if (parts[2] !== undefined) document.getElementById('valTurb').firstChild.textContent  = parts[2] + ' ';
-    if (parts[3] !== undefined) document.getElementById('valCond').firstChild.textContent  = parts[3] + ' ';
-    if (parts[4] !== undefined) document.getElementById('valTemp').innerText               = parts[4] + ' °C';
-    if (parts[5] !== undefined) document.getElementById('valHaut').firstChild.textContent  = parts[5] + ' ';
-    if (parts[6] !== undefined) document.getElementById('valDebit').firstChild.textContent = parts[6] + ' ';
+
+    // Utilisation de formatUI pour corriger l'affichage en direct
+    if (parts[2] !== undefined) document.getElementById('valTurb').firstChild.textContent  = formatUI(parts[2]) + ' ';
+    if (parts[3] !== undefined) document.getElementById('valCond').firstChild.textContent  = formatUI(parts[3]) + ' ';
+    if (parts[4] !== undefined) document.getElementById('valTemp').innerText               = formatUI(parts[4]) + ' °C';
+    if (parts[5] !== undefined) document.getElementById('valHaut').firstChild.textContent  = formatUI(parts[5]) + ' ';
+    if (parts[6] !== undefined) document.getElementById('valDebit').firstChild.textContent = formatUI(parts[6]) + ' ';
+}
+
+// Fonction utilitaire pour la BDD : parse le float et remplace -32768 par 0
+function parseSensorValue(val) {
+    if (val === undefined || val === '') return null;
+    const num = parseFloat(val);
+    return num === -32768 ? 0 : num;
 }
 
 // Parse l'intégralité de la console au moment du sync plutôt qu'en mémoire en temps réel.
@@ -93,12 +107,13 @@ function parseLog(logText) {
         seen.add(ts);
 
         lignes.push({
-            timestamp:    ts,
-            turbidite:    parts[2] !== undefined && parts[2] !== '' ? parseFloat(parts[2]) : null,
-            conductivite: parts[3] !== undefined && parts[3] !== '' ? parseFloat(parts[3]) : null,
-            temp_eau:     parts[4] !== undefined && parts[4] !== '' ? parseFloat(parts[4]) : null,
-            hauteur:      parts[5] !== undefined && parts[5] !== '' ? parseFloat(parts[5]) : null,
-            debit:        parts[6] !== undefined && parts[6] !== '' ? parseFloat(parts[6]) : null,
+            // Multiplication par 1000 pour passer des secondes aux millisecondes
+            timestamp:    ts * 1000,
+            turbidite:    parseSensorValue(parts[2]),
+            conductivite: parseSensorValue(parts[3]),
+            temp_eau:     parseSensorValue(parts[4]),
+            hauteur:      parseSensorValue(parts[5]),
+            debit:        parseSensorValue(parts[6]),
         });
     }
 
