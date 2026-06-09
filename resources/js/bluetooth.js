@@ -109,11 +109,11 @@ function parseLog(logText) {
         lignes.push({
             // Multiplication par 1000 pour passer des secondes aux millisecondes
             timestamp:    ts * 1000,
-            turbidite:    parseSensorValue(parts[2]),
-            conductivite: parseSensorValue(parts[3]),
-            temp_eau:     parseSensorValue(parts[4]),
-            hauteur:      parseSensorValue(parts[5]),
-            debit:        parseSensorValue(parts[6]),
+            turbidite:    parseSensorValue(parts[1]) / 1000,
+            conductivite: parseSensorValue(parts[2]) /1000,
+            temp_eau:     parseSensorValue(parts[3]) /16,
+            hauteur:      parseSensorValue(parts[4]),
+            debit:        parseSensorValue(parts[5]),
         });
     }
 
