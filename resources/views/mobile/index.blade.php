@@ -54,7 +54,28 @@
                     class="w-full pl-8 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 placeholder-slate-400 outline-none focus:ring-2 focus:ring-[#222a60]/15 focus:border-[#222a60] transition-all">
                 <div id="search-results" class="absolute top-[calc(100%+4px)] left-0 right-0 bg-white rounded-xl shadow-[0_12px_40px_rgba(34,42,96,0.15)] border border-slate-100 overflow-hidden hidden z-50"></div>
             </div>
+            <button id="btn-locate-desk" class="btn-locate mt-2 w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-xs font-semibold text-[#222a60] bg-slate-50 border border-slate-200 hover:bg-slate-100 transition-colors cursor-pointer">
+                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                    <circle cx="12" cy="12" r="3"/>
+                    <path d="M12 2v3m0 14v3M2 12h3m14 0h3"/>
+                    <circle cx="12" cy="12" r="7" stroke-dasharray="3 2"/>
+                </svg>
+                Me géolocaliser
+            </button>
         </div>
+
+        @auth
+        <div class="px-4 py-3 border-b border-slate-100 shrink-0">
+            <div class="text-[9px] font-mono font-bold uppercase tracking-widest text-slate-400 mb-2">Signalement</div>
+            <button id="btn-declare-coulee-desk"
+                class="w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-200 hover:bg-amber-100 transition-colors cursor-pointer">
+                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+                </svg>
+                Signaler un problème ou une amélioration du cours d'eau
+            </button>
+        </div>
+        @endauth
 
         <div class="px-4 py-3 border-b border-slate-100 shrink-0">
             <div class="text-[9px] font-mono font-bold uppercase tracking-widest text-slate-400 mb-2">Filtrer par qualité</div>
@@ -76,19 +97,6 @@
                 </div>
             </div>
         </div>
-
-        @auth
-        <div class="px-4 py-3 border-b border-slate-100 shrink-0">
-            <div class="text-[9px] font-mono font-bold uppercase tracking-widest text-slate-400 mb-2">Signalement</div>
-            <button id="btn-declare-coulee-desk"
-                class="w-full flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-200 hover:bg-amber-100 transition-colors cursor-pointer">
-                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
-                </svg>
-                Signaler un problème ou une amélioration du cours d'eau
-            </button>
-        </div>
-        @endauth
 
         <div id="sidebar-info" class="flex-1 overflow-y-auto"></div>
 
@@ -153,6 +161,25 @@
                 @endauth
             </div>
 
+            <button id="btn-locate-mobile" class="btn-locate mt-2.5 pointer-events-auto w-full flex items-center justify-center gap-2 bg-white/95 backdrop-blur-md rounded-2xl px-3.5 h-[42px] shadow-[0_4px_20px_rgba(34,42,96,0.12)] border border-sv-blue/5 text-[#222a60] text-sm font-semibold active:scale-[0.98] transition-transform">
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" class="shrink-0">
+                    <circle cx="12" cy="12" r="3"/>
+                    <path d="M12 2v3m0 14v3M2 12h3m14 0h3"/>
+                    <circle cx="12" cy="12" r="7" stroke-dasharray="3 2"/>
+                </svg>
+                Me géolocaliser
+            </button>
+
+            @auth
+            <button id="btn-declare-coulee"
+                class="mt-2.5 pointer-events-auto w-full flex items-center justify-center gap-2 px-3.5 h-[42px] rounded-2xl shadow-[0_4px_16px_rgba(0,0,0,0.1)] border border-amber-300 bg-amber-50/95 backdrop-blur-md text-amber-700 font-semibold text-xs active:scale-[0.98] transition-transform cursor-pointer">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" class="shrink-0">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+                </svg>
+                Signaler un problème ou une amélioration du cours d'eau
+            </button>
+            @endauth
+
             <div class="flex gap-1.5 mt-2.5 px-4 pointer-events-auto overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                 <div data-quality="tres_bon" class="pill flex items-center gap-1 bg-white/95 backdrop-blur-md rounded-full px-2.5 py-1 text-[10px] font-semibold text-slate-500 shadow-sm border border-slate-100 cursor-pointer transition-all active:scale-95 select-none whitespace-nowrap [&.active]:border-[#3b82f6] [&.active]:text-[#3b82f6] [&.active]:bg-[#3b82f6]/10">
                     <span class="w-1.5 h-1.5 rounded-full bg-[#3b82f6]"></span> Très bon
@@ -171,25 +198,6 @@
                 </div>
             </div>
         </div>
-
-        <div class="hidden md:flex absolute top-4 left-4 right-4 z-10 items-center gap-2 pointer-events-none">
-            <button id="btn-locate"
-                class="ml-auto w-10 h-10 flex items-center justify-center rounded-full shadow-[0_4px_16px_rgba(0,0,0,0.15)] border border-white/80 bg-white/90 backdrop-blur-md text-[#222a60] hover:bg-[#222a60] hover:text-white transition-colors cursor-pointer outline-none group pointer-events-auto">
-                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" class="transition-transform group-active:scale-95">
-                    <circle cx="12" cy="12" r="3"/>
-                    <path d="M12 2v3m0 14v3M2 12h3m14 0h3"/>
-                    <circle cx="12" cy="12" r="7" stroke-dasharray="3 2"/>
-                </svg>
-            </button>
-        </div>
-
-        <button id="btn-locate" class="md:hidden absolute right-4 bottom-28 z-10 w-12 h-12 flex items-center justify-center rounded-full shadow-[0_4px_16px_rgba(0,0,0,0.15)] border border-white/80 bg-white/90 backdrop-blur-md text-[#222a60] active:bg-[#1565c0] active:text-white transition-colors cursor-pointer outline-none group">
-            <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" class="transition-transform group-active:scale-95">
-                <circle cx="12" cy="12" r="3"/>
-                <path d="M12 2v3m0 14v3M2 12h3m14 0h3"/>
-                <circle cx="12" cy="12" r="7" stroke-dasharray="3 2"/>
-            </svg>
-        </button>
 
         <div id="tap-hint" class="absolute bottom-24 left-1/2 -translate-x-1/2 z-10 bg-sv-blue/85 backdrop-blur-md text-white text-[11px] font-mono px-4 py-2 rounded-full pointer-events-none whitespace-nowrap transition-opacity duration-400 [&.fade-out]:opacity-0 md:bottom-6">
             Appuyez sur la carte pour créer une analyse
@@ -340,15 +348,6 @@
         </nav>
         @endif
 
-        @auth
-        <button id="btn-declare-coulee"
-            class="md:hidden absolute right-4 bottom-[104px] z-10 flex items-center gap-1.5 px-3.5 py-2.5 rounded-full shadow-[0_4px_16px_rgba(0,0,0,0.15)] border border-amber-300 bg-amber-50/95 backdrop-blur-md text-amber-700 font-semibold text-xs active:scale-95 transition-transform cursor-pointer">
-            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
-            </svg>
-            Signaler un problème ou une amélioration du cours d'eau
-        </button>
-        @endauth
 
         <div id="coulee-mode-overlay" class="hidden absolute inset-0 z-[60] flex flex-col pointer-events-none">
             <div class="pointer-events-auto bg-amber-500 text-white flex items-center justify-between px-4 py-3 shadow-lg">
