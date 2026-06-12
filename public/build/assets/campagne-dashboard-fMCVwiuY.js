@@ -6,7 +6,6 @@ import{n as e,t}from"./map-utils-BX27QVU9.js";import{a as n,i as r}from"./config
         <tr class="hover:bg-slate-50 border-b border-slate-100">
             <td class="py-3 sm:py-4 pl-4 pr-4">
                 <div class="text-sm font-bold text-[#222a60]">${e.ville}</div>
-                <div class="font-mono text-xs text-slate-500 mt-1">GPS: ${e.latitude.toFixed(3)}, ${e.longitude.toFixed(3)}</div>
             </td>
             <td class="py-3 sm:py-4 pr-4"><span class="text-[11px] font-bold text-slate-600 bg-slate-100 px-2 py-1 rounded-md whitespace-nowrap">${n(t.type)}</span></td>
             <td class="py-3 sm:py-4 pr-4">${r(t.qualite)}</td>

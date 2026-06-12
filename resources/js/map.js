@@ -198,10 +198,6 @@ document.addEventListener("DOMContentLoaded", () => {
         });
         tempMarker = L.marker(latlng, { icon: pulseIcon }).addTo(map);
 
-        createCard.querySelector("#cc-lat").textContent =
-            latlng.lat.toFixed(4) + "° N";
-        createCard.querySelector("#cc-lng").textContent =
-            latlng.lng.toFixed(4) + "° E";
         createCard.querySelector("#cc-river").textContent =
             "Cours d'eau identifié lors de la saisie";
         createCard.querySelector("#cc-link").href = buildAnalyseUrl(
@@ -336,8 +332,6 @@ document.addEventListener("DOMContentLoaded", () => {
     // 6. Remplissage des Bottom Sheets
     function populateSheet(p) {
         const a = p.analyse;
-        sheet.querySelector(".sheet-coords-text").textContent =
-            p.latitude.toFixed(4) + "° N · " + p.longitude.toFixed(4) + "° E";
         sheet.querySelector(".sheet-type-text").textContent = p.ville ?? "";
         sheet.querySelector(".sheet-river-name").textContent =
             a?.nom || p.cours_d_eau || "Cours d'eau inconnu";
@@ -413,11 +407,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function populateCapteurSheet(c) {
-        sheet.querySelector(".sheet-coords-text").textContent =
-            parseFloat(c.lat).toFixed(4) +
-            "° N · " +
-            parseFloat(c.long).toFixed(4) +
-            "° E";
         sheet.querySelector(".sheet-type-text").textContent =
             "Station Automatique";
 
@@ -526,7 +515,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 <div style="font-weight:700;color:#b45309;margin-bottom:4px;">⚠ Signalement</div>
                 <div style="font-size:11px;color:#64748b;">Par ${c.user || 'inconnu'}</div>
                 <div style="font-size:11px;color:#94a3b8;">${c.date || ''}</div>
-                <div style="font-size:10px;font-family:monospace;color:#94a3b8;margin-top:4px;">${c.lat.toFixed(5)}, ${c.lng.toFixed(5)}</div>
                 <div style="font-size:11px;font-weight:bold;color:#b45309;margin-top:2px;">${c.type }</div>
                 ${(c.images && c.images.length) ? `<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;">${c.images.map(img => `<div style="cursor:zoom-in;width:${c.images.length > 1 ? 'calc(50% - 2px)' : '100%'};" onclick="window.openLightbox('${img}')"><img src="${img}" style="width:100%;height:80px;object-fit:cover;border-radius:6px;border:1px solid #e2e8f0; pointer-events:none;"></div>`).join('')}</div>` : (c.image ? `<div style="margin-top:6px; cursor:zoom-in;" onclick="window.openLightbox('${c.image}')"><img src="${c.image}" style="width:100%;height:80px;object-fit:cover;border-radius:6px;border:1px solid #e2e8f0; pointer-events:none;"></div>` : '')}
                 ${deleteBtn}
@@ -844,7 +832,7 @@ document.addEventListener("DOMContentLoaded", () => {
         coulee_pendingLatLng = e.latlng;
         if (coulee_tempMarker) coulee_tempMarker.remove();
         coulee_tempMarker = L.marker(e.latlng, { icon: couleeIcon }).addTo(map);
-        if (couleeCoords) couleeCoords.textContent = `${e.latlng.lat.toFixed(5)}, ${e.latlng.lng.toFixed(5)}`;
+        if (couleeCoords) couleeCoords.textContent = "Position définie sur la carte";
         couleeConfirmBar?.classList.remove("hidden");
     });
     // ─────────────────────────────────────────────────────────────────────────

@@ -207,10 +207,6 @@
                                 @if ($a['latitude'])
                                     <div class="w-full h-[130px] md:h-[150px] rounded-xl overflow-hidden bg-slate-200 mb-3 relative [&_.leaflet-container]:outline-none [&_.leaflet-control-attribution]:hidden [&_.leaflet-control-zoom]:hidden">
                                         <div id="map-{{ $a['id'] }}" class="w-full h-full"></div>
-                                        <div class="absolute bottom-2 left-2 bg-white/90 rounded-lg py-1 px-2 z-[500] pointer-events-none font-mono text-[9px] text-slate-700 leading-[1.4]">
-                                            {{ number_format($a['latitude'], 4) }}°<br>N ·
-                                            {{ number_format($a['longitude'], 4) }}°<br>E
-                                        </div>
                                     </div>
                                 @endif
 

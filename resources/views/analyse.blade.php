@@ -108,10 +108,10 @@
                                     <div class="w-2 h-2 rounded-full bg-[#222a60] shrink-0" aria-hidden="true"></div>
                                     <div class="flex-1 min-w-0">
                                         <p class="font-mono text-[10px] text-slate-400 uppercase tracking-wide mb-0.5">
-                                            Coordonnées</p>
+                                            Position</p>
                                         <p class="font-mono text-[11px] text-slate-700 font-medium truncate"
                                             id="coords-display">
-                                            {{ $lat ? number_format($lat, 4) . '° N · ' . number_format($lng, 4) . '° E' : 'Non défini' }}
+                                            {{ $lat ? 'Définie sur la carte' : 'Non définie' }}
                                         </p>
                                     </div>
                                     <span

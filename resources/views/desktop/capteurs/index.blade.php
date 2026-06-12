@@ -56,9 +56,6 @@
                     {{ $capteur->coursDEau->nom }}
                 </p>
                 @endif
-                <p class="font-mono text-[10px] text-slate-400">
-                    {{ number_format($capteur->lat, 5) }}, {{ number_format($capteur->long, 5) }}
-                </p>
                 <div class="mt-2">
                     @if ($derniere)
                         <span class="inline-flex items-center gap-1 text-[10px] text-slate-400">

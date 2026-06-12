@@ -210,7 +210,6 @@
             <div class="p-4 px-5">
                 <div class="flex items-start justify-between mb-1">
                     <div>
-                        <div class="sheet-coords-text font-mono text-[10px] text-slate-400 tracking-wide">—</div>
                         <div class="sheet-type-text text-[10px] text-slate-400">—</div>
                     </div>
                     <button id="sheet-close-btn" class="w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 active:bg-slate-200 transition-colors shrink-0 mt-0.5">
@@ -233,9 +232,6 @@
                 </div>
                 <div class="create-card-info">
                     <div class="create-card-river" id="cc-river">Cours d'eau</div>
-                    <div class="create-card-coords">
-                        <span id="cc-lat">—</span> · <span id="cc-lng">—</span>
-                    </div>
                 </div>
             </div>
             <div class="create-card-actions">

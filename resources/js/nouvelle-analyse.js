@@ -27,8 +27,7 @@ document.addEventListener("DOMContentLoaded", () => {
         lng = newLng;
         document.getElementById("f-lat").value = lat.toFixed(6);
         document.getElementById("f-lng").value = lng.toFixed(6);
-        document.getElementById("coords-display").textContent =
-            lat.toFixed(4) + "° N · " + lng.toFixed(4) + "° E";
+        document.getElementById("coords-display").textContent = "Définie sur la carte";
     }
 
     marker.on("dragend", (e) => {

@@ -86,7 +86,6 @@ function renderTable(groupe) {
         <tr class="hover:bg-slate-50 border-b border-slate-100">
             <td class="py-3 sm:py-4 pl-4 pr-4">
                 <div class="text-sm font-bold text-[#222a60]">${pt.ville}</div>
-                <div class="font-mono text-xs text-slate-500 mt-1">GPS: ${pt.latitude.toFixed(3)}, ${pt.longitude.toFixed(3)}</div>
             </td>
             <td class="py-3 sm:py-4 pr-4"><span class="text-[11px] font-bold text-slate-600 bg-slate-100 px-2 py-1 rounded-md whitespace-nowrap">${typeLabel(a.type)}</span></td>
             <td class="py-3 sm:py-4 pr-4">${qualiteBadgeHtml(a.qualite)}</td>

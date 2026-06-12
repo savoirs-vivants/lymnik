@@ -9,9 +9,7 @@ let overlayMap = null;
 let overlayMarker = null;
 
 function pointLabel(pt) {
-    return pt.ville
-        ? pt.ville
-        : `GPS (${parseFloat(pt.latitude).toFixed(3)}, ${parseFloat(pt.longitude).toFixed(3)})`;
+    return pt.ville || "Point GPS";
 }
 
 window.selectCoursDEau = function (id) {
@@ -146,13 +144,11 @@ function renderTable(cd) {
 
             const a = analyses[0];
             const ptLabel = pt.ville || pt.nom || "Point inconnu";
-            const coordLabel = `${parseFloat(pt.latitude).toFixed(5)}, ${parseFloat(pt.longitude).toFixed(5)}`;
 
             return `
         <tr class="hover:bg-slate-50 transition-colors group border-b border-slate-100">
             <td class="py-4 pl-4 pr-4 align-top">
                 <div class="text-sm font-bold text-[#222a60] truncate max-w-[180px]">${ptLabel}</div>
-                <div class="font-mono text-[10px] text-slate-400 mt-0.5">${coordLabel}</div>
                 <div class="font-mono text-xs text-slate-500 mt-2">${a.date || "—"} <span class="text-[10px] text-slate-400">${a.time || ""}</span></div>
             </td>
             <td class="py-4 pr-4 align-top">
@@ -203,7 +199,7 @@ function ouvrirOverlayHistorique(pointId) {
     const ptLabel = pt.ville || pt.nom || "Point inconnu";
     document.getElementById("overlay-title").textContent = ptLabel;
     document.getElementById("overlay-subtitle").textContent =
-        `Coordonnées : ${parseFloat(pt.latitude).toFixed(5)}, ${parseFloat(pt.longitude).toFixed(5)} · Historique (${pt.analyses.length})`;
+        `Historique (${pt.analyses.length})`;
 
     document.getElementById("point-overlay").classList.remove("hidden");
     document.body.style.overflow = "hidden";

@@ -68,8 +68,7 @@
 
             <div
                 class="p-4 md:p-6 overflow-y-auto flex-1 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-                <div class="flex justify-between items-start mb-3 md:mb-4">
-                    <span class="sheet-coords-text font-mono text-[10px] text-slate-400 tracking-widest uppercase"></span>
+                <div class="flex justify-end items-start mb-3 md:mb-4">
                     <button id="sheet-close-btn"
                         class="text-slate-300 hover:text-slate-600 transition-colors cursor-pointer outline-none">
                         <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="3"
@@ -108,8 +107,6 @@
                         </div>
                     </div>
                 </div>
-
-                <span id="cc-lat" class="hidden"></span><span id="cc-lng" class="hidden"></span>
 
                 <div class="flex gap-3">
                     <button id="cc-cancel"

@@ -58,10 +58,6 @@
             </div>
             @endif
             <div>
-                <p class="text-[9px] font-mono font-bold uppercase tracking-widest text-slate-400 mb-1">Coordonnées</p>
-                <p class="font-mono text-xs sm:text-sm text-slate-600">{{ $capteur->lat }}, {{ $capteur->long }}</p>
-            </div>
-            <div>
                 <p class="text-[9px] font-mono font-bold uppercase tracking-widest text-slate-400 mb-1">Mesures</p>
                 <p class="text-sm font-semibold text-slate-800">{{ $mesures->count() }}</p>
             </div>
