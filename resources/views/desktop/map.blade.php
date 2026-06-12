@@ -29,6 +29,16 @@
                     </div>
                 @endforeach
             </div>
+
+            @auth
+            <button id="btn-declare-coulee-desk" type="button"
+                class="w-full flex items-center gap-2 px-4 py-2.5 bg-amber-50 hover:bg-amber-100 border border-amber-300 rounded-xl md:rounded-2xl shadow-lg text-amber-700 text-sm font-semibold transition-colors cursor-pointer outline-none pointer-events-auto">
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" class="shrink-0">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+                </svg>
+                Signalement d'un problème ou d'une amélioration d'un cours d'eau
+            </button>
+            @endauth
         </div>
 
         <div id="bottom-sheet"
@@ -92,19 +102,7 @@
                     </div>
                 </div>
 
-                <div class="bg-slate-50 border border-slate-100 rounded-xl p-3 flex justify-around text-center">
-                    <div>
-                        <div class="text-[10px] font-bold text-slate-400 font-mono uppercase tracking-widest mb-1">Latitude
-                        </div>
-                        <div id="cc-lat" class="text-[15px] font-bold text-sv-blue font-mono">0.0000°</div>
-                    </div>
-                    <div class="w-px bg-slate-200"></div>
-                    <div>
-                        <div class="text-[10px] font-bold text-slate-400 font-mono uppercase tracking-widest mb-1">Longitude
-                        </div>
-                        <div id="cc-lng" class="text-[15px] font-bold text-sv-blue font-mono">0.0000°</div>
-                    </div>
-                </div>
+                <span id="cc-lat" class="hidden"></span><span id="cc-lng" class="hidden"></span>
 
                 <div class="flex gap-3">
                     <button id="cc-cancel"
@@ -131,16 +129,6 @@
                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 2v3m0 14v3M2 12h3m14 0h3" />
             </svg>
         </button>
-
-        @auth
-        <button id="btn-declare-coulee-desk"
-            class="absolute right-4 md:right-[76px] bottom-4 md:bottom-6 z-[1001] flex items-center gap-2 px-4 py-2.5 bg-amber-50 hover:bg-amber-100 border border-amber-300 rounded-xl md:rounded-2xl shadow-xl text-amber-700 text-sm font-semibold transition-colors cursor-pointer outline-none">
-            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
-            </svg>
-            Signalement d'un problème
-        </button>
-        @endauth
 
         {{-- Modale détails coulée de boue --}}
         @auth

@@ -109,17 +109,7 @@
                     </div>
                 </div>
 
-                <div class="bg-slate-50 border border-slate-100 rounded-xl p-3 flex justify-around text-center">
-                    <div>
-                        <div class="text-[10px] font-bold text-slate-400 font-mono uppercase tracking-widest mb-1">Latitude</div>
-                        <div id="cc-lat" class="text-[15px] font-bold text-sv-blue font-mono">0.0000°</div>
-                    </div>
-                    <div class="w-px bg-slate-200"></div>
-                    <div>
-                        <div class="text-[10px] font-bold text-slate-400 font-mono uppercase tracking-widest mb-1">Longitude</div>
-                        <div id="cc-lng" class="text-[15px] font-bold text-sv-blue font-mono">0.0000°</div>
-                    </div>
-                </div>
+                <span id="cc-lat" class="hidden"></span><span id="cc-lng" class="hidden"></span>
 
                 <div class="flex gap-3">
                     <button id="cc-cancel"
