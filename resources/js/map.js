@@ -760,6 +760,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const searchInput = document.getElementById("search-input");
     const searchResults = document.getElementById("search-results");
     let searchTimeout = null;
+    let searchCitiesData = [];
 
     if (searchInput && searchResults) {
         searchInput.addEventListener("input", (e) => {
@@ -774,8 +775,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 try {
                     const isPostalCode = /^\d+$/.test(query);
                     const url = isPostalCode
-                        ? `https://geo.api.gouv.fr/communes?codePostal=${query}&fields=nom,code,codesPostaux,centre&limit=5`
-                        : `https://geo.api.gouv.fr/communes?nom=${query}&fields=nom,code,codesPostaux,centre&boost=population&limit=5`;
+                        ? `https://geo.api.gouv.fr/communes?codePostal=${query}&fields=nom,code,codesPostaux,centre,contour&limit=5`
+                        : `https://geo.api.gouv.fr/communes?nom=${query}&fields=nom,code,codesPostaux,centre,contour&boost=population&limit=5`;
                     const response = await fetch(url);
                     const data = await response.json();
                     if (data.length === 0) {
@@ -784,12 +785,13 @@ document.addEventListener("DOMContentLoaded", () => {
                         searchResults.classList.remove("hidden");
                         return;
                     }
+                    searchCitiesData = data;
                     searchResults.innerHTML = data
-                        .map((city) => {
+                        .map((city, i) => {
                             const coords = city.centre
                                 ? city.centre.coordinates
                                 : null;
-                            return `<div class="search-item flex items-center gap-3 p-3 hover:bg-blue-50 border-b border-slate-50 cursor-pointer transition-colors" data-lat="${coords ? coords[1] : null}" data-lng="${coords ? coords[0] : null}">
+                            return `<div class="search-item flex items-center gap-3 p-3 hover:bg-blue-50 border-b border-slate-50 cursor-pointer transition-colors" data-index="${i}" data-lat="${coords ? coords[1] : null}" data-lng="${coords ? coords[0] : null}">
                                     <div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 shrink-0 pointer-events-none"><svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21s-8-4.5-8-11.8A8 8 0 0112 1.2a8 8 0 018 8c0 7.3-8 11.8-8 11.8z"/><circle cx="12" cy="9.2" r="2.5"/></svg></div>
                                     <div class="flex-1 min-w-0 pointer-events-none"><div class="text-[13px] font-bold text-slate-800 truncate">${city.nom}</div><div class="text-[10px] text-slate-400 font-mono mt-0.5">${city.codesPostaux[0]}</div></div>
                                 </div>`;
@@ -807,8 +809,15 @@ document.addEventListener("DOMContentLoaded", () => {
             if (!item) return;
             const lat = parseFloat(item.dataset.lat);
             const lng = parseFloat(item.dataset.lng);
-            if (!isNaN(lat) && !isNaN(lng))
+            const city = searchCitiesData[item.dataset.index];
+
+            if (city?.contour) {
+                const bounds = L.geoJSON(city.contour).getBounds();
+                map.flyToBounds(bounds, { animate: true, duration: 1.5, padding: [20, 20] });
+            } else if (!isNaN(lat) && !isNaN(lng)) {
                 map.flyTo([lat, lng], 14, { animate: true, duration: 1.5 });
+            }
+
             setTimeout(() => {
                 searchInput.value = "";
                 searchInput.blur();
