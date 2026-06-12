@@ -595,8 +595,46 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // -- Modale de détails Coulée --
     const couleeDetailsModal = document.getElementById("coulee-details-modal");
+    const couleeCategorieSelect = document.getElementById("coulee-categorie");
     const couleeTypeSelect = document.getElementById("coulee-type");
     const couleeTypeAutre = document.getElementById("coulee-type-autre");
+
+    // Types disponibles selon la catégorie sélectionnée (Problème / Amélioration)
+    const couleeTypesParCategorie = {
+        probleme: [
+            "Pollution",
+            "Déchets sauvages",
+            "Assèchement",
+            "Inondation / Débordement",
+            "Coulée de boue",
+            "Autre",
+        ],
+        amelioration: [
+            "Nettoyage effectué",
+            "Aménagement / Renaturation",
+            "Plantation de végétation",
+            "Création d'un point d'accès",
+            "Autre",
+        ],
+    };
+
+    function remplirCouleeTypeSelect() {
+        const categorie = couleeCategorieSelect?.value || "probleme";
+        const types = couleeTypesParCategorie[categorie] ?? [];
+
+        couleeTypeSelect.innerHTML = '<option value="">Sélectionnez un type...</option>';
+        types.forEach((type) => {
+            const option = document.createElement("option");
+            option.value = type;
+            option.textContent = type === "Autre" ? "Autre (préciser)" : type;
+            couleeTypeSelect.appendChild(option);
+        });
+
+        couleeTypeAutre.classList.add("hidden");
+        couleeTypeAutre.value = "";
+    }
+
+    couleeCategorieSelect?.addEventListener("change", remplirCouleeTypeSelect);
 
     // 0. Afficher le champ texte si "Autre" est sélectionné
     couleeTypeSelect?.addEventListener("change", function () {
@@ -673,6 +711,8 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById("coulee-date").value = new Date().toISOString().split('T')[0];
 
         // Réinitialiser les champs
+        couleeCategorieSelect.value = "probleme";
+        remplirCouleeTypeSelect();
         couleeTypeSelect.value = "";
         couleeTypeAutre.value = "";
         couleeTypeAutre.classList.add("hidden");

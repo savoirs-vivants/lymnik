@@ -60,6 +60,7 @@ class MobileController extends Controller
                 'user_id' => $c->user_id,
                 'type'    => $c->type,
                 'image'   => $c->image ? asset('storage/' . $c->image) : null,
+                'images'  => collect($c->images ?? [])->map(fn($img) => asset('storage/' . $img))->values(),
                 'date'    => $c->date
                              ? \Carbon\Carbon::parse($c->date)->translatedFormat('d M Y')
                              : $c->created_at?->translatedFormat('d M Y'),

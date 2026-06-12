@@ -142,17 +142,18 @@
                 </div>
                 <div class="p-5 space-y-4">
                     <div>
-                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Type de problème</label>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Nature du signalement</label>
+                        <select id="coulee-categorie" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-700 outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 transition-all">
+                            <option value="probleme">Problème</option>
+                            <option value="amelioration">Amélioration</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Type</label>
                         <select id="coulee-type" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-700 outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 transition-all">
                             <option value="">Sélectionnez un type...</option>
-                            <option value="Pollution">Pollution</option>
-                            <option value="Déchets sauvages">Déchets sauvages</option>
-                            <option value="Assèchement">Assèchement</option>
-                            <option value="Inondation / Débordement">Inondation / Débordement</option>
-                            <option value="Coulée de boue">Coulée de boue</option>
-                            <option value="Autre">Autre (préciser)</option>
                         </select>
-                        <input type="text" id="coulee-type-autre" placeholder="Précisez la nature du problème..."
+                        <input type="text" id="coulee-type-autre" placeholder="Précisez la nature du signalement..."
                             class="hidden mt-3 w-full bg-white border border-amber-200 rounded-xl px-3 py-2.5 text-sm text-slate-700 outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 transition-all shadow-sm">
                     </div>
                     <div>
