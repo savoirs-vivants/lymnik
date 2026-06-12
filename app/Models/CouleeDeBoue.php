@@ -7,8 +7,8 @@ use Illuminate\Database\Eloquent\Model;
 class CouleeDeBoue extends Model
 {
     protected $table = 'coulees_de_boue';
-    protected $fillable = ['lat', 'lng', 'type', 'date', 'image', 'user_id'];
-    protected $casts = ['date' => 'date'];
+    protected $fillable = ['lat', 'lng', 'type', 'date', 'image', 'images', 'user_id'];
+    protected $casts = ['date' => 'date', 'images' => 'array'];
 
 
     public function user()

@@ -529,7 +529,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 <div style="font-size:11px;color:#94a3b8;">${c.date || ''}</div>
                 <div style="font-size:10px;font-family:monospace;color:#94a3b8;margin-top:4px;">${c.lat.toFixed(5)}, ${c.lng.toFixed(5)}</div>
                 <div style="font-size:11px;font-weight:bold;color:#b45309;margin-top:2px;">${c.type }</div>
-                ${c.image ? `<div style="margin-top:6px; cursor:zoom-in;" onclick="window.openLightbox('${c.image}')"><img src="${c.image}" style="width:100%;height:80px;object-fit:cover;border-radius:6px;border:1px solid #e2e8f0; pointer-events:none;"></div>` : ''}
+                ${(c.images && c.images.length) ? `<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;">${c.images.map(img => `<div style="cursor:zoom-in;width:${c.images.length > 1 ? 'calc(50% - 2px)' : '100%'};" onclick="window.openLightbox('${img}')"><img src="${img}" style="width:100%;height:80px;object-fit:cover;border-radius:6px;border:1px solid #e2e8f0; pointer-events:none;"></div>`).join('')}</div>` : (c.image ? `<div style="margin-top:6px; cursor:zoom-in;" onclick="window.openLightbox('${c.image}')"><img src="${c.image}" style="width:100%;height:80px;object-fit:cover;border-radius:6px;border:1px solid #e2e8f0; pointer-events:none;"></div>` : '')}
                 ${deleteBtn}
             </div>
         `);
@@ -609,6 +609,62 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
+    // Aperçu des photos sélectionnées (cumulatif : choisir des fichiers plusieurs fois en ajoute, ne remplace pas)
+    const couleeImagePreview = document.getElementById("coulee-image-preview");
+    let couleeSelectedImages = [];
+
+    function renderCouleeImagePreview() {
+        couleeImagePreview.innerHTML = "";
+        couleeImagePreview.classList.toggle("hidden", couleeSelectedImages.length === 0);
+        couleeSelectedImages.forEach((file, index) => {
+            const wrapper = document.createElement("div");
+            wrapper.style.position = "relative";
+            wrapper.style.width = "64px";
+            wrapper.style.height = "64px";
+
+            const url = URL.createObjectURL(file);
+            const img = document.createElement("img");
+            img.src = url;
+            img.onload = () => URL.revokeObjectURL(url);
+            img.style.width = "100%";
+            img.style.height = "100%";
+            img.style.objectFit = "cover";
+            img.style.borderRadius = "8px";
+            img.style.border = "1px solid #e2e8f0";
+            wrapper.appendChild(img);
+
+            const removeBtn = document.createElement("button");
+            removeBtn.type = "button";
+            removeBtn.textContent = "×";
+            removeBtn.style.position = "absolute";
+            removeBtn.style.top = "-6px";
+            removeBtn.style.right = "-6px";
+            removeBtn.style.width = "18px";
+            removeBtn.style.height = "18px";
+            removeBtn.style.lineHeight = "16px";
+            removeBtn.style.borderRadius = "50%";
+            removeBtn.style.border = "1px solid #fca5a5";
+            removeBtn.style.background = "#fee2e2";
+            removeBtn.style.color = "#b91c1c";
+            removeBtn.style.fontSize = "12px";
+            removeBtn.style.fontWeight = "700";
+            removeBtn.style.cursor = "pointer";
+            removeBtn.addEventListener("click", () => {
+                couleeSelectedImages.splice(index, 1);
+                renderCouleeImagePreview();
+            });
+            wrapper.appendChild(removeBtn);
+
+            couleeImagePreview.appendChild(wrapper);
+        });
+    }
+
+    document.getElementById("coulee-image")?.addEventListener("change", function () {
+        couleeSelectedImages.push(...Array.from(this.files ?? []));
+        this.value = ""; // permet de re-sélectionner sans remplacer les fichiers déjà choisis
+        renderCouleeImagePreview();
+    });
+
     // 1. Clic sur "Valider" la position -> Ouvre la modale de détails
     document.getElementById("coulee-confirm-save")?.addEventListener("click", () => {
         if (!coulee_pendingLatLng) return;
@@ -621,6 +677,8 @@ document.addEventListener("DOMContentLoaded", () => {
         couleeTypeAutre.value = "";
         couleeTypeAutre.classList.add("hidden");
         document.getElementById("coulee-image").value = "";
+        couleeSelectedImages = [];
+        renderCouleeImagePreview();
 
         couleeDetailsModal.classList.remove("hidden");
     });
@@ -685,17 +743,16 @@ document.addEventListener("DOMContentLoaded", () => {
         const dateVal = document.getElementById("coulee-date").value;
         if (dateVal) formData.append("date", dateVal);
 
-        // Traitement de l'image
-        const imageInput = document.getElementById("coulee-image");
-        if (imageInput.files && imageInput.files[0]) {
+        // Traitement des images
+        for (const file of couleeSelectedImages) {
             try {
                 // Compresse l'image avant l'envoi (max 1000px de large)
-                const compressedFile = await compressImage(imageInput.files[0], 1000);
-                formData.append("image", compressedFile);
+                const compressedFile = await compressImage(file, 1000);
+                formData.append("images[]", compressedFile);
             } catch (err) {
                 console.error("Erreur de compression :", err);
                 // Si la compression échoue, on envoie le fichier original
-                formData.append("image", imageInput.files[0]);
+                formData.append("images[]", file);
             }
         }
 
@@ -722,10 +779,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
             if (coulee_tempMarker) { coulee_tempMarker.remove(); coulee_tempMarker = null; }
 
-            addCouleeMarker(data);
+            const newMarker = addCouleeMarker(data);
+
+            couleeSelectedImages = [];
+            renderCouleeImagePreview();
 
             closeCouleeDetails();
             exitCouleeMode();
+
+            if (data.images && data.images.length) {
+                newMarker.openPopup();
+            }
         } catch (error) {
             console.error(error);
             alert("Erreur lors de l'enregistrement. Vérifiez que la photo n'est pas trop lourde.");

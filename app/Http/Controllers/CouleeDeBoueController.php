@@ -21,6 +21,7 @@ class CouleeDeBoueController extends Controller
                     'user_id' => $c->user_id,
                     'type'    => $c->type,
                     'image'   => $c->image ? asset('storage/' . $c->image) : null,
+                    'images'  => collect($c->images ?? [])->map(fn($img) => asset('storage/' . $img))->values(),
                     'date'    => $c->date
                                  ? \Carbon\Carbon::parse($c->date)->translatedFormat('d M Y')
                                  : $c->created_at?->translatedFormat('d M Y'),
@@ -31,16 +32,19 @@ class CouleeDeBoueController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'lat'   => 'required|numeric|between:-90,90',
-            'lng'   => 'required|numeric|between:-180,180',
-            'type'  => 'nullable|string|max:255',
-            'date'  => 'nullable|date',
-            'image' => 'nullable|image|max:15360',
+            'lat'     => 'required|numeric|between:-90,90',
+            'lng'     => 'required|numeric|between:-180,180',
+            'type'    => 'nullable|string|max:255',
+            'date'    => 'nullable|date',
+            'images'  => 'nullable|array',
+            'images.*' => 'image|max:15360',
         ]);
 
-        $imagePath = null;
-        if ($request->hasFile('image')) {
-            $imagePath = $request->file('image')->store('coulees', 'public');
+        $imagePaths = [];
+        if ($request->hasFile('images')) {
+            foreach ($request->file('images') as $file) {
+                $imagePaths[] = $file->store('coulees', 'public');
+            }
         }
 
         $coulée = CouleeDeBoue::create([
@@ -49,7 +53,8 @@ class CouleeDeBoueController extends Controller
             'user_id' => Auth::id(),
             'type'    => $data['type'] ?? null,
             'date'    => $data['date'] ?? null,
-            'image'   => $imagePath,
+            'image'   => $imagePaths[0] ?? null,
+            'images'  => $imagePaths,
         ]);
 
         return response()->json([
@@ -61,6 +66,7 @@ class CouleeDeBoueController extends Controller
             'type'    => $coulée->type,
             'date'    => $coulée->date ? \Carbon\Carbon::parse($coulée->date)->translatedFormat('d M Y') : $coulée->created_at->translatedFormat('d M Y'),
             'image'   => $coulée->image ? asset('storage/' . $coulée->image) : null,
+            'images'  => collect($coulée->images ?? [])->map(fn($img) => asset('storage/' . $img))->values(),
         ], 201);
     }
 

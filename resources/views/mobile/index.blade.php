@@ -405,8 +405,10 @@
                     </div>
 
                     <div>
-                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Photo (Optionnelle)</label>
-                        <input type="file" id="coulee-image" accept="image/*" class="w-full text-sm text-slate-500 file:mr-3 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-amber-50 file:text-amber-700 hover:file:bg-amber-100 transition-colors cursor-pointer">
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Photos (Optionnelles)</label>
+                        <input type="file" id="coulee-image" accept="image/*" multiple class="w-full text-sm text-slate-500 file:mr-3 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-amber-50 file:text-amber-700 hover:file:bg-amber-100 transition-colors cursor-pointer">
+                        <p class="text-[11px] text-slate-400 mt-1.5">Vous pouvez ajouter plusieurs photos.</p>
+                        <div id="coulee-image-preview" class="hidden mt-2 flex flex-wrap gap-2"></div>
                     </div>
                 </div>
 
