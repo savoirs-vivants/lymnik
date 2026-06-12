@@ -13,7 +13,7 @@
 
             <div
                 class="bg-white/95 backdrop-blur shadow-lg rounded-2xl p-2 flex items-center border border-slate-100 pointer-events-auto relative">
-                <input type="text" id="search-input" placeholder="Rechercher un lieu..."
+                <input type="text" id="search-input" placeholder="Rechercher un lieu ou un code postal..."
                     class="flex-1 px-3 md:px-4 bg-transparent outline-none text-sm font-bold text-slate-800 placeholder-slate-400">
                 <div id="search-results"
                     class="absolute top-full left-0 right-0 bg-white mt-2 rounded-xl shadow-xl hidden overflow-hidden border border-slate-100">
