@@ -198,9 +198,15 @@ class CampagneController extends Controller
 
                     $qualiteCounts = $analyses->countBy('qualite')->toArray();
 
+                    $label = 'Groupe ' . chr(64 + $idGroupe);
+                    if ($idGroupe == 0) {
+                        $noms = $items->pluck('saisi_par')->unique();
+                        $label = $noms->count() === 1 ? $noms->first() : 'Individuel';
+                    }
+
                     return [
                         'id_groupe'       => $idGroupe,
-                        'label'           => $idGroupe > 0 ? 'Groupe ' . chr(64 + $idGroupe) : 'Individuel',
+                        'label'           => $label,
                         'total_analyses'  => $analyses->count(),
                         'total_points'    => $points->count(),
                         'qualite_counts'  => $qualiteCounts,
