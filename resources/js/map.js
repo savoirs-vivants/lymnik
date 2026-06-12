@@ -89,9 +89,8 @@ document.addEventListener("DOMContentLoaded", () => {
     document.head.appendChild(style);
 
     let userMarker = null;
-    const btnLocate = document.getElementById("btn-locate");
 
-    if (btnLocate) {
+    document.querySelectorAll(".btn-locate").forEach((btnLocate) => {
         btnLocate.addEventListener("click", function () {
             if (!navigator.geolocation) {
                 alert("Votre navigateur ne supporte pas la géolocalisation.");
@@ -133,7 +132,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 },
             );
         });
-    }
+    });
 
     // 4. Modales (Bottom Sheet & Create Card)
     const sheet = document.getElementById("bottom-sheet");

@@ -122,8 +122,7 @@
             </div>
         </div>
 
-        <button id="btn-locate"
-            class="absolute left-4 md:left-6 bottom-4 md:bottom-6 z-[1001] w-10 h-10 md:w-12 md:h-12 bg-white rounded-xl md:rounded-2xl shadow-xl flex items-center justify-center text-sv-blue hover:bg-slate-50 transition-all outline-none cursor-pointer border border-slate-100">
+        <button id="btn-locate" class="btn-locate absolute left-4 md:left-6 bottom-4 md:bottom-6 z-[1001] w-10 h-10 md:w-12 md:h-12 bg-white rounded-xl md:rounded-2xl shadow-xl flex items-center justify-center text-sv-blue hover:bg-slate-50 transition-all outline-none cursor-pointer border border-slate-100">
             <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                 <circle cx="12" cy="12" r="3" />
                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 2v3m0 14v3M2 12h3m14 0h3" />
