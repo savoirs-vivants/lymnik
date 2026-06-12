@@ -86,6 +86,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/campagnes',                      [CampagneController::class, 'index'])->name('campagnes.index');
     Route::get('/campagnes/resultats', [CampagneController::class, 'resultats'])->name('campagnes.resultats');
     Route::post('/campagne',                      [CampagneController::class, 'store'])->name('campagne.store');
+    Route::post('/campagne/active',               [CampagneController::class, 'setActive'])->name('campagne.setActive');
     Route::put('/campagnes/{campagne}',           [CampagneController::class, 'update'])->name('campagne.update');
     Route::get('/campagnes/{campagne}/participants', [CampagneController::class, 'participants'])->name('campagne.participants');
     Route::put('/campagnes/{campagne}/terminer', [CampagneController::class, 'terminer'])->name('campagnes.terminer');

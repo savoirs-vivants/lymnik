@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Analyse;
 use App\Models\Campagne;
 use App\Models\SessionParticipant;
 use Illuminate\Http\Request;
@@ -97,6 +98,24 @@ class CampagneController extends Controller
         return response()->json($participants);
     }
 
+    public function setActive(Request $request)
+    {
+        $request->validate([
+            'campagne_id' => 'nullable|exists:campagnes,id',
+        ]);
+
+        $campagneId = $request->input('campagne_id');
+
+        if ($campagneId) {
+            $campagne = Campagne::findOrFail($campagneId);
+            abort_unless($campagne->id_gestionnaire === Auth::id(), 403);
+        }
+
+        \App\Models\User::find(Auth::id())->update(['active_campagne_id' => $campagneId]);
+
+        return response()->json(['ok' => true]);
+    }
+
     public function destroy(Campagne $campagne)
     {
         abort_unless($campagne->id_gestionnaire === Auth::id(), 403);
@@ -121,12 +140,34 @@ class CampagneController extends Controller
 
         $campagnes = $query->get()
             ->map(function ($campagne) {
-                $groupes = $campagne->participants->groupBy('id_groupe')->map(function ($participants, $idGroupe) {
-                    $analyses = $participants->flatMap->analyses;
+                // Analyses des participants, regroupées par groupe de terrain
+                $entries = $campagne->participants->flatMap(function ($participant) {
+                    return $participant->analyses->map(fn($a) => [
+                        'analyse'   => $a,
+                        'id_groupe' => $participant->id_groupe,
+                        'saisi_par' => trim(($participant->prenom ?? '') . ' ' . ($participant->nom ?? '')) ?: ($participant->pseudo ?? 'Inconnu'),
+                    ]);
+                });
+
+                // Analyses saisies directement par le gestionnaire (liées via session_id, sans participant)
+                $analysesGestionnaire = Analyse::with(['point.coursDEau', 'user'])
+                    ->where('session_id', $campagne->id)
+                    ->whereNull('participant_id')
+                    ->get();
+
+                $entries = $entries->concat($analysesGestionnaire->map(fn($a) => [
+                    'analyse'   => $a,
+                    'id_groupe' => 0,
+                    'saisi_par' => trim(($a->user?->firstname ?? '') . ' ' . ($a->user?->name ?? '')) ?: 'Gestionnaire',
+                ]));
+
+                $groupes = $entries->groupBy('id_groupe')->map(function ($items, $idGroupe) {
+                    $analyses    = $items->pluck('analyse');
+                    $saisiParMap = $items->mapWithKeys(fn($item) => [$item['analyse']->id => $item['saisi_par']]);
 
                     $points = collect();
                     if ($analyses->isNotEmpty()) {
-                        $points = $analyses->groupBy('point_id')->map(function ($analysesPoint) use ($participants) {
+                        $points = $analyses->groupBy('point_id')->map(function ($analysesPoint) use ($saisiParMap) {
                             $pt = $analysesPoint->first()->point;
 
                             return [
@@ -134,12 +175,8 @@ class CampagneController extends Controller
                                 'latitude'  => (float) $pt->latitude,
                                 'longitude' => (float) $pt->longitude,
                                 'ville'     => $pt->ville ?? 'Point GPS',
-                                'analyses'  => $analysesPoint->sortByDesc('created_at')->map(function ($a) use ($participants) {
-                                    $participant = $participants->firstWhere('id', $a->participant_id);
+                                'analyses'  => $analysesPoint->sortByDesc('created_at')->map(function ($a) use ($saisiParMap) {
                                     $mesures = is_string($a->mesures) ? json_decode($a->mesures, true) : ($a->mesures ?? []);
-
-                                    $saisiPar = trim(($participant->prenom ?? '') . ' ' . ($participant->nom ?? ''));
-                                    if (empty($saisiPar)) $saisiPar = $participant->pseudo ?? 'Inconnu';
 
                                     return [
                                         'id'         => $a->id,
@@ -152,7 +189,7 @@ class CampagneController extends Controller
                                         'note'       => $mesures['note'] ?? null,
                                         'bandelette' => $mesures['bandelette'] ?? null,
                                         'photometre' => $mesures['photometre'] ?? null,
-                                        'saisi_par'  => $saisiPar,
+                                        'saisi_par'  => $saisiParMap[$a->id] ?? 'Inconnu',
                                     ];
                                 })->values(),
                             ];

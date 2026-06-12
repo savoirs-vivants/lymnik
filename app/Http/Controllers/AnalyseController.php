@@ -91,24 +91,24 @@ class AnalyseController extends Controller
 
         $coursDEaux = CoursDEau::whereHas('points.analyses', function ($q) use ($mode) {
             if ($mode === 'campagnes') {
-                $q->whereNotNull('session_id')->whereNotNull('participant_id');
+                $q->whereNotNull('session_id');
             } else {
-                $q->whereNull('session_id')->whereNull('participant_id');
+                $q->whereNull('session_id');
             }
         })
             ->with(['points' => function ($q) use ($mode) {
                 $q->whereHas('analyses', function ($q2) use ($mode) {
                     if ($mode === 'campagnes') {
-                        $q2->whereNotNull('session_id')->whereNotNull('participant_id');
+                        $q2->whereNotNull('session_id');
                     } else {
-                        $q2->whereNull('session_id')->whereNull('participant_id');
+                        $q2->whereNull('session_id');
                     }
                 })
                     ->with(['analyses' => function ($q3) use ($mode) {
                         if ($mode === 'campagnes') {
-                            $q3->whereNotNull('session_id')->whereNotNull('participant_id');
+                            $q3->whereNotNull('session_id');
                         } else {
-                            $q3->whereNull('session_id')->whereNull('participant_id');
+                            $q3->whereNull('session_id');
                         }
                         $q3->latest()->with('user');
                     }]);
@@ -258,7 +258,7 @@ class AnalyseController extends Controller
                 'qualite'        => $qualite,
                 'user_id'        => Auth::id(),
                 'participant_id' => $participant['id']         ?? null,
-                'session_id'     => $participant['id_session'] ?? null,
+                'session_id'     => $participant['id_session'] ?? Auth::user()?->active_campagne_id,
                 'nom'            => $request->filled('nom') ? trim($request->nom) : null,
             ]);
 

@@ -1,3 +1,28 @@
+// Gestion du switch de campagne active depuis le header
+document.querySelectorAll('.campagne-switch-btn').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+        const campagneId = btn.dataset.campagneId;
+
+        try {
+            const res = await fetch('/campagne/active', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                },
+                body: JSON.stringify({ campagne_id: campagneId || null }),
+            });
+
+            if (!res.ok) throw new Error();
+
+            window.location.reload();
+        } catch {
+            alert("Erreur lors du changement de campagne.");
+        }
+    });
+});
+
 // Gestion de la création de campagne depuis le dashboard
 
 const modal = document.getElementById('modal-campagne');

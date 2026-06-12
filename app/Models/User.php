@@ -29,7 +29,13 @@ class User extends Authenticatable
         'email',
         'password',
         'role',
+        'active_campagne_id',
     ];
+
+    public function activeCampagne()
+    {
+        return $this->belongsTo(Campagne::class, 'active_campagne_id');
+    }
 
     protected function casts(): array
     {

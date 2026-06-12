@@ -31,6 +31,41 @@
     @endif
 
     @auth
+    @php
+        $userCampagnes = \App\Models\Campagne::where('id_gestionnaire', Auth::id())->orderByDesc('created_at')->get();
+        $activeCampagne = $userCampagnes->firstWhere('id', Auth::user()->active_campagne_id);
+    @endphp
+
+    @if($userCampagnes->isNotEmpty())
+    <div class="relative group cursor-pointer shrink-0" tabindex="0">
+        <button class="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 hover:bg-slate-100 transition-colors text-xs sm:text-sm font-semibold text-slate-600 max-w-[140px] sm:max-w-[200px] focus:outline-none">
+            <svg class="w-4 h-4 shrink-0 text-[#222a60]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+            </svg>
+            <span class="truncate">{{ $activeCampagne->nom ?? 'Aucune campagne' }}</span>
+            <svg class="w-3 h-3 text-gray-400 shrink-0 transition-transform duration-200 group-focus-within:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M19 9l-7 7-7-7" />
+            </svg>
+        </button>
+
+        <div class="absolute right-0 top-full mt-2 w-60 bg-white rounded-2xl border border-gray-100 shadow-[0_20px_40px_rgb(0,0,0,0.08)] p-2 z-50
+                    invisible opacity-0 translate-y-2 transition-all duration-200 ease-out
+                    group-focus-within:visible group-focus-within:opacity-100 group-focus-within:translate-y-0">
+            <p class="px-3 py-1.5 text-[10px] font-bold text-gray-400 uppercase tracking-widest">Campagne active</p>
+            <button type="button" data-campagne-id=""
+                class="campagne-switch-btn w-full flex items-center gap-2 px-3 py-2 rounded-xl text-xs sm:text-sm font-bold text-left transition-colors cursor-pointer border-none outline-none {{ $activeCampagne ? 'text-gray-500 hover:bg-gray-50 hover:text-[#0F143A]' : 'bg-[#222a60]/10 text-[#222a60]' }}">
+                Aucune campagne
+            </button>
+            @foreach($userCampagnes as $c)
+            <button type="button" data-campagne-id="{{ $c->id }}"
+                class="campagne-switch-btn w-full flex items-center gap-2 px-3 py-2 rounded-xl text-xs sm:text-sm font-bold text-left transition-colors cursor-pointer border-none outline-none truncate {{ $activeCampagne?->id === $c->id ? 'bg-[#222a60]/10 text-[#222a60]' : 'text-gray-500 hover:bg-gray-50 hover:text-[#0F143A]' }}">
+                {{ $c->nom }}
+            </button>
+            @endforeach
+        </div>
+    </div>
+    @endif
+
     <button id="btn-lancer-campagne"
         class="hidden sm:inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#222a60] text-white text-xs sm:text-sm font-semibold hover:bg-[#1a2050] transition-colors shadow-sm shrink-0">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
