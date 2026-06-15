@@ -141,12 +141,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function openSheet() {
         sheet.classList.add("open");
-        nav.classList.add("hidden-nav");
+        nav?.classList.add("hidden-nav");
         sheetOpen = true;
     }
     function closeSheet() {
         sheet.classList.remove("open");
-        nav.classList.remove("hidden-nav");
+        nav?.classList.remove("hidden-nav");
         sheetOpen = false;
         sheet.style.transform = "";
     }
@@ -267,7 +267,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 populateSheet(p);
                 openSheet();
             });
-            pointMarkers.push({ marker, qualite: q });
+            pointMarkers.push({ marker, qualite: q, id: p.id });
         });
 
         // Réapplique les filtres qualité actifs
@@ -393,6 +393,19 @@ document.addEventListener("DOMContentLoaded", () => {
             casesHtml =
                 '<div class="col-span-3 text-xs text-slate-400 text-center py-2">Données non renseignées.</div>';
 
+        const isOwner = window.currentUserId && a?.user_id === window.currentUserId;
+        const canEdit = window.isAdmin || isOwner;
+
+        const editDeleteHtml = canEdit ? `
+            <div class="flex gap-2 mt-3">
+                <a href="${window.analyseEditUrlBase}/${a.id}/edit?redirect_to=${encodeURIComponent(window.location.pathname)}" class="flex-1 flex items-center justify-center gap-2 bg-slate-100 text-[#222a60] py-3 rounded-[14px] text-[13px] font-bold no-underline active:scale-[0.98] transition-transform">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7M18.5 2.5a2.121 2.121 0 113 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> Modifier
+                </a>
+                <button type="button" data-delete-analyse="${a.id}" class="flex-1 flex items-center justify-center gap-2 bg-red-50 text-red-600 py-3 rounded-[14px] text-[13px] font-bold border border-red-100 active:scale-[0.98] transition-transform">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14z"/></svg> Supprimer
+                </button>
+            </div>` : '';
+
         sheet.querySelector(".sheet-analyse-info").innerHTML = `
             <div class="flex gap-2 mb-3">
                 <div class="flex-1 bg-slate-50 border border-slate-100 rounded-lg py-2 px-3"><div class="font-mono text-[9px] font-bold uppercase tracking-widest text-slate-400 mb-0.5">Date</div><div class="text-xs font-bold text-[#222a60]">${a.created_at ?? "—"}</div></div>
@@ -403,7 +416,45 @@ document.addEventListener("DOMContentLoaded", () => {
                 <a href="${window.createAnalyseUrl}?point_id=${p.id}&lat=${p.latitude}&lng=${p.longitude}${p.cours_d_eau_id ? "&cours_d_eau_id=" + p.cours_d_eau_id : ""}&redirect_to=${encodeURIComponent(window.location.pathname)}" class="flex items-center justify-center gap-2 bg-gradient-to-br from-[#1a7fc4] to-[#1565c0] text-white py-3.5 rounded-[14px] text-[14px] font-bold shadow-[0_4px_16px_rgba(21,101,192,0.25)] no-underline active:scale-[0.98] transition-transform">
                     <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg> Nouvelle mesure ici
                 </a>
+                ${editDeleteHtml}
             </div>`;
+
+        if (canEdit) {
+            const delBtn = sheet.querySelector(`[data-delete-analyse="${a.id}"]`);
+            delBtn?.addEventListener("click", async () => {
+                if (!confirm("Supprimer ce point et toutes ses analyses ?")) return;
+                delBtn.disabled = true;
+                delBtn.textContent = "Suppression…";
+
+                let res;
+                try {
+                    res = await fetch(`${window.analyseEditUrlBase}/${a.id}`, {
+                        method: "DELETE",
+                        headers: { "X-CSRF-TOKEN": window.csrfToken, Accept: "application/json" },
+                    });
+                } catch {
+                    delBtn.disabled = false;
+                    delBtn.textContent = "Supprimer";
+                    alert("Erreur lors de la suppression.");
+                    return;
+                }
+
+                if (!res.ok) {
+                    delBtn.disabled = false;
+                    delBtn.textContent = "Supprimer";
+                    alert(`Erreur lors de la suppression (${res.status}).`);
+                    return;
+                }
+
+                closeSheet();
+                window.mapPoints = (window.mapPoints ?? []).filter((pt) => pt.id !== p.id);
+                const idx = pointMarkers.findIndex((pm) => pm.id === p.id);
+                if (idx !== -1) {
+                    pointMarkers[idx].marker.remove();
+                    pointMarkers.splice(idx, 1);
+                }
+            }, { once: true });
+        }
     }
 
     function populateCapteurSheet(c) {

@@ -449,6 +449,8 @@
     window.couleesStoreUrl    = "{{ auth()->check() ? route('coulees-de-boue.store') : '' }}";
     window.couleesDestroyBase = "{{ auth()->check() ? url('coulees-de-boue') : '' }}";
     window.currentUserId      = {{ auth()->id() ?? 'null' }};
+    window.isAdmin            = {{ (auth()->check() && auth()->user()->role === 'admin') ? 'true' : 'false' }};
+    window.analyseEditUrlBase = "{{ url('analyse') }}";
     window.csrfToken          = "{{ csrf_token() }}";
 </script>
 
