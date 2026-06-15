@@ -12,6 +12,7 @@ use App\Http\Requests\StoreAnalyseRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class AnalyseController extends Controller
 {
@@ -190,7 +191,9 @@ class AnalyseController extends Controller
         $coursDEauId = $request->query('cours_d_eau_id');
         $nomCoursEau = $request->query('nom_cours_eau');
 
-        return view('analyse', compact('lat', 'lng', 'coursDEauId', 'nomCoursEau'));
+        $mesures = [];
+
+        return view('analyse', compact('lat', 'lng', 'coursDEauId', 'nomCoursEau', 'mesures'));
     }
 
     public function store(StoreAnalyseRequest $request, CoursDEauService $service)
@@ -285,6 +288,129 @@ class AnalyseController extends Controller
             'lat' => $lat,
             'lng' => $lng
         ])->with('success', 'Analyse enregistrée !');
+    }
+
+    private function authorizeOwner(Analyse $analyse): void
+    {
+        if (Auth::user()->role !== 'admin' && $analyse->user_id !== Auth::id()) {
+            abort(403);
+        }
+    }
+
+    public function edit(Analyse $analyse)
+    {
+        $this->authorizeOwner($analyse);
+
+        $analyse->load('point.coursDEau');
+        $point = $analyse->point;
+        $mesures = is_string($analyse->mesures) ? json_decode($analyse->mesures, true) : ($analyse->mesures ?? []);
+
+        return view('analyse', [
+            'analyse'     => $analyse,
+            'mesures'     => $mesures,
+            'lat'         => $point->latitude,
+            'lng'         => $point->longitude,
+            'coursDEauId' => $point->cours_d_eau_id,
+            'nomCoursEau' => $point->coursDEau?->nom,
+        ]);
+    }
+
+    public function update(StoreAnalyseRequest $request, Analyse $analyse, CoursDEauService $service)
+    {
+        $this->authorizeOwner($analyse);
+
+        DB::transaction(function () use ($request, $analyse, $service) {
+            $point = $analyse->point;
+
+            $coursDEauId = $request->integer('cours_d_eau_id') ?: null;
+            if (! $coursDEauId) {
+                $river       = $service->findNearest($request->latitude, $request->longitude);
+                $coursDEauId = $river?->id;
+            }
+            $point->update([
+                'latitude'       => $request->latitude,
+                'longitude'      => $request->longitude,
+                'cours_d_eau_id' => $coursDEauId,
+                'ville'          => $request->filled('ville') ? $request->ville : $point->ville,
+            ]);
+
+            if ($request->hasFile('image')) {
+                if ($analyse->image) {
+                    Storage::disk('public')->delete($analyse->image);
+                }
+                $imagePath = $request->file('image')->store('analyses', 'public');
+            } else {
+                $imagePath = $analyse->image;
+            }
+
+            $mesures = ['note' => $request->note];
+
+            $type = AnalyseType::from($request->type);
+
+            if ($type->hasBandelette()) {
+                $mesures['bandelette'] = array_map(
+                    fn($v) => ($v !== '' && $v !== null) ? (float) $v : null,
+                    $request->input('mesures.bandelette', [])
+                );
+            }
+            if ($type->hasPhotometre()) {
+                $mesures['photometre'] = array_map(
+                    fn($v) => ($v !== '' && $v !== null) ? (float) $v : null,
+                    $request->input('mesures.photometre', [])
+                );
+            }
+
+            $qualite = $this->qualiteService->calculer($mesures);
+
+            $analyse->update([
+                'type'       => $request->type,
+                'image'      => $imagePath,
+                'mesures'    => json_encode($mesures),
+                'est_valide' => $this->qualiteService->isValid($mesures),
+                'qualite'    => $qualite,
+                'nom'        => $request->filled('nom') ? trim($request->nom) : null,
+            ]);
+
+            if ($request->filled('date_prelevement')) {
+                DB::table('analyses')
+                    ->where('id', $analyse->id)
+                    ->update(['created_at' => \Carbon\Carbon::parse($request->date_prelevement)]);
+            }
+        });
+
+        $lat = $request->input('latitude');
+        $lng = $request->input('longitude');
+
+        $redirectTo = $request->input('redirect_to');
+
+        if ($redirectTo && is_string($redirectTo) && str_starts_with($redirectTo, '/') && !str_contains($redirectTo, '://')) {
+            $separator = str_contains($redirectTo, '?') ? '&' : '?';
+            $redirectWithCoords = $redirectTo . $separator . "lat={$lat}&lng={$lng}";
+
+            return redirect($redirectWithCoords)->with('success', 'Analyse modifiée !');
+        }
+
+        return redirect()->route('mobile', [
+            'lat' => $lat,
+            'lng' => $lng,
+        ])->with('success', 'Analyse modifiée !');
+    }
+
+    public function destroy(Analyse $analyse)
+    {
+        $this->authorizeOwner($analyse);
+
+        $point = $analyse->point;
+
+        foreach ($point->analyses as $a) {
+            if ($a->image) {
+                Storage::disk('public')->delete($a->image);
+            }
+        }
+
+        $point->delete();
+
+        return response()->json(['ok' => true]);
     }
 
     public function myAnalyses()

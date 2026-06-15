@@ -73,6 +73,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/analyses', [AnalyseController::class, 'index'])->name('analyses.index');
     Route::get('/analyses/invalides', [AnalyseController::class, 'invalides'])->name('analyses.invalides');
     Route::patch('/analyse/{analyse}/valider', [AnalyseController::class, 'valider'])->name('analyse.valider');
+    Route::get('/analyse/{analyse}/edit', [AnalyseController::class, 'edit'])->name('analyse.edit');
+    Route::put('/analyse/{analyse}', [AnalyseController::class, 'update'])->name('analyse.update');
+    Route::delete('/analyse/{analyse}', [AnalyseController::class, 'destroy'])->name('analyse.destroy');
 
     Route::get('/profil',                   [ProfilController::class, 'profil'])->name('profil');
     Route::get('/profil/modifier',          [ProfilController::class, 'edit'])->name('profil.edit');
