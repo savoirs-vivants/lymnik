@@ -18,7 +18,7 @@
                     </svg>
                 </a>
                 <div class="text-center">
-                    <p class="text-white text-[17px] font-bold leading-tight" id="header-title">Nouvelle analyse</p>
+                    <p class="text-white text-[17px] font-bold leading-tight" id="header-title">{{ isset($analyse) ? "Modifier l'analyse" : 'Nouvelle analyse' }}</p>
                     <p class="text-white/55 text-[11px] mt-0.5 font-mono tracking-wide">
                         {{ now()->translatedFormat('d M Y') }}
                     </p>
@@ -33,7 +33,7 @@
 
             <div class="max-w-2xl mx-auto w-full flex flex-col gap-4">
 
-                @if (auth()->check() && auth()->user()->role === 'admin')
+                @if (auth()->check() && auth()->user()->role === 'admin' && !isset($analyse))
                     <div class="flex p-1 bg-slate-200/50 rounded-xl mb-1">
                         <button type="button" id="btn-mode-analyse"
                             class="flex-1 py-2.5 text-[13px] font-bold rounded-lg bg-white text-[#222a60] shadow-sm transition-all">
@@ -61,9 +61,13 @@
                     </div>
                 @endif
 
-                <form id="analyse-form" method="POST" action="{{ route('analyse.store') }}" enctype="multipart/form-data"
-                    novalidate>
+                <form id="analyse-form" method="POST"
+                    action="{{ isset($analyse) ? route('analyse.update', $analyse) : route('analyse.store') }}"
+                    enctype="multipart/form-data" novalidate>
                     @csrf
+                    @if (isset($analyse))
+                        @method('PUT')
+                    @endif
                     <input type="hidden" name="cours_d_eau_id" value="{{ old('cours_d_eau_id', $coursDEauId ?? '') }}">
                     <input type="hidden" name="ville" id="f-ville" value="{{ old('ville') }}">
                     <input type="hidden" name="latitude" id="f-lat" value="{{ old('latitude', $lat) }}">
@@ -170,7 +174,7 @@
                                         class="normal-case font-normal text-slate-300">(optionnel)</span>
                                 </label>
                                 <input id="nom-analyse" type="text" name="nom" maxlength="150"
-                                    value="{{ old('nom') }}"
+                                    value="{{ old('nom', $analyse->nom ?? '') }}"
                                     placeholder="Ex : Prélèvement amont barrage, Sortie classe…"
                                     class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-[13px] text-slate-800 placeholder:text-slate-400 focus:border-[#222a60] focus:bg-white focus:ring-2 focus:ring-[#222a60]/15 focus:outline-none transition-all">
                             </div>
@@ -181,7 +185,7 @@
                                     Date du prélèvement <span class="normal-case font-normal text-slate-300">(optionnel — par défaut aujourd'hui)</span>
                                 </label>
                                 <input id="date-prelevement" type="datetime-local" name="date_prelevement"
-                                    value="{{ old('date_prelevement') }}"
+                                    value="{{ old('date_prelevement', isset($analyse) ? $analyse->created_at?->format('Y-m-d\TH:i') : '') }}"
                                     class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-[13px] text-slate-800 focus:border-[#222a60] focus:bg-white focus:ring-2 focus:ring-[#222a60]/15 focus:outline-none transition-all font-mono">
                             </div>
 
@@ -190,7 +194,7 @@
                                     <input type="file" name="image" id="file-upload" class="sr-only"
                                         accept="image/*" aria-label="Ajouter une photo">
                                     <label for="file-upload" id="ph-camera"
-                                        class="w-20 h-20 sm:w-24 sm:h-24 rounded-xl border-2 border-dashed border-slate-300 hover:border-[#222a60] hover:bg-blue-50 flex flex-col items-center justify-center gap-1 text-slate-500 cursor-pointer bg-slate-50 transition-colors focus-within:ring-2 focus-within:ring-[#222a60]/30 select-none">
+                                        class="{{ isset($analyse) && $analyse->image ? 'hidden' : '' }} w-20 h-20 sm:w-24 sm:h-24 rounded-xl border-2 border-dashed border-slate-300 hover:border-[#222a60] hover:bg-blue-50 flex flex-col items-center justify-center gap-1 text-slate-500 cursor-pointer bg-slate-50 transition-colors focus-within:ring-2 focus-within:ring-[#222a60]/30 select-none">
                                         <svg width="20" height="20" fill="none" stroke="currentColor"
                                             stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
                                             <path stroke-linecap="round" stroke-linejoin="round"
@@ -200,9 +204,10 @@
                                         <span class="text-[10px] font-semibold">Photo</span>
                                     </label>
                                     <div id="photo-thumb"
-                                        class="hidden w-20 h-20 sm:w-24 sm:h-24 rounded-xl bg-slate-100 items-center justify-center relative overflow-hidden border border-slate-200">
-                                        <img id="photo-preview" src="" alt="Aperçu photo"
-                                            class="w-full h-full object-cover">
+                                        class="{{ isset($analyse) && $analyse->image ? 'flex' : 'hidden' }} w-20 h-20 sm:w-24 sm:h-24 rounded-xl bg-slate-100 items-center justify-center relative overflow-hidden border border-slate-200">
+                                        <img id="photo-preview"
+                                            src="{{ isset($analyse) && $analyse->image ? asset('storage/' . $analyse->image) : '' }}"
+                                            alt="Aperçu photo" class="w-full h-full object-cover">
                                         <button type="button" id="photo-remove" aria-label="Supprimer la photo"
                                             class="absolute top-1 right-1 w-6 h-6 rounded-full bg-black/65 text-white text-xs flex items-center justify-center cursor-pointer hover:bg-black focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none">✕</button>
                                     </div>
@@ -210,7 +215,7 @@
                                 <div class="flex-1 min-w-0 flex flex-col">
                                     <label for="note-textarea" class="sr-only">Notes</label>
                                     <textarea id="note-textarea" name="note" placeholder="Notes : météo, aspect visuel, odeur…" rows="4"
-                                        class="flex-1 w-full p-3 rounded-xl border border-slate-200 bg-slate-50 font-grotesk text-[13px] text-slate-800 resize-none placeholder:text-slate-400 focus:border-[#222a60] focus:bg-white focus:ring-2 focus:ring-[#222a60]/15 focus:outline-none transition-all">{{ old('note') }}</textarea>
+                                        class="flex-1 w-full p-3 rounded-xl border border-slate-200 bg-slate-50 font-grotesk text-[13px] text-slate-800 resize-none placeholder:text-slate-400 focus:border-[#222a60] focus:bg-white focus:ring-2 focus:ring-[#222a60]/15 focus:outline-none transition-all">{{ old('note', $mesures['note'] ?? '') }}</textarea>
                                 </div>
                             </div>
                         </section>
@@ -228,10 +233,10 @@
 
                             <div class="px-5 pb-5 pt-4" role="radiogroup" aria-labelledby="section-3-title">
                                 <input type="hidden" name="type" id="f-type"
-                                    value="{{ old('type', 'bandelette') }}">
+                                    value="{{ old('type', $analyse->type ?? 'bandelette') }}">
                                 <div class="grid grid-cols-2 gap-3 mb-3">
                                     @foreach ([['value' => 'bandelette', 'label' => 'Bandelette', 'sub' => '6 paramètres', 'color' => 'bg-blue-50 text-[#222a60]', 'icon' => '<rect x="9" y="2" width="6" height="20" rx="2"/><path stroke-linecap="round" d="M9 8h6M9 12h6M9 16h4"/>'], ['value' => 'photometre', 'label' => 'Photomètre', 'sub' => '3 paramètres', 'color' => 'bg-indigo-50 text-indigo-700', 'icon' => '<circle cx="12" cy="12" r="4"/><path stroke-linecap="round" d="M12 2v2M12 20v2M2 12h2M20 12h2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>']] as $card)
-                                        @php $sel = old('type', 'bandelette') === $card['value']; @endphp
+                                        @php $sel = old('type', $analyse->type ?? 'bandelette') === $card['value']; @endphp
                                         <button type="button" role="radio"
                                             aria-checked="{{ $sel ? 'true' : 'false' }}"
                                             data-type="{{ $card['value'] }}"
@@ -255,7 +260,7 @@
                                     @endforeach
                                 </div>
 
-                                @php $selLesDeux = old('type') === 'les_deux'; @endphp
+                                @php $selLesDeux = old('type', $analyse->type ?? '') === 'les_deux'; @endphp
                                 <button type="button" role="radio"
                                     aria-checked="{{ $selLesDeux ? 'true' : 'false' }}" data-type="les_deux"
                                     class="type-card w-full flex items-center gap-4 p-4 rounded-xl border-2 cursor-pointer text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#222a60]/40 {{ $selLesDeux ? 'border-[#222a60] bg-blue-50/40' : 'border-slate-200 bg-slate-50 hover:border-slate-300 hover:bg-white' }}">
@@ -331,7 +336,7 @@
                                                     min="0" name="mesures[bandelette][{{ $f['key'] }}]"
                                                     aria-label="{{ $f['label'] }} en {{ $f['unit'] }}"
                                                     class="w-24 h-10 px-3 rounded-xl border border-slate-200 bg-slate-50 font-grotesk text-[13px] font-bold text-[#222a60] text-center focus:border-[#222a60] focus:bg-white focus:ring-2 focus:ring-[#222a60]/15 focus:outline-none placeholder:text-slate-300 placeholder:font-normal transition-all"
-                                                    placeholder="—" value="{{ old('mesures.bandelette.' . $f['key']) }}">
+                                                    placeholder="—" value="{{ old('mesures.bandelette.' . $f['key'], $mesures['bandelette'][$f['key']] ?? null) }}">
                                             </div>
                                         @endforeach
                                     </div>
@@ -369,7 +374,7 @@
                                                     min="0" name="mesures[photometre][{{ $f['key'] }}]"
                                                     aria-label="{{ $f['label'] }} en {{ $f['unit'] }}"
                                                     class="w-24 h-10 px-3 rounded-xl border border-slate-200 bg-slate-50 font-grotesk text-[13px] font-bold text-[#222a60] text-center focus:border-[#222a60] focus:bg-white focus:ring-2 focus:ring-[#222a60]/15 focus:outline-none placeholder:text-slate-300 placeholder:font-normal transition-all"
-                                                    placeholder="—" value="{{ old('mesures.photometre.' . $f['key']) }}">
+                                                    placeholder="—" value="{{ old('mesures.photometre.' . $f['key'], $mesures['photometre'][$f['key']] ?? null) }}">
                                             </div>
                                         @endforeach
                                     </div>
@@ -442,7 +447,7 @@
                         stroke-width="2.5" viewBox="0 0 24 24" aria-hidden="true">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
                     </svg>
-                    <span id="submit-text">Enregistrer la mesure</span>
+                    <span id="submit-text">{{ isset($analyse) ? 'Enregistrer les modifications' : 'Enregistrer la mesure' }}</span>
                 </button>
             </div>
         </div>
