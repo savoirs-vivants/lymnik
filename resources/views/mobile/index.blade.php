@@ -133,54 +133,51 @@
 
         <div id="map" class="absolute inset-0 z-0 outline-none bg-slate-200"></div>
 
-        <div id="top-bar" class="absolute top-0 inset-x-0 z-50 pt-[max(52px,env(safe-area-inset-top))] px-4 pb-3 pointer-events-none md:hidden">
-            <div class="flex items-center gap-2.5 pointer-events-auto relative z-20">
-                <div class="flex-1 flex items-center gap-2 bg-white/95 backdrop-blur-md rounded-2xl px-3.5 h-[46px] shadow-[0_4px_20px_rgba(34,42,96,0.12)] border border-sv-blue/5 relative">
-                    <svg class="text-slate-400 shrink-0" width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div id="top-bar" class="absolute top-0 inset-x-0 z-50 pt-[max(12px,env(safe-area-inset-top))] px-3 pb-2 pointer-events-none md:hidden">
+            <div class="flex items-center gap-2 pointer-events-auto relative z-20">
+                <div class="flex-1 flex items-center gap-2 bg-white/95 backdrop-blur-md rounded-2xl px-3.5 h-[44px] shadow-[0_4px_20px_rgba(34,42,96,0.12)] border border-sv-blue/5 relative">
+                    <svg class="text-slate-400 shrink-0" width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <circle cx="11" cy="11" r="8" stroke-width="2"/>
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35"/>
                     </svg>
-                    <input type="text" id="search-input" placeholder="Commune ou Code Postal" autocomplete="off"
+                    <input type="text" id="search-input" placeholder="Commune ou code postal" autocomplete="off"
                         class="bg-transparent border-none outline-none w-full text-sm text-slate-800 placeholder-slate-400 font-grotesk">
                     <div id="search-results" class="absolute top-[52px] left-0 right-0 bg-white rounded-xl shadow-[0_12px_40px_rgba(34,42,96,0.15)] border border-slate-100 overflow-hidden hidden"></div>
                 </div>
 
+                <button id="btn-locate-mobile" class="btn-locate w-[44px] h-[44px] rounded-2xl bg-white/95 backdrop-blur-md shadow-[0_4px_20px_rgba(34,42,96,0.12)] border border-sv-blue/5 flex items-center justify-center text-[#222a60] shrink-0 active:scale-[0.93] transition-transform pointer-events-auto">
+                    <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                        <circle cx="12" cy="12" r="3"/><path d="M12 2v3m0 14v3M2 12h3m14 0h3"/>
+                        <circle cx="12" cy="12" r="7" stroke-dasharray="3 2"/>
+                    </svg>
+                </button>
+
+                @auth
+                <button id="btn-declare-coulee"
+                    class="w-[44px] h-[44px] rounded-2xl bg-amber-50/95 backdrop-blur-md shadow-[0_4px_16px_rgba(0,0,0,0.1)] border border-amber-300 flex items-center justify-center text-amber-700 shrink-0 active:scale-[0.93] transition-transform cursor-pointer pointer-events-auto">
+                    <svg width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+                    </svg>
+                </button>
+                @endauth
+
                 @guest
                     <a href="{{ route('login', ['source' => 'mobile']) }}"
-                        class="w-[46px] h-[46px] rounded-full bg-slate-100 flex items-center justify-center text-slate-400 shrink-0 shadow-[0_4px_16px_rgba(0,0,0,0.08)] border border-slate-200 no-underline transition-transform active:scale-[0.93]">
-                        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        class="w-[44px] h-[44px] rounded-full bg-slate-100 flex items-center justify-center text-slate-400 shrink-0 shadow-[0_4px_16px_rgba(0,0,0,0.08)] border border-slate-200 no-underline transition-transform active:scale-[0.93]">
+                        <svg width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
                         </svg>
                     </a>
                 @endguest
                 @auth
                     <a href="{{ route('profil') }}"
-                        class="w-[46px] h-[46px] rounded-full bg-sv-blue flex items-center justify-center font-grotesk text-[13px] font-bold text-white shrink-0 shadow-[0_4px_16px_rgba(34,42,96,0.25)] no-underline border-2 border-white transition-transform active:scale-[0.93]">
+                        class="w-[44px] h-[44px] rounded-full bg-sv-blue flex items-center justify-center font-grotesk text-[12px] font-bold text-white shrink-0 shadow-[0_4px_16px_rgba(34,42,96,0.25)] no-underline border-2 border-white transition-transform active:scale-[0.93]">
                         {{ strtoupper(substr(Auth::user()->firstname, 0, 1) . substr(Auth::user()->name, 0, 1)) }}
                     </a>
                 @endauth
             </div>
 
-            <button id="btn-locate-mobile" class="btn-locate mt-2.5 pointer-events-auto w-full flex items-center justify-center gap-2 bg-white/95 backdrop-blur-md rounded-2xl px-3.5 h-[42px] shadow-[0_4px_20px_rgba(34,42,96,0.12)] border border-sv-blue/5 text-[#222a60] text-sm font-semibold active:scale-[0.98] transition-transform">
-                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" class="shrink-0">
-                    <circle cx="12" cy="12" r="3"/>
-                    <path d="M12 2v3m0 14v3M2 12h3m14 0h3"/>
-                    <circle cx="12" cy="12" r="7" stroke-dasharray="3 2"/>
-                </svg>
-                Me géolocaliser
-            </button>
-
-            @auth
-            <button id="btn-declare-coulee"
-                class="mt-2.5 pointer-events-auto w-full flex items-center justify-center gap-2 px-3.5 h-[42px] rounded-2xl shadow-[0_4px_16px_rgba(0,0,0,0.1)] border border-amber-300 bg-amber-50/95 backdrop-blur-md text-amber-700 font-semibold text-xs active:scale-[0.98] transition-transform cursor-pointer">
-                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" class="shrink-0">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
-                </svg>
-                Signaler un problème ou une amélioration du cours d'eau
-            </button>
-            @endauth
-
-            <div class="flex gap-1.5 mt-2.5 px-4 pointer-events-auto overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            <div class="flex gap-1.5 mt-2 px-1 pointer-events-auto overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                 <div data-quality="tres_bon" class="pill flex items-center gap-1 bg-white/95 backdrop-blur-md rounded-full px-2.5 py-1 text-[10px] font-semibold text-slate-500 shadow-sm border border-slate-100 cursor-pointer transition-all active:scale-95 select-none whitespace-nowrap [&.active]:border-[#3b82f6] [&.active]:text-[#3b82f6] [&.active]:bg-[#3b82f6]/10">
                     <span class="w-1.5 h-1.5 rounded-full bg-[#3b82f6]"></span> Très bon
                 </div>
