@@ -45,7 +45,7 @@ import{i as e,n as t,r as n,t as r}from"./map-utils-BX27QVU9.js";import{n as i,r
                 <line x1="12" y1="9" x2="12" y2="13" stroke="white" stroke-width="2" stroke-linecap="round"/>
                 <circle cx="12" cy="16.5" r="1" fill="white" stroke="none"/>
             </svg>
-        </div>`,iconSize:[32,32],iconAnchor:[16,28]}),se=[];function M(e){console.log(`Données reçues pour le marqueur :`,e);let t=o.default.marker([e.lat,e.lng],{icon:j}).addTo(f),n=window.currentUserId&&e.user_id===window.currentUserId?`<button data-coulee-id="${e.id}" style="margin-top:8px;width:100%;padding:5px 0;background:#fee2e2;border:1px solid #fca5a5;border-radius:6px;color:#b91c1c;font-size:11px;font-weight:700;cursor:pointer;font-family:'Space Grotesk',sans-serif;">
+        </div>`,iconSize:[32,32],iconAnchor:[16,28]}),se=[];function M(e){console.log(`Données reçues pour le marqueur :`,e);let t=o.default.marker([e.lat,e.lng],{icon:j}).addTo(f),n=window.currentUserId&&e.user_id===window.currentUserId||window.isAdmin?`<button data-coulee-id="${e.id}" style="margin-top:8px;width:100%;padding:5px 0;background:#fee2e2;border:1px solid #fca5a5;border-radius:6px;color:#b91c1c;font-size:11px;font-weight:700;cursor:pointer;font-family:'Space Grotesk',sans-serif;">
                    Supprimer
                </button>`:``;return t.bindPopup(`
             <div style="font-family:'Space Grotesk',sans-serif;min-width:160px;">
