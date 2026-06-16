@@ -20,10 +20,10 @@
                 </div>
             </div>
 
-            <div class="flex flex-wrap gap-1.5 md:gap-2 pointer-events-auto">
+            <div class="flex flex-nowrap gap-1.5 md:gap-2 pointer-events-auto overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                 @foreach (['tres_bon' => '#3b82f6', 'bon' => '#16987c', 'passable' => '#eab308', 'mediocre' => '#f97316', 'mauvais' => '#ef4444'] as $q => $color)
                     <div data-quality="{{ $q }}"
-                        class="pill cursor-pointer bg-white/90 px-2.5 md:px-3 py-1 md:py-1.5 rounded-full shadow-sm text-[9px] md:text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5 md:gap-2 border border-transparent transition-all active:scale-95 [&.active]:border-slate-200 hover:bg-white">
+                        class="pill cursor-pointer bg-white/90 px-2.5 md:px-3 py-1 md:py-1.5 rounded-full shadow-sm text-[9px] md:text-[10px] font-black uppercase tracking-wider flex items-center gap-1.5 md:gap-2 border border-transparent transition-all active:scale-95 whitespace-nowrap [&.active]:border-slate-200 hover:bg-white shrink-0">
                         <span class="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full" style="background: {{ $color }}"></span>
                         {{ str_replace('_', ' ', $q) }}
                     </div>
@@ -32,11 +32,12 @@
 
             @auth
             <button id="btn-declare-coulee-desk" type="button"
-                class="w-full flex items-center gap-2 px-4 py-2.5 bg-amber-50 hover:bg-amber-100 border border-amber-300 rounded-xl md:rounded-2xl shadow-lg text-amber-700 text-sm font-semibold transition-colors cursor-pointer outline-none pointer-events-auto">
-                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" class="shrink-0">
+                class="w-full flex items-center gap-2 px-3 md:px-4 py-2 md:py-2.5 bg-amber-50 hover:bg-amber-100 border border-amber-300 rounded-xl md:rounded-2xl shadow-lg text-amber-700 text-xs md:text-sm font-semibold transition-colors cursor-pointer outline-none pointer-events-auto">
+                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" class="shrink-0">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
                 </svg>
-                Signalement d'un problème ou d'une amélioration d'un cours d'eau
+                <span class="hidden sm:inline">Signalement d'un problème ou d'une amélioration d'un cours d'eau</span>
+                <span class="sm:hidden">Signaler un problème</span>
             </button>
             @endauth
         </div>
