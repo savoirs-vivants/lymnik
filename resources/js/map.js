@@ -556,7 +556,7 @@ document.addEventListener("DOMContentLoaded", () => {
         console.log("Données reçues pour le marqueur :", c);
         const marker = L.marker([c.lat, c.lng], { icon: couleeIcon }).addTo(map);
         const isOwner = window.currentUserId && c.user_id === window.currentUserId;
-        const deleteBtn = isOwner
+        const deleteBtn = (isOwner || window.isAdmin)
             ? `<button data-coulee-id="${c.id}" style="margin-top:8px;width:100%;padding:5px 0;background:#fee2e2;border:1px solid #fca5a5;border-radius:6px;color:#b91c1c;font-size:11px;font-weight:700;cursor:pointer;font-family:'Space Grotesk',sans-serif;">
                    Supprimer
                </button>`

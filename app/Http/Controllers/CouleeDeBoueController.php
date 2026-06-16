@@ -72,7 +72,7 @@ class CouleeDeBoueController extends Controller
 
     public function destroy(CouleeDeBoue $couleeDeBoue)
     {
-        if ($couleeDeBoue->user_id !== Auth::id()) {
+        if (Auth::user()->role !== 'admin' && $couleeDeBoue->user_id !== Auth::id()) {
             return response()->json(['error' => 'Interdit'], 403);
         }
 
