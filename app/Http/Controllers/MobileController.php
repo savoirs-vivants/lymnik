@@ -60,12 +60,13 @@ class MobileController extends Controller
                 'lng'     => (float) $c->lng,
                 'user'    => trim($c->user?->firstname . ' ' . $c->user?->name),
                 'user_id' => $c->user_id,
-                'type'    => $c->type,
-                'image'   => $c->image ? asset('storage/' . $c->image) : null,
-                'images'  => collect($c->images ?? [])->map(fn($img) => asset('storage/' . $img))->values(),
-                'date'    => $c->date
-                             ? \Carbon\Carbon::parse($c->date)->translatedFormat('d M Y')
-                             : $c->created_at?->translatedFormat('d M Y'),
+                'type'        => $c->type,
+                'description' => $c->description,
+                'image'       => $c->image ? asset('storage/' . $c->image) : null,
+                'images'      => collect($c->images ?? [])->map(fn($img) => asset('storage/' . $img))->values(),
+                'date'        => $c->date
+                                 ? \Carbon\Carbon::parse($c->date)->translatedFormat('d M Y')
+                                 : $c->created_at?->translatedFormat('d M Y'),
             ]);
 
         return view('mobile.index', compact('pointsJson', 'riversJson', 'capteursJson', 'couleesJson'));

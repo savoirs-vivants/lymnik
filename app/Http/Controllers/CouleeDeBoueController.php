@@ -19,12 +19,13 @@ class CouleeDeBoueController extends Controller
                     'lng'     => (float) $c->lng,
                     'user'    => trim($c->user?->firstname . ' ' . $c->user?->name),
                     'user_id' => $c->user_id,
-                    'type'    => $c->type,
-                    'image'   => $c->image ? asset('storage/' . $c->image) : null,
-                    'images'  => collect($c->images ?? [])->map(fn($img) => asset('storage/' . $img))->values(),
-                    'date'    => $c->date
-                                 ? \Carbon\Carbon::parse($c->date)->translatedFormat('d M Y')
-                                 : $c->created_at?->translatedFormat('d M Y'),
+                    'type'        => $c->type,
+                    'description' => $c->description,
+                    'image'       => $c->image ? asset('storage/' . $c->image) : null,
+                    'images'      => collect($c->images ?? [])->map(fn($img) => asset('storage/' . $img))->values(),
+                    'date'        => $c->date
+                                     ? \Carbon\Carbon::parse($c->date)->translatedFormat('d M Y')
+                                     : $c->created_at?->translatedFormat('d M Y'),
                 ])
         );
     }
@@ -34,10 +35,11 @@ class CouleeDeBoueController extends Controller
         $data = $request->validate([
             'lat'     => 'required|numeric|between:-90,90',
             'lng'     => 'required|numeric|between:-180,180',
-            'type'    => 'nullable|string|max:255',
-            'date'    => 'nullable|date',
-            'images'  => 'nullable|array',
-            'images.*' => 'image|max:15360',
+            'type'        => 'nullable|string|max:255',
+            'description' => 'nullable|string',
+            'date'        => 'nullable|date',
+            'images'      => 'nullable|array',
+            'images.*'    => 'image|max:15360',
         ]);
 
         $imagePaths = [];
@@ -48,25 +50,27 @@ class CouleeDeBoueController extends Controller
         }
 
         $coulée = CouleeDeBoue::create([
-            'lat'     => $data['lat'],
-            'lng'     => $data['lng'],
-            'user_id' => Auth::id(),
-            'type'    => $data['type'] ?? null,
-            'date'    => $data['date'] ?? null,
-            'image'   => $imagePaths[0] ?? null,
-            'images'  => $imagePaths,
+            'lat'         => $data['lat'],
+            'lng'         => $data['lng'],
+            'user_id'     => Auth::id(),
+            'type'        => $data['type'] ?? null,
+            'description' => $data['description'] ?? null,
+            'date'        => $data['date'] ?? null,
+            'image'       => $imagePaths[0] ?? null,
+            'images'      => $imagePaths,
         ]);
 
         return response()->json([
-            'id'      => $coulée->id,
-            'lat'     => (float) $coulée->lat,
-            'lng'     => (float) $coulée->lng,
-            'user'    => trim(Auth::user()->firstname . ' ' . Auth::user()->name),
-            'user_id' => $coulée->user_id,
-            'type'    => $coulée->type,
-            'date'    => $coulée->date ? \Carbon\Carbon::parse($coulée->date)->translatedFormat('d M Y') : $coulée->created_at->translatedFormat('d M Y'),
-            'image'   => $coulée->image ? asset('storage/' . $coulée->image) : null,
-            'images'  => collect($coulée->images ?? [])->map(fn($img) => asset('storage/' . $img))->values(),
+            'id'          => $coulée->id,
+            'lat'         => (float) $coulée->lat,
+            'lng'         => (float) $coulée->lng,
+            'user'        => trim(Auth::user()->firstname . ' ' . Auth::user()->name),
+            'user_id'     => $coulée->user_id,
+            'type'        => $coulée->type,
+            'description' => $coulée->description,
+            'date'        => $coulée->date ? \Carbon\Carbon::parse($coulée->date)->translatedFormat('d M Y') : $coulée->created_at->translatedFormat('d M Y'),
+            'image'       => $coulée->image ? asset('storage/' . $coulée->image) : null,
+            'images'      => collect($coulée->images ?? [])->map(fn($img) => asset('storage/' . $img))->values(),
         ], 201);
     }
 
