@@ -552,47 +552,145 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const couleeMarkers = [];
 
-    function addCouleeMarker(c) {
-        console.log("Données reçues pour le marqueur :", c);
-        const marker = L.marker([c.lat, c.lng], { icon: couleeIcon }).addTo(map);
-        const isOwner = window.currentUserId && c.user_id === window.currentUserId;
-        const deleteBtn = (isOwner || window.isAdmin)
-            ? `<button data-coulee-id="${c.id}" style="margin-top:8px;width:100%;padding:5px 0;background:#fee2e2;border:1px solid #fca5a5;border-radius:6px;color:#b91c1c;font-size:11px;font-weight:700;cursor:pointer;font-family:'Space Grotesk',sans-serif;">
-                   Supprimer
-               </button>`
+    // Overlay détail signalement (créé une seule fois, réutilisé)
+    function getCouleeViewOverlay() {
+        let ov = document.getElementById('coulee-view-overlay');
+        if (!ov) {
+            ov = document.createElement('div');
+            ov.id = 'coulee-view-overlay';
+            ov.style.cssText = 'display:none;position:fixed;inset:0;z-index:9998;background:rgba(15,23,42,0.65);backdrop-filter:blur(4px);align-items:flex-end;justify-content:center;padding:0;font-family:"Space Grotesk",sans-serif;';
+            document.body.appendChild(ov);
+            ov.addEventListener('click', (e) => { if (e.target === ov) ov.style.display = 'none'; });
+        }
+        return ov;
+    }
+
+    function openCouleeDetail(c, markerRef) {
+        const ov = getCouleeViewOverlay();
+        const canDelete = window.isAdmin || (window.currentUserId && c.user_id === window.currentUserId);
+
+        const allImages = (c.images && c.images.length) ? c.images : (c.image ? [c.image] : []);
+        const imagesHtml = allImages.length
+            ? `<div style="display:grid;grid-template-columns:repeat(${allImages.length > 1 ? 2 : 1},1fr);gap:6px;margin-top:12px;">${allImages.map(img => `<img src="${img}" onclick="window.openLightbox('${img}')" style="width:100%;height:${allImages.length > 1 ? '110px' : '160px'};object-fit:cover;border-radius:10px;border:1px solid #e2e8f0;cursor:zoom-in;" />`).join('')}</div>`
             : '';
-        marker.bindPopup(`
-            <div style="font-family:'Space Grotesk',sans-serif;min-width:160px;">
-                <div style="font-weight:700;color:#b45309;margin-bottom:4px;">⚠ Signalement</div>
-                <div style="font-size:11px;color:#64748b;">Par ${c.user || 'inconnu'}</div>
-                <div style="font-size:11px;color:#94a3b8;">${c.date || ''}</div>
-                <div style="font-size:11px;font-weight:bold;color:#b45309;margin-top:2px;">${c.type }</div>
-                ${(c.images && c.images.length) ? `<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;">${c.images.map(img => `<div style="cursor:zoom-in;width:${c.images.length > 1 ? 'calc(50% - 2px)' : '100%'};" onclick="window.openLightbox('${img}')"><img src="${img}" style="width:100%;height:80px;object-fit:cover;border-radius:6px;border:1px solid #e2e8f0; pointer-events:none;"></div>`).join('')}</div>` : (c.image ? `<div style="margin-top:6px; cursor:zoom-in;" onclick="window.openLightbox('${c.image}')"><img src="${c.image}" style="width:100%;height:80px;object-fit:cover;border-radius:6px;border:1px solid #e2e8f0; pointer-events:none;"></div>` : '')}
-                ${deleteBtn}
-            </div>
-        `);
-        marker.on('popupopen', () => {
-            const btn = marker.getPopup()?.getElement()?.querySelector('[data-coulee-id]');
-            if (!btn) return;
-            btn.addEventListener('click', async () => {
+
+        const descHtml = c.description
+            ? `<div style="margin-top:14px;background:#fffbeb;border:1px solid #fde68a;border-radius:10px;overflow:hidden;">
+                   <div style="padding:10px 14px 6px;font-size:9px;font-weight:700;color:#92400e;text-transform:uppercase;letter-spacing:.07em;">Description</div>
+                   <div style="max-height:180px;overflow-y:auto;padding:0 14px 12px;">
+                       <p style="font-size:13px;color:#44403c;line-height:1.6;margin:0;white-space:pre-wrap;word-break:break-word;overflow-wrap:anywhere;">${c.description.replace(/</g,'&lt;')}</p>
+                   </div>
+               </div>`
+            : '';
+
+        const deleteBtnHtml = canDelete
+            ? `<button id="coulee-view-delete" style="flex:1;padding:12px;background:#fee2e2;border:1px solid #fca5a5;border-radius:12px;color:#b91c1c;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">Supprimer</button>`
+            : '';
+
+        ov.innerHTML = `
+            <div style="background:#fff;border-radius:24px 24px 0 0;width:100%;max-width:520px;max-height:85dvh;overflow-y:auto;padding:20px 20px calc(20px + env(safe-area-inset-bottom));box-shadow:0 -8px 40px rgba(15,23,42,0.2);">
+                <div style="width:36px;height:4px;background:#e2e8f0;border-radius:9px;margin:0 auto 16px;"></div>
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+                    <span style="font-size:11px;font-weight:700;color:#b45309;text-transform:uppercase;letter-spacing:.06em;">⚠ Signalement</span>
+                    <button id="coulee-view-close" style="width:28px;height:28px;border-radius:50%;background:#f1f5f9;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#64748b;">
+                        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" d="M18 6L6 18M6 6l12 12"/></svg>
+                    </button>
+                </div>
+                <div style="font-size:20px;font-weight:800;color:#222a60;margin-bottom:12px;line-height:1.2;">${c.type || 'Signalement'}</div>
+                <div style="display:flex;gap:16px;">
+                    <div style="flex:1;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:10px 12px;">
+                        <div style="font-size:9px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.07em;margin-bottom:3px;">Par</div>
+                        <div style="font-size:12px;font-weight:600;color:#334155;">${c.user || 'Inconnu'}</div>
+                    </div>
+                    <div style="flex:1;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:10px 12px;">
+                        <div style="font-size:9px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.07em;margin-bottom:3px;">Date</div>
+                        <div style="font-size:12px;font-weight:600;color:#334155;">${c.date || '—'}</div>
+                    </div>
+                </div>
+                ${descHtml}
+                ${imagesHtml}
+                ${canDelete ? `<div style="display:flex;gap:10px;margin-top:16px;">${deleteBtnHtml}</div>` : ''}
+            </div>`;
+
+        ov.style.display = 'flex';
+        ov.style.alignItems = 'flex-end';
+        ov.style.justifyContent = 'center';
+
+        document.getElementById('coulee-view-close').onclick = () => { ov.style.display = 'none'; };
+
+        if (canDelete) {
+            document.getElementById('coulee-view-delete').onclick = async () => {
                 if (!confirm('Supprimer ce signalement ?')) return;
+                const btn = document.getElementById('coulee-view-delete');
                 btn.disabled = true;
                 btn.textContent = 'Suppression…';
+                let res;
                 try {
-                    const res = await fetch(`${window.couleesDestroyBase}/${c.id}`, {
+                    res = await fetch(`${window.couleesDestroyBase}/${c.id}`, {
                         method: 'DELETE',
                         headers: { 'X-CSRF-TOKEN': window.csrfToken, 'Accept': 'application/json' },
                     });
-                    if (!res.ok) throw new Error();
-                    marker.closePopup();
-                    marker.remove();
                 } catch {
-                    btn.disabled = false;
-                    btn.textContent = 'Supprimer';
-                    alert('Erreur lors de la suppression.');
+                    btn.disabled = false; btn.textContent = 'Supprimer'; alert('Erreur réseau.'); return;
                 }
+                if (!res.ok) { btn.disabled = false; btn.textContent = 'Supprimer'; alert('Erreur lors de la suppression.'); return; }
+                ov.style.display = 'none';
+                markerRef.remove();
+            };
+        }
+    }
+
+    function addCouleeMarker(c) {
+        const marker = L.marker([c.lat, c.lng], { icon: couleeIcon }).addTo(map);
+        const canDelete = window.isAdmin || (window.currentUserId && c.user_id === window.currentUserId);
+
+        const deleteBtnPopup = canDelete
+            ? `<button data-coulee-id="${c.id}" style="flex:1;padding:6px 0;background:#fee2e2;border:1px solid #fca5a5;border-radius:8px;color:#b91c1c;font-size:11px;font-weight:700;cursor:pointer;font-family:'Space Grotesk',sans-serif;">Supprimer</button>`
+            : '';
+
+        marker.bindPopup(`
+            <div style="font-family:'Space Grotesk',sans-serif;min-width:180px;">
+                <div style="font-weight:700;color:#b45309;margin-bottom:4px;font-size:12px;">⚠ Signalement</div>
+                <div style="font-size:12px;font-weight:600;color:#1e293b;margin-bottom:2px;">${c.type || '—'}</div>
+                <div style="font-size:11px;color:#64748b;">Par ${c.user || 'inconnu'}</div>
+                <div style="font-size:11px;color:#94a3b8;margin-bottom:10px;">${c.date || ''}</div>
+                <div style="display:flex;gap:6px;">
+                    <button data-coulee-detail style="flex:1;padding:6px 0;background:#fff7ed;border:1px solid #fed7aa;border-radius:8px;color:#92400e;font-size:11px;font-weight:700;cursor:pointer;font-family:'Space Grotesk',sans-serif;">Détail</button>
+                    ${deleteBtnPopup}
+                </div>
+            </div>
+        `);
+
+        marker.on('popupopen', () => {
+            const popup = marker.getPopup()?.getElement();
+            if (!popup) return;
+
+            popup.querySelector('[data-coulee-detail]')?.addEventListener('click', () => {
+                marker.closePopup();
+                openCouleeDetail(c, marker);
             });
+
+            const delBtn = popup.querySelector('[data-coulee-id]');
+            if (!delBtn) return;
+            delBtn.addEventListener('click', async () => {
+                if (!confirm('Supprimer ce signalement ?')) return;
+                delBtn.disabled = true;
+                delBtn.textContent = 'Suppression…';
+                let res;
+                try {
+                    res = await fetch(`${window.couleesDestroyBase}/${c.id}`, {
+                        method: 'DELETE',
+                        headers: { 'X-CSRF-TOKEN': window.csrfToken, 'Accept': 'application/json' },
+                    });
+                } catch {
+                    delBtn.disabled = false; delBtn.textContent = 'Supprimer'; alert('Erreur réseau.'); return;
+                }
+                if (!res.ok) { delBtn.disabled = false; delBtn.textContent = 'Supprimer'; alert('Erreur lors de la suppression.'); return; }
+                marker.closePopup();
+                marker.remove();
+            }, { once: true });
         });
+
         couleeMarkers.push(marker);
         return marker;
     }
@@ -755,6 +853,8 @@ document.addEventListener("DOMContentLoaded", () => {
         couleeTypeAutre.value = "";
         couleeTypeAutre.classList.add("hidden");
         document.getElementById("coulee-image").value = "";
+        const descEl = document.getElementById("coulee-description");
+        if (descEl) descEl.value = "";
         couleeSelectedImages = [];
         renderCouleeImagePreview();
 
@@ -820,6 +920,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const dateVal = document.getElementById("coulee-date").value;
         if (dateVal) formData.append("date", dateVal);
+
+        const descriptionVal = document.getElementById("coulee-description")?.value.trim();
+        if (descriptionVal) formData.append("description", descriptionVal);
 
         // Traitement des images
         for (const file of couleeSelectedImages) {
