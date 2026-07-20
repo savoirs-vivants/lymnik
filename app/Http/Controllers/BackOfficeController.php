@@ -10,6 +10,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\BackofficeUserCreated;
 
 class BackOfficeController extends Controller
 {
@@ -60,15 +62,22 @@ class BackOfficeController extends Controller
             'role'      => ['nullable', 'string', 'in:admin,participant'],
         ]);
 
-        $validated['password'] = Hash::make($validated['password']);
+        $plainPassword = $validated['password'];
+        $validated['password'] = Hash::make($plainPassword);
 
         if (empty($validated['role'])) {
             $validated['role'] = 'participant';
         }
 
-        User::create($validated);
+        $user = User::create($validated);
 
-        return back()->with('success', 'Le nouvel utilisateur a été créé avec succès.');
+        try {
+            Mail::to($user->email)->send(new BackofficeUserCreated($user, $plainPassword));
+        } catch (\Exception $e) {
+            // Mail non bloquant
+        }
+
+        return back()->with('success', 'Le nouvel utilisateur a été créé et ses identifiants lui ont été envoyés par e-mail.');
     }
 
     public function update(Request $request, User $user)
