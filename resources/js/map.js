@@ -583,6 +583,10 @@ document.addEventListener("DOMContentLoaded", () => {
                </div>`
             : '';
 
+        const editBtnHtml = canDelete
+            ? `<button id="coulee-view-edit" style="flex:1;padding:12px;background:#f1f5f9;border:1px solid #cbd5e1;border-radius:12px;color:#334155;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">Modifier</button>`
+            : '';
+
         const deleteBtnHtml = canDelete
             ? `<button id="coulee-view-delete" style="flex:1;padding:12px;background:#fee2e2;border:1px solid #fca5a5;border-radius:12px;color:#b91c1c;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">Supprimer</button>`
             : '';
@@ -609,7 +613,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 </div>
                 ${descHtml}
                 ${imagesHtml}
-                ${canDelete ? `<div style="display:flex;gap:10px;margin-top:16px;">${deleteBtnHtml}</div>` : ''}
+                ${canDelete ? `<div style="display:flex;gap:10px;margin-top:16px;">${editBtnHtml}${deleteBtnHtml}</div>` : ''}
             </div>`;
 
         ov.style.display = 'flex';
@@ -617,6 +621,13 @@ document.addEventListener("DOMContentLoaded", () => {
         ov.style.justifyContent = 'center';
 
         document.getElementById('coulee-view-close').onclick = () => { ov.style.display = 'none'; };
+
+        if (canDelete) {
+            document.getElementById('coulee-view-edit').onclick = () => {
+                ov.style.display = 'none';
+                openCouleeEditForm(c, markerRef);
+            };
+        }
 
         if (canDelete) {
             document.getElementById('coulee-view-delete').onclick = async () => {
@@ -640,15 +651,14 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    function addCouleeMarker(c) {
-        const marker = L.marker([c.lat, c.lng], { icon: couleeIcon }).addTo(map);
+    function buildCouleePopupContent(c) {
         const canDelete = window.isAdmin || (window.currentUserId && c.user_id === window.currentUserId);
 
         const deleteBtnPopup = canDelete
             ? `<button data-coulee-id="${c.id}" style="flex:1;padding:6px 0;background:#fee2e2;border:1px solid #fca5a5;border-radius:8px;color:#b91c1c;font-size:11px;font-weight:700;cursor:pointer;font-family:'Space Grotesk',sans-serif;">Supprimer</button>`
             : '';
 
-        marker.bindPopup(`
+        return `
             <div style="font-family:'Space Grotesk',sans-serif;min-width:180px;">
                 <div style="font-weight:700;color:#b45309;margin-bottom:4px;font-size:12px;">⚠ Signalement</div>
                 <div style="font-size:12px;font-weight:600;color:#1e293b;margin-bottom:2px;">${c.type || '—'}</div>
@@ -659,7 +669,12 @@ document.addEventListener("DOMContentLoaded", () => {
                     ${deleteBtnPopup}
                 </div>
             </div>
-        `);
+        `;
+    }
+
+    function addCouleeMarker(c) {
+        const marker = L.marker([c.lat, c.lng], { icon: couleeIcon }).addTo(map);
+        marker.bindPopup(buildCouleePopupContent(c));
 
         marker.on('popupopen', () => {
             const popup = marker.getPopup()?.getElement();
@@ -699,6 +714,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     let coulee_tempMarker = null;
     let coulee_pendingLatLng = null;
+    let coulee_editing = null; // { data, marker } quand la modale est ouverte en mode édition
 
     const couleeOverlay   = document.getElementById("coulee-mode-overlay");
     const couleeConfirmBar = document.getElementById("coulee-confirm-bar");
@@ -839,9 +855,46 @@ document.addEventListener("DOMContentLoaded", () => {
         renderCouleeImagePreview();
     });
 
+    // Ouvre la modale de détails pré-remplie pour modifier un signalement existant
+    function openCouleeEditForm(c, markerRef) {
+        coulee_editing = { data: c, marker: markerRef };
+
+        let categorie = "probleme";
+        let matchedType = "";
+        for (const [cat, types] of Object.entries(couleeTypesParCategorie)) {
+            if (c.type && types.includes(c.type)) {
+                categorie = cat;
+                matchedType = c.type;
+                break;
+            }
+        }
+
+        couleeCategorieSelect.value = categorie;
+        remplirCouleeTypeSelect();
+
+        if (matchedType) {
+            couleeTypeSelect.value = matchedType;
+        } else if (c.type) {
+            couleeTypeSelect.value = "Autre";
+            couleeTypeAutre.classList.remove("hidden");
+            couleeTypeAutre.value = c.type;
+        }
+
+        document.getElementById("coulee-date").value = c.date_raw || "";
+        document.getElementById("coulee-image").value = "";
+        const descEl = document.getElementById("coulee-description");
+        if (descEl) descEl.value = c.description || "";
+        couleeSelectedImages = [];
+        renderCouleeImagePreview();
+
+        couleeDetailsModal.classList.remove("hidden");
+    }
+
     // 1. Clic sur "Valider" la position -> Ouvre la modale de détails
     document.getElementById("coulee-confirm-save")?.addEventListener("click", () => {
         if (!coulee_pendingLatLng) return;
+
+        coulee_editing = null;
 
         // Pré-remplir la date à aujourd'hui
         document.getElementById("coulee-date").value = new Date().toISOString().split('T')[0];
@@ -902,15 +955,21 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 3. Soumission finale au serveur
     document.getElementById("coulee-details-submit")?.addEventListener("click", async () => {
-        if (!coulee_pendingLatLng || !window.couleesStoreUrl) return;
+        const isEditing = !!coulee_editing;
+        if (!isEditing && (!coulee_pendingLatLng || !window.couleesStoreUrl)) return;
+        if (isEditing && !window.couleesDestroyBase) return;
 
         const btn = document.getElementById("coulee-details-submit");
         btn.disabled = true;
         btn.textContent = "Compression..."; // Indique à l'utilisateur ce qu'il se passe
 
         const formData = new FormData();
-        formData.append("lat", coulee_pendingLatLng.lat);
-        formData.append("lng", coulee_pendingLatLng.lng);
+        if (isEditing) {
+            formData.append("_method", "PUT"); // nécessaire pour l'upload de fichiers via Laravel
+        } else {
+            formData.append("lat", coulee_pendingLatLng.lat);
+            formData.append("lng", coulee_pendingLatLng.lng);
+        }
 
         let typeVal = couleeTypeSelect.value;
         if (typeVal === "Autre") {
@@ -940,7 +999,8 @@ document.addEventListener("DOMContentLoaded", () => {
         btn.textContent = "Envoi...";
 
         try {
-            const res = await fetch(window.couleesStoreUrl, {
+            const url = isEditing ? `${window.couleesDestroyBase}/${coulee_editing.data.id}` : window.couleesStoreUrl;
+            const res = await fetch(url, {
                 method: "POST",
                 headers: {
                     "X-CSRF-TOKEN": window.csrfToken,
@@ -958,18 +1018,23 @@ document.addEventListener("DOMContentLoaded", () => {
 
             const data = await res.json();
 
-            if (coulee_tempMarker) { coulee_tempMarker.remove(); coulee_tempMarker = null; }
-
-            const newMarker = addCouleeMarker(data);
-
             couleeSelectedImages = [];
             renderCouleeImagePreview();
-
             closeCouleeDetails();
-            exitCouleeMode();
 
-            if (data.images && data.images.length) {
-                newMarker.openPopup();
+            if (isEditing) {
+                Object.assign(coulee_editing.data, data);
+                coulee_editing.marker.setPopupContent(buildCouleePopupContent(coulee_editing.data));
+                coulee_editing = null;
+            } else {
+                if (coulee_tempMarker) { coulee_tempMarker.remove(); coulee_tempMarker = null; }
+
+                const newMarker = addCouleeMarker(data);
+                exitCouleeMode();
+
+                if (data.images && data.images.length) {
+                    newMarker.openPopup();
+                }
             }
         } catch (error) {
             console.error(error);

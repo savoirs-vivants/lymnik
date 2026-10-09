@@ -68,6 +68,7 @@ Route::get('/statistiques', [StatistiqueController::class, 'index'])->name('stat
 
 Route::middleware('auth')->group(function () {
     Route::post('/coulees-de-boue', [CouleeDeBoueController::class, 'store'])->name('coulees-de-boue.store');
+    Route::put('/coulees-de-boue/{couleeDeBoue}', [CouleeDeBoueController::class, 'update'])->name('coulees-de-boue.update');
     Route::delete('/coulees-de-boue/{couleeDeBoue}', [CouleeDeBoueController::class, 'destroy'])->name('coulees-de-boue.destroy');
 
     Route::get('/analyses', [AnalyseController::class, 'index'])->name('analyses.index');
